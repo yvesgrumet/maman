@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suivi Maman 💛</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fdf6f9; --warm: #faedf3; --gold: #c4789a; --gold-light: #e0a0bf;
+    --brown: #7d4e6b; --sage: #89b5a0; --text: #3d2040; --text-soft: #8a6080;
+    --shadow: rgba(180,120,160,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lato', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #a05878 0%, #c47898 60%, #e0a0bf 100%); padding: 24px 20px 20px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: #fff8ee; text-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+  .header p { color: #f5dcea; font-size: 0.85rem; margin-top: 4px; font-weight: 300; }
+  .tab-bar { display: flex; justify-content: center; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+  .tab-btn { background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); color: #fff8ee; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-size: 0.82rem; font-family: 'Lato', sans-serif; font-weight: 700; transition: all 0.2s; }
+  .tab-btn:hover, .tab-btn.active { background: rgba(255,255,255,0.9); color: var(--brown); border-color: transparent; }
+
+  /* SYNC STATUS */
+  .sync-bar { background: rgba(255,255,255,0.15); text-align: center; padding: 4px; font-size: 0.75rem; color: #f5dcea; }
+  .sync-bar.ok { background: rgba(137,181,160,0.3); color: #d0f0e0; }
+  .sync-bar.err { background: rgba(220,80,80,0.3); color: #ffd0d0; }
+
+  .main { max-width: 700px; margin: 0 auto; padding: 20px 16px 100px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 16px var(--shadow); border: 1px solid rgba(196,120,154,0.1); }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--brown); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label, .section-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-soft); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input, .form-group textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #edd9e8; border-radius: 10px; font-family: 'Lato', sans-serif; font-size: 0.9rem; background: var(--cream); color: var(--text); transition: border-color 0.2s; outline: none; }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--gold); background: #fff; }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  .who-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+  .who-chip { background: var(--warm); border: 2px solid transparent; border-radius: 20px; padding: 7px 16px; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text-soft); transition: all 0.2s; }
+  .who-chip.selected { background: var(--brown); color: #fff; border-color: var(--brown); }
+
+  .period-toggle { display: flex; gap: 8px; flex-wrap: wrap; }
+  .period-btn { flex: 1; min-width: 80px; background: var(--warm); border: 2px solid transparent; border-radius: 10px; padding: 9px 6px; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--text-soft); text-align: center; transition: all 0.2s; }
+  .period-btn.selected { background: var(--brown); color: #fff; }
+
+  .actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .action-btn { background: var(--warm); border: 2px solid transparent; border-radius: 12px; padding: 12px 10px; cursor: pointer; text-align: center; font-family: 'Lato', sans-serif; font-size: 0.82rem; color: var(--text-soft); font-weight: 700; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .action-btn .emoji { font-size: 1.5rem; }
+  .action-btn.selected { border-color: var(--sage); background: #f0f8f1; color: #3a6b3e; }
+
+  .emotion-category { margin-bottom: 16px; }
+  .emotion-cat-label { font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-soft); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .emotion-cat-label::after { content: ''; flex: 1; height: 1px; background: #edd9e8; }
+  .emotion-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .emotion-btn { background: var(--warm); border: 2px solid transparent; border-radius: 20px; padding: 6px 12px; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text-soft); transition: all 0.2s; }
+  .emotion-btn:hover { transform: translateY(-1px); }
+  .emotion-btn.selected { border-color: var(--gold); background: #fde8f2; color: var(--brown); }
+  .cat-perte .emotion-btn.selected { border-color: #9b7ec8; background: #f3eeff; color: #5a3a8a; }
+  .cat-peur  .emotion-btn.selected { border-color: #7bafc4; background: #eaf4fa; color: #2e5f78; }
+  .cat-triste .emotion-btn.selected { border-color: #a0a0c0; background: #eeeef8; color: #404080; }
+  .cat-colere .emotion-btn.selected { border-color: #d08060; background: #fff0e8; color: #8a4020; }
+  .cat-honte .emotion-btn.selected { border-color: #b08898; background: #f8eef2; color: #6a3848; }
+  .cat-joie  .emotion-btn.selected { border-color: #89b5a0; background: #eef8f3; color: #2e6b50; }
+  .cat-mixte .emotion-btn.selected { border-color: #b0b060; background: #f8f8e8; color: #5a5a20; }
+
+  .photo-label { display: inline-flex; align-items: center; gap: 6px; background: var(--warm); border: 1.5px solid var(--gold-light); border-radius: 12px; padding: 9px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: var(--brown); }
+
+  .submit-btn { width: 100%; background: linear-gradient(135deg, var(--brown), var(--gold-light)); color: #fff; border: none; border-radius: 14px; padding: 14px; font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(196,120,154,0.35); transition: all 0.2s; margin-top: 4px; }
+  .submit-btn:hover { transform: translateY(-2px); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .cal-nav button { background: var(--warm); border: none; border-radius: 10px; padding: 8px 14px; cursor: pointer; font-size: 1rem; color: var(--brown); font-weight: 700; }
+  .cal-month { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--brown); font-weight: 700; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-header { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--text-soft); padding: 4px 0; text-transform: uppercase; }
+  .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+  .cal-day:not(.empty):hover { background: var(--warm); }
+  .cal-day.today { background: var(--warm); font-weight: 700; color: var(--gold); }
+  .cal-day.has-entry { background: #fde8f4; }
+  .dot-row { display: flex; gap: 2px; margin-top: 2px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; }
+  .dot-joy{background:#89b5a0} .dot-loss{background:#9b7ec8} .dot-fear{background:#90afd0}
+  .dot-sad{background:#a0a0c0} .dot-anger{background:#d08060} .dot-mixed{background:#c4c478}
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--text-soft); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .filter-chip { background: var(--warm); border: 1.5px solid transparent; border-radius: 20px; padding: 5px 12px; cursor: pointer; font-size: 0.78rem; font-weight: 700; color: var(--text-soft); transition: all 0.2s; }
+  .filter-chip.active { background: var(--brown); color: #fff; }
+
+  .entry-card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--gold); box-shadow: 0 2px 12px var(--shadow); animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .entry-card.cat-joie{border-left-color:#89b5a0} .entry-card.cat-perte{border-left-color:#9b7ec8}
+  .entry-card.cat-peur{border-left-color:#90afd0} .entry-card.cat-triste{border-left-color:#a0a0c0}
+  .entry-card.cat-colere{border-left-color:#d08060} .entry-card.cat-honte{border-left-color:#e08fa0}
+  .entry-card.cat-mixte{border-left-color:#c4c478}
+  .entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .entry-who { font-weight: 700; color: var(--brown); font-size: 0.9rem; }
+  .entry-date { font-size: 0.78rem; color: var(--text-soft); }
+  .entry-emotions-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .emotion-tag { background: #fde8f2; color: var(--brown); border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; }
+  .entry-actions-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .entry-action-tag { background: #f0f8f1; color: #3a6b3e; border-radius: 10px; padding: 3px 9px; font-size: 0.75rem; font-weight: 700; }
+  .entry-note { font-size: 0.85rem; color: var(--text-soft); line-height: 1.5; border-top: 1px solid var(--warm); padding-top: 8px; margin-top: 4px; }
+  .delete-btn { display: inline-flex; align-items: center; gap: 5px; background: #fff0f3; border: 1.5px solid #f0c0c8; color: #c0506a; border-radius: 10px; padding: 5px 12px; cursor: pointer; font-size: 0.78rem; font-weight: 700; font-family: 'Lato', sans-serif; transition: all 0.2s; margin-top: 10px; }
+  .delete-btn:hover { background: #ffe0e6; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-box { background: #fff; border-radius: 14px; padding: 14px 10px; text-align: center; box-shadow: 0 2px 10px var(--shadow); }
+  .stat-number { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); font-weight: 700; }
+  .stat-label { font-size: 0.72rem; color: var(--text-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-label { font-size: 0.8rem; font-weight: 700; color: var(--text-soft); width: 130px; flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--warm); border-radius: 10px; height: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+  .bar-count { font-size: 0.8rem; font-weight: 700; color: var(--text-soft); width: 24px; text-align: right; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-soft); }
+  .empty-state .big-emoji { font-size: 3rem; margin-bottom: 12px; }
+  .loading { text-align: center; padding: 30px; color: var(--text-soft); font-size: 0.9rem; }
+
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--brown); color: #fff8ee; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 700; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 999; transition: transform 0.3s ease; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media(max-width:400px){ .stats-row{grid-template-columns:repeat(2,1fr)} .header h1{font-size:1.5rem} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💛 Suivi de Maman</h1>
+  <p>Un carnet partagé pour prendre soin d'elle ensemble</p>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('add',this)">✏️ Ajouter</button>
+    <button class="tab-btn" onclick="showTab('calendar',this)">📅 Calendrier</button>
+    <button class="tab-btn" onclick="showTab('journal',this)">📖 Journal</button>
+    <button class="tab-btn" onclick="showTab('stats',this)">📊 Bilan</button>
+  </div>
+</div>
+<div class="sync-bar" id="syncBar">⏳ Connexion à la base de données...</div>
+
+<div class="main">
+
+  <!-- ADD -->
+  <div id="tab-add" class="section active">
+    <div class="card">
+      <div class="card-title">👤 Qui es-tu ?</div>
+      <div class="who-selector">
+        <div class="who-chip" data-who="Françoise" onclick="selectWho(this)">Françoise</div>
+        <div class="who-chip" data-who="Martine"   onclick="selectWho(this)">Martine</div>
+        <div class="who-chip" data-who="Nicole"    onclick="selectWho(this)">Nicole</div>
+        <div class="who-chip" data-who="Pascale"   onclick="selectWho(this)">Pascale</div>
+        <div class="who-chip" data-who="Isabelle"  onclick="selectWho(this)">Isabelle</div>
+        <div class="who-chip" data-who="Yves"      onclick="selectWho(this)">Yves</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🕐 Quand ?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div class="form-group" style="margin:0"><label>Date</label><input type="date" id="entryDate"></div>
+        <div class="form-group" style="margin:0"><label>Heure</label><input type="time" id="entryTime"></div>
+      </div>
+      <span class="section-label">Moment(s) de la journée</span>
+      <div class="period-toggle">
+        <button class="period-btn" data-period="matin"      onclick="togglePeriod(this)">🌅 Matin</button>
+        <button class="period-btn" data-period="après-midi" onclick="togglePeriod(this)">☀️ Après-midi</button>
+        <button class="period-btn" data-period="soir"       onclick="togglePeriod(this)">🌙 Soir</button>
+        <button class="period-btn" data-period="appel"      onclick="togglePeriod(this)">📞 Appel</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Qu'as-tu fait ?</div>
+      <div class="actions-grid">
+        <button class="action-btn" data-action="visite"       onclick="toggleAction(this)"><span class="emoji">🏠</span>Visite à domicile</button>
+        <button class="action-btn" data-action="courses"      onclick="toggleAction(this)"><span class="emoji">🛒</span>Courses</button>
+        <button class="action-btn" data-action="médecin"      onclick="toggleAction(this)"><span class="emoji">🏥</span>Médecin / RDV</button>
+        <button class="action-btn" data-action="repas"        onclick="toggleAction(this)"><span class="emoji">🍽️</span>Repas préparé</button>
+        <button class="action-btn" data-action="promenade"    onclick="toggleAction(this)"><span class="emoji">🚶</span>Promenade</button>
+        <button class="action-btn" data-action="appel-tel"    onclick="toggleAction(this)"><span class="emoji">📞</span>Appelé</button>
+        <button class="action-btn" data-action="médicaments"  onclick="toggleAction(this)"><span class="emoji">💊</span>Médicaments</button>
+        <button class="action-btn" data-action="femme-menage" onclick="toggleAction(this)"><span class="emoji">🧹</span>Femme de ménage</button>
+        <button class="action-btn" data-action="infirmiere"   onclick="toggleAction(this)"><span class="emoji">👩‍⚕️</span>Infirmière</button>
+        <button class="action-btn" data-action="autre"        onclick="toggleAction(this)"><span class="emoji">➕</span>Autre</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📝 Note ou observation</div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <textarea id="entryNote" placeholder="Tes observations..."></textarea>
+      </div>
+      <span class="section-label">📷 Ajouter une photo</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <label class="photo-label">📷 Appareil photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this)"></label>
+        <label class="photo-label">🖼️ Galerie<input type="file" accept="image/*" style="display:none" onchange="handlePhoto(this)"></label>
+      </div>
+      <div id="photoPreviewArea" style="margin-top:12px;display:none;">
+        <div style="position:relative;display:inline-block;">
+          <img id="photoPreview" style="max-width:100%;max-height:240px;border-radius:14px;box-shadow:0 3px 16px var(--shadow);display:block;">
+          <button onclick="removePhoto()" style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.92);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:0.9rem;color:var(--brown);">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💭 Comment était-elle ?</div>
+      <p style="font-size:0.78rem;color:var(--text-soft);margin-bottom:16px;font-style:italic;">Plusieurs choix possibles</p>
+      <div class="emotion-category cat-joie">
+        <div class="emotion-cat-label">🤗 Émotions positives</div>
+        <div class="emotion-grid">
+          <button class="emotion-btn" data-cat="cat-joie" onclick="toggleEmotion(this)">😊 Heureuse</button>
+          <button class="emotion-btn" data-cat="cat-joie" onclick="toggleEmotion(this)">💪 En forme</button>
+          <button class="emotion-btn" data-cat="cat-joie" onclick="toggleEmotion(this)">🌸 Sereine</button>
+          <button class="emotion-btn" data-cat="cat-joie" onclick="toggleEmotion(this)">🏅 Fière</button>
+          <button class="emotion-btn" data-cat="cat-joie" onclick="toggleEmotion(this)">🙏 Reconnaissante</button>
+          <button class="emotion-btn" data-cat="cat-joie" onclick="toggleEmotion(this)">💞 Tendre</button>
+          <button class="emotion-btn" data-cat="cat-joie" onclick="toggleEmotion(this)">✅ Devoir accompli</button>
+        </div>
+      </div>
+      <div class="emotion-category cat-perte">
+        <div class="emotion-cat-label">😔 Perte et deuil</div>
+        <div class="emotion-grid">
+          <button class="emotion-btn" data-cat="cat-perte" onclick="toggleEmotion(this)">😔 Deuil des capacités physiques</button>
+          <button class="emotion-btn" data-cat="cat-perte" onclick="toggleEmotion(this)">😔 Deuil de l'autonomie</button>
+          <button class="emotion-btn" data-cat="cat-perte" onclick="toggleEmotion(this)">😔 Deuil de la mémoire</button>
+          <button class="emotion-btn" data-cat="cat-perte" onclick="toggleEmotion(this)">😔 Deuil des proches</button>
+          <button class="emotion-btn" data-cat="cat-perte" onclick="toggleEmotion(this)">😔 Nostalgique</button>
+        </div>
+      </div>
+      <div class="emotion-category cat-peur">
+        <div class="emotion-cat-label">😰 Peurs et angoisses</div>
+        <div class="emotion-grid">
+          <button class="emotion-btn" data-cat="cat-peur" onclick="toggleEmotion(this)">😰 Peur de tomber</button>
+          <button class="emotion-btn" data-cat="cat-peur" onclick="toggleEmotion(this)">😰 Peur d'être un fardeau</button>
+          <button class="emotion-btn" data-cat="cat-peur" onclick="toggleEmotion(this)">😰 Peur de l'oubli de soi</button>
+          <button class="emotion-btn" data-cat="cat-peur" onclick="toggleEmotion(this)">😰 Peur de la mort</button>
+          <button class="emotion-btn" data-cat="cat-peur" onclick="toggleEmotion(this)">😰 Angoisse du vide</button>
+        </div>
+      </div>
+      <div class="emotion-category cat-triste">
+        <div class="emotion-cat-label">😞 Tristesse</div>
+        <div class="emotion-grid">
+          <button class="emotion-btn" data-cat="cat-triste" onclick="toggleEmotion(this)">😞 Mélancolie</button>
+          <button class="emotion-btn" data-cat="cat-triste" onclick="toggleEmotion(this)">😞 Sentiment d'inutilité</button>
+          <button class="emotion-btn" data-cat="cat-triste" onclick="toggleEmotion(this)">😞 Solitude profonde</button>
+          <button class="emotion-btn" data-cat="cat-triste" onclick="toggleEmotion(this)">😞 Abattement</button>
+        </div>
+      </div>
+      <div class="emotion-category cat-colere">
+        <div class="emotion-cat-label">😤 Frustration et colère</div>
+        <div class="emotion-grid">
+          <button class="emotion-btn" data-cat="cat-colere" onclick="toggleEmotion(this)">😤 Colère contre son corps</button>
+          <button class="emotion-btn" data-cat="cat-colere" onclick="toggleEmotion(this)">😤 Frustration face à la dépendance</button>
+          <button class="emotion-btn" data-cat="cat-colere" onclick="toggleEmotion(this)">😤 Irritable</button>
+          <button class="emotion-btn" data-cat="cat-colere" onclick="toggleEmotion(this)">😤 Sentiment d'injustice</button>
+        </div>
+      </div>
+      <div class="emotion-category cat-honte">
+        <div class="emotion-cat-label">😳 Honte et humiliation</div>
+        <div class="emotion-grid">
+          <button class="emotion-btn" data-cat="cat-honte" onclick="toggleEmotion(this)">😳 Honte du corps vieillissant</button>
+          <button class="emotion-btn" data-cat="cat-honte" onclick="toggleEmotion(this)">😳 Humiliation de ne pas se souvenir</button>
+          <button class="emotion-btn" data-cat="cat-honte" onclick="toggleEmotion(this)">😳 Sentiment de diminution</button>
+        </div>
+      </div>
+      <div class="emotion-category cat-mixte">
+        <div class="emotion-cat-label">🌀 États mixtes</div>
+        <div class="emotion-grid">
+          <button class="emotion-btn" data-cat="cat-mixte" onclick="toggleEmotion(this)">🌀 Ambivalente</button>
+          <button class="emotion-btn" data-cat="cat-mixte" onclick="toggleEmotion(this)">🌀 Confusion émotionnelle</button>
+          <button class="emotion-btn" data-cat="cat-mixte" onclick="toggleEmotion(this)">🌀 Résignée</button>
+          <button class="emotion-btn" data-cat="cat-mixte" onclick="toggleEmotion(this)">🌀 Hypervigilante</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="saveEntry()">💛 Enregistrer cette visite</button>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="tab-calendar" class="section">
+    <div class="card">
+      <div class="cal-nav">
+        <button onclick="changeMonth(-1)">◀</button>
+        <div class="cal-month" id="calMonthLabel"></div>
+        <button onclick="changeMonth(1)">▶</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot dot-joy"></div> Positive</div>
+        <div class="legend-item"><div class="legend-dot dot-loss"></div> Deuil</div>
+        <div class="legend-item"><div class="legend-dot dot-fear"></div> Angoisse</div>
+        <div class="legend-item"><div class="legend-dot dot-sad"></div> Tristesse</div>
+        <div class="legend-item"><div class="legend-dot dot-anger"></div> Colère</div>
+        <div class="legend-item"><div class="legend-dot dot-mixed"></div> Mixte</div>
+      </div>
+    </div>
+    <div id="dayDetail"></div>
+  </div>
+
+  <!-- JOURNAL -->
+  <div id="tab-journal" class="section">
+    <div class="filter-row">
+      <span style="font-size:0.8rem;font-weight:700;color:var(--text-soft);">Filtrer :</span>
+      <div class="filter-chip active" data-filter="all"     onclick="setFilter(this)">Tous</div>
+      <div class="filter-chip" data-filter="visite"         onclick="setFilter(this)">🏠 Visites</div>
+      <div class="filter-chip" data-filter="appel-tel"      onclick="setFilter(this)">📞 Appels</div>
+      <div class="filter-chip" data-filter="médecin"        onclick="setFilter(this)">🏥 RDV</div>
+      <div class="filter-chip" data-filter="cat-joie"       onclick="setFilter(this)">😊 Positive</div>
+      <div class="filter-chip" data-filter="cat-triste"     onclick="setFilter(this)">😞 Triste</div>
+      <div class="filter-chip" data-filter="cat-peur"       onclick="setFilter(this)">😰 Angoisse</div>
+    </div>
+    <div id="journalList"></div>
+  </div>
+
+  <!-- STATS -->
+  <div id="tab-stats" class="section">
+    <div id="statsContent"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB7Pq9t4T_dqG_xzf8829yKXe-RX4_rMhs",
+    authDomain: "suivi-maman.firebaseapp.com",
+    databaseURL: "https://suivi-maman-default-rtdb.firebaseio.com",
+    projectId: "suivi-maman",
+    storageBucket: "suivi-maman.firebasestorage.app",
+    messagingSenderId: "464641073360",
+    appId: "1:464641073360:web:327a3738757cdfc7fa7ed5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const entriesRef = ref(db, 'entries');
+
+  // Sync status
+  const syncBar = document.getElementById('syncBar');
+
+  // Listen to all entries in real time
+  onValue(entriesRef, (snapshot) => {
+    entries = [];
+    if(snapshot.exists()) {
+      snapshot.forEach(child => {
+        entries.push({ ...child.val(), _fbKey: child.key });
+      });
+      // Sort by ts descending
+      entries.sort((a,b) => new Date(b.ts) - new Date(a.ts));
+    }
+    syncBar.textContent = '🟢 Synchronisé — toute la famille voit les mises à jour en temps réel';
+    syncBar.className = 'sync-bar ok';
+    // Refresh current view
+    const active = document.querySelector('.section.active');
+    if(active) {
+      const id = active.id;
+      if(id==='tab-calendar') renderCalendar();
+      if(id==='tab-journal') renderJournal();
+      if(id==='tab-stats') renderStats();
+    }
+  }, (error) => {
+    syncBar.textContent = '🔴 Erreur de connexion — vérifiez votre internet';
+    syncBar.className = 'sync-bar err';
+  });
+
+  // Expose save/delete to window
+  window._fbSave = async (entry) => {
+    await push(entriesRef, entry);
+  };
+  window._fbDelete = async (fbKey) => {
+    await remove(ref(db, 'entries/' + fbKey));
+  };
+</script>
+
+<script>
+  let entries = [];
+  let selectedWho = '';
+  let selectedPeriods = [];
+  let selectedEmotions = [];
+  let selectedActions = [];
+  let selectedPhoto = null;
+  let calYear, calMonth;
+  let activeFilter = 'all';
+  let lastViewedDate = null;
+
+  function initForm() {
+    const now = new Date();
+    document.getElementById('entryDate').value = now.toISOString().slice(0,10);
+    document.getElementById('entryTime').value = now.toTimeString().slice(0,5);
+  }
+  initForm();
+  const today = new Date();
+  calYear = today.getFullYear();
+  calMonth = today.getMonth();
+
+  function showTab(t, btn) {
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+t).classList.add('active');
+    btn.classList.add('active');
+    if(t==='calendar') renderCalendar();
+    if(t==='journal')  renderJournal();
+    if(t==='stats')    renderStats();
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2800);
+  }
+
+  function selectWho(el) {
+    document.querySelectorAll('.who-chip').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedWho = el.dataset.who;
+  }
+  function togglePeriod(el) {
+    el.classList.toggle('selected');
+    const p = el.dataset.period;
+    selectedPeriods = selectedPeriods.includes(p) ? selectedPeriods.filter(x=>x!==p) : [...selectedPeriods,p];
+  }
+  function toggleAction(el) {
+    el.classList.toggle('selected');
+    const a = el.dataset.action;
+    selectedActions = selectedActions.includes(a) ? selectedActions.filter(x=>x!==a) : [...selectedActions,a];
+  }
+  function toggleEmotion(el) {
+    el.classList.toggle('selected');
+    const label = el.textContent.trim();
+    const cat = el.dataset.cat;
+    const key = label+'|'+cat;
+    if(selectedEmotions.find(e=>e.key===key))
+      selectedEmotions = selectedEmotions.filter(e=>e.key!==key);
+    else
+      selectedEmotions.push({label,cat,key});
+  }
+
+  function handlePhoto(input) {
+    const file = input.files[0];
+    if(!file) return;
+    // Resize before storing to keep Firebase size small
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxW = 800;
+        const scale = img.width > maxW ? maxW/img.width : 1;
+        canvas.width = img.width*scale;
+        canvas.height = img.height*scale;
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        selectedPhoto = canvas.toDataURL('image/jpeg', 0.7);
+        document.getElementById('photoPreview').src = selectedPhoto;
+        document.getElementById('photoPreviewArea').style.display = 'block';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function removePhoto() {
+    selectedPhoto = null;
+    document.getElementById('photoPreviewArea').style.display = 'none';
+    document.getElementById('photoPreview').src = '';
+  }
+
+  async function saveEntry() {
+    if(!selectedWho) { showToast('⚠️ Dis-nous qui tu es !'); return; }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Enregistrement...';
+    const entry = {
+      who: selectedWho,
+      date: document.getElementById('entryDate').value,
+      time: document.getElementById('entryTime').value,
+      periods: [...selectedPeriods],
+      emotions: [...selectedEmotions],
+      actions: [...selectedActions],
+      note: document.getElementById('entryNote').value.trim(),
+      photo: selectedPhoto || null,
+      ts: new Date().toISOString()
+    };
+    try {
+      await window._fbSave(entry);
+      document.querySelectorAll('.who-chip,.period-btn,.emotion-btn,.action-btn').forEach(el=>el.classList.remove('selected'));
+      selectedWho=''; selectedPeriods=[]; selectedEmotions=[]; selectedActions=[];
+      document.getElementById('entryNote').value='';
+      removePhoto();
+      initForm();
+      showToast('✅ Visite enregistrée ! Toute la famille peut la voir 💛');
+    } catch(e) {
+      showToast('❌ Erreur — vérifiez votre connexion internet');
+    }
+    btn.disabled = false;
+    btn.textContent = '💛 Enregistrer cette visite';
+  }
+
+  const catDot = {'cat-joie':'dot-joy','cat-perte':'dot-loss','cat-peur':'dot-fear','cat-triste':'dot-sad','cat-colere':'dot-anger','cat-honte':'dot-sad','cat-mixte':'dot-mixed'};
+  const periodEmoji = {matin:'🌅','après-midi':'☀️',soir:'🌙',appel:'📞'};
+  const actionInfo = {
+    visite:'🏠 Visite', courses:'🛒 Courses', 'médecin':'🏥 RDV médecin',
+    repas:'🍽️ Repas', promenade:'🚶 Promenade', 'appel-tel':'📞 Appel',
+    médicaments:'💊 Médicaments', 'femme-menage':'🧹 Femme de ménage',
+    infirmiere:'👩‍⚕️ Infirmière', autre:'➕ Autre'
+  };
+
+  function formatDate(d) {
+    if(!d) return '';
+    const [y,m,day] = d.split('-');
+    const months=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+    return `${parseInt(day)} ${months[parseInt(m)-1]} ${y}`;
+  }
+  function dominantCat(emotions) {
+    if(!emotions||!emotions.length) return '';
+    const counts={};
+    emotions.forEach(e=>counts[e.cat]=(counts[e.cat]||0)+1);
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+
+  // CALENDAR
+  function renderCalendar() {
+    const months=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    document.getElementById('calMonthLabel').textContent=`${months[calMonth]} ${calYear}`;
+    const grid=document.getElementById('calGrid');
+    let html=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d=>`<div class="cal-day-header">${d}</div>`).join('');
+    const first=new Date(calYear,calMonth,1);
+    let startDay=first.getDay(); startDay=startDay===0?6:startDay-1;
+    for(let i=0;i<startDay;i++) html+=`<div class="cal-day empty"></div>`;
+    const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+    const todayStr=today.toISOString().slice(0,10);
+    for(let d=1;d<=daysInMonth;d++){
+      const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayEntries=entries.filter(e=>e.date===dateStr);
+      let cls='cal-day';
+      if(dateStr===todayStr) cls+=' today';
+      if(dayEntries.length) cls+=' has-entry';
+      const seen=new Set(); let dots='';
+      dayEntries.forEach(e=>(e.emotions||[]).forEach(em=>{
+        const dc=catDot[em.cat];
+        if(dc&&!seen.has(dc)){dots+=`<div class="dot ${dc}"></div>`;seen.add(dc);}
+      }));
+      html+=`<div class="${cls}" onclick="showDayDetail('${dateStr}')"><span>${d}</span>${dots?`<div class="dot-row">${dots}</div>`:''}</div>`;
+    }
+    grid.innerHTML=html;
+    if(lastViewedDate) showDayDetail(lastViewedDate);
+    else document.getElementById('dayDetail').innerHTML='';
+  }
+  function changeMonth(dir){
+    calMonth+=dir;
+    if(calMonth>11){calMonth=0;calYear++;}
+    if(calMonth<0){calMonth=11;calYear--;}
+    lastViewedDate=null;
+    renderCalendar();
+  }
+  function showDayDetail(dateStr){
+    lastViewedDate=dateStr;
+    const dayEntries=entries.filter(e=>e.date===dateStr);
+    const div=document.getElementById('dayDetail');
+    if(!dayEntries.length){
+      div.innerHTML=`<div class="card"><p style="color:var(--text-soft);text-align:center;padding:10px">Aucune entrée ce jour-là</p></div>`;
+      return;
+    }
+    div.innerHTML=dayEntries.map(e=>entryCardHTML(e,true)).join('');
+  }
+
+  // JOURNAL
+  function setFilter(el){
+    document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    activeFilter=el.dataset.filter;
+    renderJournal();
+  }
+  function renderJournal(){
+    const list=document.getElementById('journalList');
+    let filtered=entries;
+    if(activeFilter!=='all'){
+      filtered=entries.filter(e=>
+        (e.actions&&e.actions.includes(activeFilter))||
+        (e.emotions&&e.emotions.find(em=>em.cat===activeFilter))
+      );
+    }
+    if(!filtered.length){
+      list.innerHTML=`<div class="empty-state"><div class="big-emoji">📖</div><p>Aucune entrée pour l'instant.<br>Ajoutez la première visite !</p></div>`;
+      return;
+    }
+    list.innerHTML=filtered.map(e=>entryCardHTML(e,true)).join('');
+  }
+
+  function entryCardHTML(e,showDelete=false){
+    const dom=dominantCat(e.emotions);
+    const periods=(e.periods||[]).map(p=>periodEmoji[p]||'').join(' ');
+    const emotionsHTML=e.emotions&&e.emotions.length
+      ?`<div class="entry-emotions-row">${e.emotions.map(em=>`<span class="emotion-tag">${em.label}</span>`).join('')}</div>`:'';
+    const actionsHTML=e.actions&&e.actions.length
+      ?`<div class="entry-actions-row">${e.actions.map(a=>`<span class="entry-action-tag">${actionInfo[a]||a}</span>`).join('')}</div>`:'';
+    const noteHTML=e.note?`<div class="entry-note">${e.note}</div>`:'';
+    const photoHTML=e.photo?`<div style="margin-top:10px;"><img src="${e.photo}" style="max-width:100%;max-height:220px;border-radius:12px;box-shadow:0 2px 10px var(--shadow);display:block;"></div>`:'';
+    const delBtn=showDelete?`<button class="delete-btn" onclick="deleteEntry('${e._fbKey}','${e.date}')">🗑️ Supprimer</button>`:'';
+    return `<div class="entry-card ${dom}">
+      <div class="entry-header">
+        <div>
+          <div class="entry-who">👤 ${e.who}</div>
+          <div class="entry-date">${periods} ${formatDate(e.date)}${e.time?' · '+e.time:''}</div>
+        </div>
+      </div>
+      ${emotionsHTML}${actionsHTML}${noteHTML}${photoHTML}${delBtn}
+    </div>`;
+  }
+
+  async function deleteEntry(fbKey, date){
+    if(!confirm('Supprimer cette entrée ?')) return;
+    try {
+      await window._fbDelete(fbKey);
+      lastViewedDate = date;
+      showToast('🗑️ Entrée supprimée');
+    } catch(e) {
+      showToast('❌ Erreur lors de la suppression');
+    }
+  }
+
+  // STATS
+  function renderStats(){
+    const div=document.getElementById('statsContent');
+    if(!entries.length){
+      div.innerHTML=`<div class="empty-state"><div class="big-emoji">📊</div><p>Les statistiques apparaîtront<br>après les premières visites.</p></div>`;
+      return;
+    }
+    const total=entries.length;
+    const thisMonth=entries.filter(e=>{const d=new Date(e.date);return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear();}).length;
+    const people=[...new Set(entries.map(e=>e.who))].length;
+    const catLabels={'cat-joie':'🤗 Positive','cat-perte':'😔 Deuil/Perte','cat-peur':'😰 Angoisse','cat-triste':'😞 Tristesse','cat-colere':'😤 Colère','cat-honte':'😳 Honte','cat-mixte':'🌀 Mixte'};
+    const catColors={'cat-joie':'#89b5a0','cat-perte':'#9b7ec8','cat-peur':'#90afd0','cat-triste':'#a0a0c0','cat-colere':'#d08060','cat-honte':'#e08fa0','cat-mixte':'#c4c478'};
+    const catCounts={};
+    entries.forEach(e=>{if(e.emotions)e.emotions.forEach(em=>catCounts[em.cat]=(catCounts[em.cat]||0)+1);});
+    const maxCat=Math.max(...Object.values(catCounts),1);
+    const emotionBars=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).map(([cat,c])=>
+      `<div class="bar-row"><div class="bar-label">${catLabels[cat]||cat}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxCat*100)}%;background:${catColors[cat]||'var(--gold)'}"></div></div><div class="bar-count">${c}</div></div>`
+    ).join('');
+    const actCounts={};
+    entries.forEach(e=>{if(e.actions)e.actions.forEach(a=>actCounts[a]=(actCounts[a]||0)+1);});
+    const actList=Object.entries(actCounts).sort((a,b)=>b[1]-a[1])
+      .map(([a,c])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--warm);font-size:0.87rem;"><span>${actionInfo[a]||a}</span><span style="font-weight:700;color:var(--brown)">${c}×</span></div>`).join('');
+    div.innerHTML=`
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-number">${total}</div><div class="stat-label">Total entrées</div></div>
+        <div class="stat-box"><div class="stat-number">${thisMonth}</div><div class="stat-label">Ce mois</div></div>
+        <div class="stat-box"><div class="stat-number">${people}</div><div class="stat-label">Proches actifs</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💭 États émotionnels observés</div>
+        ${emotionBars||'<p style="color:var(--text-soft);font-size:0.85rem">Pas encore de données</p>'}
+      </div>
+      <div class="card">
+        <div class="card-title">✅ Actions réalisées</div>
+        ${actList||'<p style="color:var(--text-soft);font-size:0.85rem">Pas encore de données</p>'}
+      </div>`;
+  }
+</script>
+</body>
+</html>
