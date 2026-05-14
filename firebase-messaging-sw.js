@@ -1,28 +1,46 @@
-// Service Worker — Suivi Maman
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+// Service Worker — Suivi Maman 💛
+const CACHE = 'suivi-maman-v1';
 
-firebase.initializeApp({
-  apiKey: "AIzaSyB7Pq9t4T_dqG_xzf8829yKXe-RX4_rMhs",
-  authDomain: "suivi-maman.firebaseapp.com",
-  databaseURL: "https://suivi-maman-default-rtdb.firebaseio.com",
-  projectId: "suivi-maman",
-  storageBucket: "suivi-maman.firebasestorage.app",
-  messagingSenderId: "464641073360",
-  appId: "1:464641073360:web:327a3738757cdfc7fa7ed5"
+self.addEventListener('install', e => {
+  self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll([
+      '/', '/index.html', '/maman-tablette.html',
+      '/icon-famille.png', '/icon-maman.png'
+    ]).catch(()=>{}))
+  );
 });
 
-const messaging = firebase.messaging();
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
+  ));
+  self.clients.claim();
+});
 
-// Notification en arrière-plan
-messaging.onBackgroundMessage((payload) => {
-  const { title, body, icon } = payload.notification;
-  self.registration.showNotification(title || '💛 Suivi Maman', {
-    body: body || 'Nouvelle mise à jour',
-    icon: icon || '/icon-famille.png',
-    badge: '/icon-famille.png',
-    vibrate: [200, 100, 200],
-    tag: 'maman-notification',
-    renotify: true
-  });
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  );
+});
+
+// Afficher les notifications push reçues
+self.addEventListener('push', e => {
+  const data = e.data ? e.data.json() : {};
+  e.waitUntil(
+    self.registration.showNotification(data.title || '💛 Suivi Maman', {
+      body: data.body || '',
+      icon: '/icon-famille.png',
+      badge: '/icon-famille.png',
+      vibrate: data.urgent ? [300,100,300,100,300] : [200,100,200],
+      tag: 'suivi-maman',
+      renotify: true,
+      requireInteraction: data.urgent || false
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow('/'));
 });

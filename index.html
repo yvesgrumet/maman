@@ -423,7 +423,6 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB7Pq9t4T_dqG_xzf8829yKXe-RX4_rMhs",
@@ -479,32 +478,62 @@
     refreshActiveTab();
   });
 
-  // NOTIFICATIONS PUSH
+  // NOTIFICATIONS PUSH — via navigateur natif + Firebase
   async function setupNotifications() {
     try {
       if(!('Notification' in window)) return;
-      // Register service worker
-      const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      const messaging = getMessaging(app);
       const permission = await Notification.requestPermission();
       if(permission !== 'granted') return;
-      // VAPID key — à remplacer après activation FCM dans Firebase Console
-      const token = await getToken(messaging, {
-        vapidKey: 'VOTRE_VAPID_KEY_ICI',
-        serviceWorkerRegistration: reg
+
+      // Écouter les nouveaux statuts de Maman en temps réel
+      onValue(ref(db,'maman_status'), (snap) => {
+        const statuses=[];
+        if(snap.exists()) snap.forEach(c=>statuses.push(c.val()));
+        statuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+        if(!statuses.length) return;
+        const last = statuses[0];
+        // Notifier seulement si c'est récent (moins de 30 secondes)
+        const age = (Date.now() - new Date(last.ts).getTime()) / 1000;
+        if(age < 30) {
+          const emoji = last.mood==='mal'?'🚨':last.mood==='moyen'?'😐':'😊';
+          sendBrowserNotif(
+            `${emoji} Nouvelles de Maman`,
+            `${last.moodLabel||''}${last.message?' — "'+last.message+'"':''}`,
+            last.mood==='mal'
+          );
+        }
       });
-      if(token) {
-        // Sauvegarder le token dans Firebase pour pouvoir envoyer des notifs
-        const who = localStorage.getItem('notif_who') || 'famille';
-        await push(ref(db,'notif_tokens'), { token, who, ts: new Date().toISOString() });
-      }
-      // Notif quand l'app est ouverte
-      onMessage(messaging, (payload) => {
-        const { title, body } = payload.notification || {};
-        if(title) showToast(`🔔 ${title}: ${body||''}`);
+
+      // Écouter les nouvelles visites
+      onValue(ref(db,'entries'), (snap) => {
+        const all=[];
+        if(snap.exists()) snap.forEach(e=>all.push(e.val()));
+        all.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+        if(!all.length) return;
+        const last = all[0];
+        const age = (Date.now() - new Date(last.ts).getTime()) / 1000;
+        if(age < 30 && last.who) {
+          sendBrowserNotif('💛 Nouvelle visite', `${last.who} vient d'enregistrer une visite`);
+        }
       });
-    } catch(e) { console.log('Notifications non disponibles:', e); }
+
+    } catch(e) { console.log('Notifications:', e); }
   }
+
+  function sendBrowserNotif(title, body, urgent=false) {
+    if(Notification.permission !== 'granted') return;
+    const n = new Notification(title, {
+      body,
+      icon: '/icon-famille.png',
+      badge: '/icon-famille.png',
+      vibrate: urgent ? [300,100,300,100,300] : [200,100,200],
+      tag: 'suivi-maman',
+      renotify: true,
+      requireInteraction: urgent
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  }
+
   setupNotifications();
 </script>
 
