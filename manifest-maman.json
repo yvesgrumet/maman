@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     { "src": "icon-maman.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
-    { "src": "icon-maman.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-maman.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "ic%C3%B4ne-maman.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "ic%C3%B4ne-maman.png", "sizes": "512x512", "type": "image/png" }
   ]
 }

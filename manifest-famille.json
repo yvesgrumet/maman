@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     { "src": "icon-famille.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
-    { "src": "icon-famille.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-famille.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "ic%C3%B4ne-famille.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "ic%C3%B4ne-famille.png", "sizes": "512x512", "type": "image/png" }
   ]
 }

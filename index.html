@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Suivi Maman">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#a05878">
-<link rel="apple-touch-icon" href="icon-famille.png">
-<link rel="icon" type="image/png" href="icon-famille.png">
+<link rel="apple-touch-icon" href="ic%C3%B4ne-famille.png">
+<link rel="icon" type="image/png" href="ic%C3%B4ne-famille.png">
 <link rel="manifest" href="manifest-famille.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -537,7 +537,7 @@
     if(Notification.permission !== 'granted') return;
     try {
       const n = new Notification(title, {
-        body, icon: '/icon-famille.png', badge: '/icon-famille.png',
+        body, icon: '/ic%C3%B4ne-famille.png', badge: '/ic%C3%B4ne-famille.png',
         vibrate: urgent ? [300,100,300,100,300] : [200,100,200],
         tag: 'suivi-maman-'+Date.now(), renotify: true, requireInteraction: urgent
       });
