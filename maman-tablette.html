@@ -279,7 +279,7 @@
     msgs.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
     const div=document.getElementById('childMessages');
     if(!msgs.length){div.innerHTML='<div class="no-msg">Pas encore de messages... 💛</div>';return;}
-    div.innerHTML=msgs.slice(0,8).map(m=>`
+    div.innerHTML=msgs.slice(0,7).map(m=>`
       <div class="child-msg">
         <button class="del-msg-btn" onclick="deleteMsg('${m.key}')">✕ Effacer</button>
         <div class="child-msg-who">💌 ${m.who}</div>

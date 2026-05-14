@@ -166,34 +166,10 @@
   <div id="tab-maman" class="section">
     <div id="mamanStatusArea"><div class="empty-state"><div class="big-emoji">🌸</div><p>En attente des nouvelles de Maman...</p></div></div>
 
-    <!-- RDV -->
+    <!-- HISTORIQUE 7 DERNIERS MESSAGES MAMAN -->
     <div class="card">
-      <div class="card-title">📅 Rendez-vous de Maman</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-        <input class="reply-input" type="text" id="rdvTitle" placeholder="Ex : Médecin, Coiffeur..." style="flex:2;min-width:140px;">
-        <input class="reply-input" type="date" id="rdvDate" style="flex:1;min-width:130px;">
-      </div>
-      <div style="margin-bottom:12px;">
-        <label class="section-label" style="margin-bottom:8px;">Heure du rendez-vous</label>
-        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-          <div style="position:relative;width:60px;height:120px;overflow:hidden;border-radius:12px;background:var(--cream);border:1.5px solid #edd9e8;">
-            <div style="position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(to bottom,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
-            <div style="position:absolute;bottom:0;left:0;right:0;height:38px;background:linear-gradient(to top,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
-            <div style="position:absolute;top:50%;left:0;right:0;height:36px;transform:translateY(-50%);border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);z-index:1;pointer-events:none;background:rgba(196,120,154,0.06);"></div>
-            <div id="rdvHourWheel" style="position:absolute;top:0;left:0;right:0;cursor:grab;touch-action:none;"></div>
-          </div>
-          <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--brown);padding:0 3px;">:</div>
-          <div style="position:relative;width:60px;height:120px;overflow:hidden;border-radius:12px;background:var(--cream);border:1.5px solid #edd9e8;">
-            <div style="position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(to bottom,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
-            <div style="position:absolute;bottom:0;left:0;right:0;height:38px;background:linear-gradient(to top,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
-            <div style="position:absolute;top:50%;left:0;right:0;height:36px;transform:translateY(-50%);border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);z-index:1;pointer-events:none;background:rgba(196,120,154,0.06);"></div>
-            <div id="rdvMinWheel" style="position:absolute;top:0;left:0;right:0;cursor:grab;touch-action:none;"></div>
-          </div>
-        </div>
-        <input type="hidden" id="rdvTime">
-      </div>
-      <button class="reply-btn" onclick="addRdvFromFamily()" style="width:100%;margin-bottom:14px;">📅 Ajouter ce rendez-vous</button>
-      <div id="familyRdvList"></div>
+      <div class="card-title">📋 7 derniers messages de Maman</div>
+      <div id="mamanHistory"><p style="color:var(--text-soft);font-size:0.85rem;text-align:center;padding:10px">Pas encore de messages...</p></div>
     </div>
 
     <!-- RÉPONDRE -->
@@ -349,6 +325,36 @@
       </div></div>
     </div>
 
+    <!-- RDV DE MAMAN -->
+    <div class="card">
+      <div class="card-title">📅 Rendez-vous de Maman</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <input class="reply-input" type="text" id="rdvTitle" placeholder="Ex : Médecin, Coiffeur..." style="flex:2;min-width:140px;">
+        <input class="reply-input" type="date" id="rdvDate" style="flex:1;min-width:130px;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label class="section-label" style="margin-bottom:8px;">Heure du rendez-vous</label>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+          <div style="position:relative;width:60px;height:120px;overflow:hidden;border-radius:12px;background:var(--cream);border:1.5px solid #edd9e8;">
+            <div style="position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(to bottom,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:38px;background:linear-gradient(to top,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
+            <div style="position:absolute;top:50%;left:0;right:0;height:36px;transform:translateY(-50%);border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);z-index:1;pointer-events:none;background:rgba(196,120,154,0.06);"></div>
+            <div id="rdvHourWheel" style="position:absolute;top:0;left:0;right:0;cursor:grab;touch-action:none;"></div>
+          </div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--brown);padding:0 3px;">:</div>
+          <div style="position:relative;width:60px;height:120px;overflow:hidden;border-radius:12px;background:var(--cream);border:1.5px solid #edd9e8;">
+            <div style="position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(to bottom,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:38px;background:linear-gradient(to top,var(--cream),transparent);z-index:2;pointer-events:none;"></div>
+            <div style="position:absolute;top:50%;left:0;right:0;height:36px;transform:translateY(-50%);border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);z-index:1;pointer-events:none;background:rgba(196,120,154,0.06);"></div>
+            <div id="rdvMinWheel" style="position:absolute;top:0;left:0;right:0;cursor:grab;touch-action:none;"></div>
+          </div>
+        </div>
+        <input type="hidden" id="rdvTime">
+      </div>
+      <button class="reply-btn" onclick="addRdvFromFamily()" style="width:100%;margin-bottom:14px;">📅 Ajouter ce rendez-vous</button>
+      <div id="familyRdvList"></div>
+    </div>
+
     <!-- PAS DISPONIBLE -->
     <div class="card" style="border:2px solid #f0c0c8;">
       <div class="card-title">🚫 Signaler une indisponibilité</div>
@@ -446,6 +452,8 @@
     entries.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
     syncBar.textContent='🟢 Synchronisé — toute la famille voit les mises à jour en temps réel';
     syncBar.className='sync-bar ok';
+    // Badge sur l'icône — nouvelles entrées depuis dernière visite
+    updateAppBadge();
     refreshActiveTab();
   },()=>{syncBar.textContent='🔴 Erreur de connexion';syncBar.className='sync-bar err';});
 
@@ -462,6 +470,8 @@
     if(snap.exists()) snap.forEach(c=>statuses.push(c.val()));
     statuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
     if(statuses.length) renderMamanStatus(statuses[0]);
+    // Historique 7 derniers
+    renderMamanHistory(statuses.slice(0,7));
     const btn=document.getElementById('btnMaman');
     if(statuses.length&&statuses[0].mood==='mal')
       btn.innerHTML='🌸 Maman <span class="notif-badge">!</span>';
@@ -558,7 +568,25 @@
 </script>
 
 <script>
-  let entries=[], rdvEntries=[], unavailList=[], selectedWho='', selectedReplyWho='', selectedUnavailWho='';
+  function updateAppBadge(){
+    try {
+      const lastVisit = parseInt(localStorage.getItem('lastVisitTs')||'0');
+      const newCount = entries.filter(e=>new Date(e.ts).getTime()>lastVisit).length;
+      if('setAppBadge' in navigator) {
+        if(newCount>0) navigator.setAppBadge(newCount);
+        else navigator.clearAppBadge();
+      }
+    } catch(e){}
+  }
+
+  // Enregistrer la dernière visite quand l'app est ouverte
+  localStorage.setItem('lastVisitTs', Date.now().toString());
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden){
+      localStorage.setItem('lastVisitTs',Date.now().toString());
+      if('clearAppBadge' in navigator) navigator.clearAppBadge();
+    }
+  });
   let selectedPeriods=[], selectedEmotions=[], selectedActions=[], selectedPhoto=null;
   let calYear, calMonth, activeFilter='all', lastViewedDate=null;
 
@@ -869,8 +897,22 @@
     }
   }
 
-  // RDV FAMILY
-  function addRdvFromFamily(){
+  function renderMamanHistory(statuses){
+    const div=document.getElementById('mamanHistory');
+    if(!div) return;
+    if(!statuses.length){div.innerHTML='<p style="color:var(--text-soft);font-size:0.85rem;text-align:center;padding:10px">Pas encore de messages...</p>';return;}
+    const moodColor={bien:'#89b5a0',moyen:'#e8c870',mal:'#e08fa0'};
+    div.innerHTML=statuses.map(s=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm);">
+        <span style="font-size:1.6rem;">${s.moodEmoji||'💛'}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:var(--brown);font-size:0.88rem;">${s.moodLabel||''}</div>
+          ${s.message?`<div style="font-size:0.82rem;color:var(--text-soft);font-style:italic;">"${s.message}"</div>`:''}
+          <div style="font-size:0.72rem;color:#c0a0b8;margin-top:2px;">${fmtTs(s.ts)}</div>
+        </div>
+        <div style="width:10px;height:10px;border-radius:50%;background:${moodColor[s.mood]||'#ccc'};flex-shrink:0;"></div>
+      </div>`).join('');
+  }
     const title=document.getElementById('rdvTitle').value.trim();
     const date=document.getElementById('rdvDate').value;
     const time=document.getElementById('rdvTime').value;
