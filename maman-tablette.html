@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bonjour Maman 💛</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bonjour Maman">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#7d4e6b">
+<link rel="apple-touch-icon" href="icon-maman.png">
+<link rel="icon" type="image/png" href="icon-maman.png">
+<link rel="manifest" href="manifest-maman.json">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Lato', sans-serif; background: linear-gradient(160deg,#fff0f7 0%,#fdf6ff 50%,#f0f7ff 100%); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:0 0 60px; }
+
+  .top-banner { width:100%; background:linear-gradient(135deg,#7d4e6b 0%,#c47898 60%,#e0a0bf 100%); padding:28px 24px 22px; text-align:center; box-shadow:0 4px 24px rgba(125,78,107,0.3); }
+  .top-date { font-family:'Playfair Display',serif; font-size:1.8rem; color:#fff8ee; margin-bottom:4px; }
+  .top-time { font-size:4rem; font-weight:700; color:#fff; letter-spacing:2px; line-height:1; text-shadow:0 2px 12px rgba(0,0,0,0.2); margin-bottom:14px; }
+  .top-weather { display:inline-flex; align-items:center; gap:10px; background:rgba(255,255,255,0.2); border-radius:20px; padding:8px 20px; color:#fff8ee; font-size:1.1rem; font-weight:700; margin-bottom:10px; }
+  .weather-icon { font-size:1.8rem; }
+
+  .rdv-banner { display:none; align-items:center; gap:10px; background:rgba(255,240,160,0.3); border:2px solid rgba(255,220,80,0.6); border-radius:16px; padding:10px 18px; margin-top:10px; animation:blink 2s infinite; }
+  .rdv-banner.show { display:inline-flex; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.7} }
+  .rdv-banner-emoji { font-size:1.5rem; }
+  .rdv-banner-text { text-align:left; }
+  .rdv-banner-title { font-size:0.8rem; color:#ffe8a0; font-weight:700; }
+  .rdv-banner-detail { font-size:1rem; color:#fff; font-weight:700; }
+
+  .sync-label { font-size:0.78rem; color:rgba(255,255,255,0.7); display:flex; align-items:center; justify-content:center; gap:6px; margin-top:10px; }
+  .sync-dot { width:8px; height:8px; border-radius:50%; background:#ccc; transition:background 0.3s; }
+  .sync-dot.ok { background:#89b5a0; }
+
+  .content { width:100%; max-width:750px; padding:20px 24px 0; }
+  .card { background:#fff; border-radius:24px; padding:26px; margin-bottom:20px; box-shadow:0 4px 20px rgba(180,120,160,0.12); }
+  .card-title { font-family:'Playfair Display',serif; font-size:1.5rem; color:#7d4e6b; margin-bottom:18px; text-align:center; }
+
+  .mood-row { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .mood-btn { flex:1; min-width:140px; max-width:210px; background:#fdf6f9; border:3px solid #edd9e8; border-radius:22px; padding:24px 12px; cursor:pointer; text-align:center; transition:all 0.25s; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .mood-btn .big-emoji { font-size:3.5rem; line-height:1; }
+  .mood-btn .mood-label { font-size:1.15rem; font-weight:700; color:#7d4e6b; }
+  .mood-btn .mood-sub { font-size:0.82rem; color:#b07898; font-weight:300; line-height:1.4; }
+  .mood-btn.bien.active  { background:#eef8f3; border-color:#89b5a0; transform:translateY(-4px); box-shadow:0 8px 24px rgba(137,181,160,0.3); }
+  .mood-btn.moyen.active { background:#fffbe8; border-color:#e8c870; transform:translateY(-4px); box-shadow:0 8px 24px rgba(232,200,112,0.3); }
+  .mood-btn.mal.active   { background:#fff0f3; border-color:#e08fa0; transform:translateY(-4px); box-shadow:0 8px 24px rgba(224,143,160,0.3); }
+  .mood-btn:hover { transform:translateY(-2px); }
+
+  .msg-textarea { width:100%; border:2px solid #edd9e8; border-radius:16px; padding:16px; font-family:'Lato',sans-serif; font-size:1.1rem; color:#3d2040; background:#fdf6f9; resize:none; min-height:90px; outline:none; line-height:1.6; transition:border-color 0.2s; }
+  .msg-textarea:focus { border-color:#c4789a; background:#fff; }
+  .msg-textarea::placeholder { color:#c0a0b8; }
+
+  .courses-input-row { display:flex; gap:10px; margin-bottom:12px; }
+  .courses-input-row input { flex:1; border:2px solid #edd9e8; border-radius:14px; padding:13px 16px; font-family:'Lato',sans-serif; font-size:1.05rem; color:#3d2040; background:#fdf6f9; outline:none; transition:border-color 0.2s; }
+  .courses-input-row input:focus { border-color:#c4789a; background:#fff; }
+  .add-btn { background:#c4789a; color:#fff; border:none; border-radius:14px; padding:13px 20px; font-size:1.5rem; cursor:pointer; transition:all 0.2s; }
+  .add-btn:hover { background:#a05878; }
+  .suggestions { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+  .sug-chip { background:#faedf3; border:1.5px solid #edd9e8; border-radius:20px; padding:7px 14px; font-size:0.92rem; color:#7d4e6b; cursor:pointer; font-weight:700; transition:all 0.2s; }
+  .sug-chip:hover { background:#c4789a; color:#fff; border-color:#c4789a; }
+  .course-list { list-style:none; }
+  .course-item { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:12px; margin-bottom:7px; background:#fdf6f9; font-size:1.05rem; color:#3d2040; animation:fadeUp 0.2s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .course-item.done { text-decoration:line-through; color:#b0a0b0; background:#f5f0f5; }
+  .course-left { display:flex; align-items:center; gap:11px; cursor:pointer; flex:1; }
+  .check-circle { width:28px; height:28px; border-radius:50%; border:2.5px solid #c4789a; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; transition:all 0.2s; }
+  .course-item.done .check-circle { background:#89b5a0; border-color:#89b5a0; color:#fff; }
+  .del-btn-sm { background:none; border:none; cursor:pointer; font-size:1.1rem; color:#e08fa0; padding:4px 8px; border-radius:8px; }
+
+  .rdv-input-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .rdv-input { flex:1; min-width:130px; border:2px solid #edd9e8; border-radius:12px; padding:11px 14px; font-family:'Lato',sans-serif; font-size:0.95rem; background:#fdf6f9; color:#3d2040; outline:none; transition:border-color 0.2s; }
+  .rdv-input:focus { border-color:#c4789a; background:#fff; }
+  .add-rdv-btn { background:#c4789a; color:#fff; border:none; border-radius:12px; padding:11px 18px; font-size:0.95rem; font-weight:700; cursor:pointer; font-family:'Lato',sans-serif; white-space:nowrap; }
+  .rdv-item { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:12px; margin-bottom:7px; background:#fdf6f9; border-left:4px solid #e8c870; animation:fadeUp 0.2s ease; }
+  .rdv-item.today { background:#fffbe8; border-left-color:#f0a030; }
+  .rdv-item-title { font-weight:700; color:#7d4e6b; font-size:1rem; }
+  .rdv-item-date { font-size:0.82rem; color:#b07898; margin-top:2px; }
+  .today-badge { background:#f0a030; color:#fff; border-radius:8px; padding:1px 8px; font-size:0.72rem; font-weight:700; margin-left:6px; }
+
+  .child-msg { background:linear-gradient(135deg,#faedf3,#f0f7ff); border-radius:16px; padding:16px 18px; margin-bottom:10px; border-left:4px solid #c4789a; position:relative; animation:fadeUp 0.3s ease; }
+  .child-msg-who { font-weight:700; color:#7d4e6b; font-size:0.95rem; margin-bottom:3px; }
+  .child-msg-text { font-size:1rem; color:#3d2040; line-height:1.5; }
+  .child-msg-time { font-size:0.75rem; color:#b07898; margin-top:5px; }
+  .del-msg-btn { position:absolute; top:10px; right:10px; background:rgba(224,143,160,0.15); border:none; border-radius:8px; padding:4px 10px; cursor:pointer; font-size:0.8rem; color:#e08fa0; font-weight:700; }
+  .del-msg-btn:hover { background:#ffe0e6; }
+  .no-msg { text-align:center; color:#c0a0b8; font-size:1rem; padding:20px 0; }
+
+  .send-btn { width:100%; background:linear-gradient(135deg,#7d4e6b,#c4789a); color:#fff; border:none; border-radius:18px; padding:20px; font-family:'Playfair Display',serif; font-size:1.4rem; cursor:pointer; box-shadow:0 6px 24px rgba(196,120,154,0.4); transition:all 0.2s; margin-top:4px; }
+  .send-btn:hover { transform:translateY(-3px); }
+  .send-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+  .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(125,78,107,0.88); z-index:999; align-items:center; justify-content:center; flex-direction:column; gap:20px; backdrop-filter:blur(6px); }
+  .confirm-overlay.show { display:flex; }
+  .confirm-emoji { font-size:7rem; animation:pop 0.5s ease; }
+  @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  .confirm-text { font-family:'Playfair Display',serif; font-size:2rem; color:#fff; text-align:center; padding:0 30px; }
+  .confirm-sub { font-size:1.1rem; color:#f5dcea; text-align:center; }
+
+  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(80px); background:#7d4e6b; color:#fff8ee; padding:12px 24px; border-radius:30px; font-size:0.95rem; font-weight:700; box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:998; transition:transform 0.3s ease; pointer-events:none; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="top-banner">
+  <div class="top-date" id="topDate">...</div>
+  <div class="top-time" id="topTime">00:00</div>
+  <div class="top-weather">
+    <span class="weather-icon" id="weatherIcon">🌡️</span>
+    <span id="weatherText">Chargement météo...</span>
+  </div>
+  <div class="rdv-banner" id="rdvBanner">
+    <span class="rdv-banner-emoji">📅</span>
+    <div class="rdv-banner-text">
+      <div class="rdv-banner-title">Rendez-vous aujourd'hui</div>
+      <div class="rdv-banner-detail" id="rdvBannerDetail"></div>
+    </div>
+  </div>
+  <div class="sync-label"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Connexion...</span></div>
+</div>
+
+<div class="content">
+
+  <div class="card">
+    <div class="card-title">🌸 Comment je me sens</div>
+    <div class="mood-row">
+      <button class="mood-btn bien" data-mood="bien" onclick="selectMood(this)">
+        <span class="big-emoji">😊</span><span class="mood-label">Je vais bien</span>
+        <span class="mood-sub">Je me sens bien aujourd'hui</span>
+      </button>
+      <button class="mood-btn moyen" data-mood="moyen" onclick="selectMood(this)">
+        <span class="big-emoji">😐</span><span class="mood-label">Je vais moyen</span>
+        <span class="mood-sub">Pas terrible, pas terrible</span>
+      </button>
+      <button class="mood-btn mal" data-mood="mal" onclick="selectMood(this)">
+        <span class="big-emoji">😔</span><span class="mood-label">Je vais mal</span>
+        <span class="mood-sub">J'ai besoin de vous</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💬 Mon message du jour</div>
+    <textarea class="msg-textarea" id="mamMsg" placeholder="Écris un petit message à tes enfants..."></textarea>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🛒 Ma liste de courses</div>
+    <div class="courses-input-row">
+      <input type="text" id="courseInput" placeholder="Ajouter un article..." onkeydown="if(event.key==='Enter')addCourse()">
+      <button class="add-btn" onclick="addCourse()">＋</button>
+    </div>
+    <div class="suggestions">
+      <span class="sug-chip" onclick="addFromSug('🍞 Pain')">🍞 Pain</span>
+      <span class="sug-chip" onclick="addFromSug('🥛 Lait')">🥛 Lait</span>
+      <span class="sug-chip" onclick="addFromSug('🧀 Fromage')">🧀 Fromage</span>
+      <span class="sug-chip" onclick="addFromSug('🍖 Jambon')">🍖 Jambon</span>
+      <span class="sug-chip" onclick="addFromSug('🍪 Biscottes')">🍪 Biscottes</span>
+      <span class="sug-chip" onclick="addFromSug('🍌 Fruits')">🍌 Fruits</span>
+      <span class="sug-chip" onclick="addFromSug('🍮 Compote')">🍮 Compote</span>
+      <span class="sug-chip" onclick="addFromSug('🥛 Yaourt')">🥛 Yaourt</span>
+      <span class="sug-chip" onclick="addFromSug('☕ Café')">☕ Café</span>
+      <span class="sug-chip" onclick="addFromSug('🎂 Gâteau')">🎂 Gâteau</span>
+      <span class="sug-chip" onclick="addFromSug('🧻 Papier toilette')">🧻 Papier toilette</span>
+      <span class="sug-chip" onclick="addFromSug('🍽️ Produit vaisselle')">🍽️ Produit vaisselle</span>
+      <span class="sug-chip" onclick="addFromSug('🧴 Savon')">🧴 Savon</span>
+      <span class="sug-chip" onclick="addFromSug('🫧 Lessive')">🫧 Lessive</span>
+      <span class="sug-chip" onclick="addFromSug('🍹 Sirop')">🍹 Sirop</span>
+      <span class="sug-chip" onclick="addFromSug('💊 Médicaments')">💊 Médicaments</span>
+    </div>
+    <ul class="course-list" id="courseList"></ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Mes rendez-vous</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;">
+      <button class="sug-chip" onclick="document.getElementById('rdvTitle').value='✂️ Coiffeur'">✂️ Coiffeur</button>
+    </div>
+    <div class="rdv-input-row">
+      <input class="rdv-input" type="text" id="rdvTitle" placeholder="Ex : Soins, Coiffeur...">
+      <input class="rdv-input" type="date" id="rdvDate" style="max-width:160px;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:0.78rem;font-weight:700;color:#b07898;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Heure du rendez-vous</label>
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+        <div style="position:relative;width:70px;height:130px;overflow:hidden;border-radius:14px;background:#fdf6f9;border:1.5px solid #edd9e8;">
+          <div style="position:absolute;top:0;left:0;right:0;height:44px;background:linear-gradient(to bottom,#fdf6f9,transparent);z-index:2;pointer-events:none;"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:44px;background:linear-gradient(to top,#fdf6f9,transparent);z-index:2;pointer-events:none;"></div>
+          <div style="position:absolute;top:50%;left:0;right:0;height:38px;transform:translateY(-50%);border-top:2px solid #c4789a;border-bottom:2px solid #c4789a;z-index:1;pointer-events:none;background:rgba(196,120,154,0.06);"></div>
+          <div id="mamRdvHourWheel" style="position:absolute;top:0;left:0;right:0;cursor:grab;touch-action:none;"></div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:#7d4e6b;padding:0 4px;">:</div>
+        <div style="position:relative;width:70px;height:130px;overflow:hidden;border-radius:14px;background:#fdf6f9;border:1.5px solid #edd9e8;">
+          <div style="position:absolute;top:0;left:0;right:0;height:44px;background:linear-gradient(to bottom,#fdf6f9,transparent);z-index:2;pointer-events:none;"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:44px;background:linear-gradient(to top,#fdf6f9,transparent);z-index:2;pointer-events:none;"></div>
+          <div style="position:absolute;top:50%;left:0;right:0;height:38px;transform:translateY(-50%);border-top:2px solid #c4789a;border-bottom:2px solid #c4789a;z-index:1;pointer-events:none;background:rgba(196,120,154,0.06);"></div>
+          <div id="mamRdvMinWheel" style="position:absolute;top:0;left:0;right:0;cursor:grab;touch-action:none;"></div>
+        </div>
+      </div>
+      <input type="hidden" id="rdvTime">
+    </div>
+    <button class="add-rdv-btn" onclick="addRdv()" style="width:100%;">＋ Ajouter ce rendez-vous</button>
+    <ul id="rdvList" style="margin-top:12px;"></ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💌 Messages de mes enfants</div>
+    <div id="childMessages"><div class="no-msg">Pas encore de messages... 💛</div></div>
+  </div>
+
+  <button class="send-btn" id="sendBtn" onclick="sendAll()">💛 Envoyer mes nouvelles à mes enfants</button>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-emoji" id="confirmEmoji">💛</div>
+  <div class="confirm-text" id="confirmText">Tes enfants ont reçu tes nouvelles !</div>
+  <div class="confirm-sub">Ils pensent à toi 💕</div>
+</div>
+
+<!-- MESSAGE ENVOYÉ — affiché 5 minutes -->
+<div id="sentBanner" style="display:none;width:100%;max-width:750px;margin:0 24px;">
+  <div style="background:linear-gradient(135deg,#eef8f3,#f0f7ff);border:2px solid #89b5a0;border-radius:20px;padding:20px 22px;box-shadow:0 4px 16px rgba(137,181,160,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2e6b50;">✅ Message envoyé à tes enfants</div>
+      <button onclick="deleteSentMsg()" style="background:#fff0f3;border:1.5px solid #f0c0c8;color:#c0506a;border-radius:10px;padding:5px 12px;cursor:pointer;font-size:0.82rem;font-weight:700;font-family:'Lato',sans-serif;white-space:nowrap;margin-left:10px;">🗑️ Supprimer</button>
+    </div>
+    <div id="sentMoodLine" style="font-size:1.3rem;margin-bottom:6px;"></div>
+    <div id="sentMsgLine" style="font-size:0.95rem;color:#3d2040;font-style:italic;margin-bottom:10px;"></div>
+    <div style="background:rgba(137,181,160,0.15);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+      <div style="font-size:0.78rem;color:#5a8a70;font-weight:700;">⏳ Disparaît dans</div>
+      <div id="countdownTimer" style="font-size:1rem;font-weight:700;color:#2e6b50;font-family:'Playfair Display',serif;">5:00</div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB7Pq9t4T_dqG_xzf8829yKXe-RX4_rMhs",
+    authDomain: "suivi-maman.firebaseapp.com",
+    databaseURL: "https://suivi-maman-default-rtdb.firebaseio.com",
+    projectId: "suivi-maman",
+    storageBucket: "suivi-maman.firebasestorage.app",
+    messagingSenderId: "464641073360",
+    appId: "1:464641073360:web:327a3738757cdfc7fa7ed5"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  document.getElementById('syncDot').classList.add('ok');
+  document.getElementById('syncLabel').textContent = 'Connecté 🟢';
+
+  onValue(ref(db,'maman_courses'), (snap) => {
+    courses = [];
+    if(snap.exists()) snap.forEach(c => courses.push({...c.val(), key:c.key}));
+    renderCourses();
+  });
+  onValue(ref(db,'maman_rdv'), (snap) => {
+    rdvItems = [];
+    if(snap.exists()) snap.forEach(r => rdvItems.push({...r.val(), key:r.key}));
+    rdvItems.sort((a,b)=>new Date(a.date+' '+(a.time||'00:00'))-new Date(b.date+' '+(b.time||'00:00')));
+    renderRdv(); checkTodayRdv();
+  });
+  onValue(ref(db,'messages_enfants'), (snap) => {
+    const msgs=[];
+    if(snap.exists()) snap.forEach(m=>msgs.push({...m.val(),key:m.key}));
+    msgs.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    const div=document.getElementById('childMessages');
+    if(!msgs.length){div.innerHTML='<div class="no-msg">Pas encore de messages... 💛</div>';return;}
+    div.innerHTML=msgs.slice(0,8).map(m=>`
+      <div class="child-msg">
+        <button class="del-msg-btn" onclick="deleteMsg('${m.key}')">✕ Effacer</button>
+        <div class="child-msg-who">💌 ${m.who}</div>
+        <div class="child-msg-text">${m.text}</div>
+        <div class="child-msg-time">${fmtTs(m.ts)}</div>
+      </div>`).join('');
+  });
+
+  window._fbSendMaman  = async (d) => { const r = await push(ref(db,'maman_status'),d); return r.key; };
+  window._fbDelStatus  = async (k) => await remove(ref(db,'maman_status/'+k));
+  window._fbSaveCourses = async (list) => { await set(ref(db,'maman_courses'),null); for(const i of list) await push(ref(db,'maman_courses'),i); };
+  window._fbAddRdv = async (r) => await push(ref(db,'maman_rdv'),r);
+  window._fbDelRdv = async (k) => await remove(ref(db,'maman_rdv/'+k));
+  window._fbDelMsg = async (k) => await remove(ref(db,'messages_enfants/'+k));
+</script>
+
+<script>
+  let selectedMood='', courses=[], rdvItems=[];
+
+  // HORLOGE
+  function updateClock(){
+    const now=new Date();
+    const jours=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    const mois=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    document.getElementById('topDate').textContent=`${jours[now.getDay()]} ${now.getDate()} ${mois[now.getMonth()]} ${now.getFullYear()}`;
+    document.getElementById('topTime').textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
+  updateClock(); setInterval(updateClock,1000);
+
+  // MÉTÉO — Open-Meteo Izernore (46.2197, 5.5456)
+  async function loadWeather(){
+    try {
+      const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=46.2197&longitude=5.5456&current_weather=true&timezone=Europe%2FParis');
+      if(!r.ok) throw new Error();
+      const data = await r.json();
+      const w = data.current_weather;
+      const wc = w.weathercode;
+      const map = [
+        [0,'☀️','Ensoleillé'],[1,'🌤️','Peu nuageux'],[2,'⛅','Nuageux'],[3,'☁️','Couvert'],
+        [45,'🌫️','Brouillard'],[48,'🌫️','Brouillard'],[51,'🌦️','Bruine légère'],
+        [53,'🌦️','Bruine'],[55,'🌧️','Bruine forte'],[61,'🌧️','Pluie légère'],
+        [63,'🌧️','Pluie'],[65,'🌧️','Pluie forte'],[71,'❄️','Neige légère'],
+        [73,'❄️','Neige'],[75,'❄️','Neige forte'],[80,'🌦️','Averses'],
+        [81,'🌧️','Averses'],[82,'⛈️','Averses fortes'],[95,'⛈️','Orage'],[99,'⛈️','Orage fort']
+      ];
+      let icon='🌡️', desc='Variable';
+      for(const [code,ic,de] of map.reverse()) { if(wc>=code){icon=ic;desc=de;break;} }
+      document.getElementById('weatherIcon').textContent=icon;
+      document.getElementById('weatherText').textContent=`${desc} · ${Math.round(w.temperature)}°C · Izernore`;
+    } catch(e) {
+      // Fallback — essai sans timezone
+      try {
+        const r2 = await fetch('https://api.open-meteo.com/v1/forecast?latitude=46.22&longitude=5.55&current_weather=true');
+        const d2 = await r2.json();
+        const t = Math.round(d2.current_weather.temperature);
+        document.getElementById('weatherText').textContent=`${t}°C · Izernore`;
+        document.getElementById('weatherIcon').textContent='🌡️';
+      } catch(e2){
+        document.getElementById('weatherText').textContent='Météo temporairement indisponible';
+      }
+    }
+  }
+  loadWeather(); setInterval(loadWeather,30*60*1000);
+
+  // HUMEUR
+  function selectMood(el){
+    document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active'); selectedMood=el.dataset.mood;
+  }
+
+  // COURSES
+  function addCourse(){
+    const input=document.getElementById('courseInput');
+    const val=input.value.trim(); if(!val) return;
+    courses.push({text:val,done:false}); input.value='';
+    renderCourses(); saveCourses();
+  }
+  function addFromSug(text){ if(courses.find(c=>c.text===text)) return; courses.push({text,done:false}); renderCourses(); saveCourses(); }
+  function toggleCourse(i){ courses[i].done=!courses[i].done; renderCourses(); saveCourses(); }
+  function removeCourse(i){ courses.splice(i,1); renderCourses(); saveCourses(); }
+  function renderCourses(){
+    const ul=document.getElementById('courseList');
+    if(!courses.length){ul.innerHTML='<li style="text-align:center;color:#c0a0b8;padding:14px;font-size:1rem;">La liste est vide 🛒</li>';return;}
+    ul.innerHTML=courses.map((c,i)=>`
+      <li class="course-item ${c.done?'done':''}">
+        <div class="course-left" onclick="toggleCourse(${i})">
+          <div class="check-circle">${c.done?'✓':''}</div><span>${c.text}</span>
+        </div>
+        <button class="del-btn-sm" onclick="removeCourse(${i})">✕</button>
+      </li>`).join('');
+  }
+  function saveCourses(){ if(window._fbSaveCourses) window._fbSaveCourses(courses); }
+
+  // RDV
+  function addRdv(){
+    const title=document.getElementById('rdvTitle').value.trim();
+    const date=document.getElementById('rdvDate').value;
+    const time=document.getElementById('rdvTime').value;
+    if(!title||!date){showToast('⚠️ Remplis le titre et la date !');return;}
+    if(window._fbAddRdv) window._fbAddRdv({title,date,time,ts:new Date().toISOString()});
+    document.getElementById('rdvTitle').value='';
+    document.getElementById('rdvDate').value='';
+    document.getElementById('rdvTime').value='';
+  }
+  function deleteRdv(key){ if(window._fbDelRdv) window._fbDelRdv(key); }
+  function renderRdv(){
+    const ul=document.getElementById('rdvList');
+    const todayStr=new Date().toISOString().slice(0,10);
+    const future=rdvItems.filter(r=>r.date>=todayStr);
+    if(!future.length){ul.innerHTML='<li style="text-align:center;color:#c0a0b8;padding:14px;font-size:1rem;">Aucun rendez-vous à venir 📅</li>';return;}
+    ul.innerHTML=future.map(r=>{
+      const isToday=r.date===todayStr;
+      return `<li class="rdv-item ${isToday?'today':''}">
+        <div style="flex:1">
+          <div class="rdv-item-title">📅 ${r.title}${isToday?'<span class="today-badge">Aujourd\'hui !</span>':''}</div>
+          <div class="rdv-item-date">${fmtDate(r.date)}${r.time?' à '+r.time:''}</div>
+        </div>
+        <button class="del-btn-sm" onclick="deleteRdv('${r.key}')">✕</button>
+      </li>`;
+    }).join('');
+  }
+  function checkTodayRdv(){
+    const todayStr=new Date().toISOString().slice(0,10);
+    const today=rdvItems.filter(r=>r.date===todayStr);
+    const banner=document.getElementById('rdvBanner');
+    if(today.length){
+      banner.classList.add('show');
+      document.getElementById('rdvBannerDetail').textContent=today.map(r=>`${r.title}${r.time?' à '+r.time:''}`).join(' · ');
+    } else { banner.classList.remove('show'); }
+  }
+
+  // MESSAGES
+  function deleteMsg(key){ if(window._fbDelMsg) window._fbDelMsg(key); }
+
+  // ENVOYER
+  let countdownInterval = null;
+  let sentFbKey = null;
+
+  async function sendAll(){
+    if(!selectedMood){alert('Dis-nous comment tu vas 😊');return;}
+    const btn=document.getElementById('sendBtn');
+    btn.disabled=true; btn.textContent='⏳ Envoi...';
+    const moodEmoji={bien:'😊',moyen:'😐',mal:'😔'};
+    const moodLabel={bien:'Je vais bien',moyen:'Je vais moyen',mal:'J\'ai besoin de vous'};
+    const msg=document.getElementById('mamMsg').value.trim();
+    try{
+      const key = await window._fbSendMaman({
+        mood:selectedMood, moodEmoji:moodEmoji[selectedMood], moodLabel:moodLabel[selectedMood],
+        message:msg,
+        courses:courses.filter(c=>!c.done).map(c=>c.text),
+        ts:new Date().toISOString()
+      });
+      sentFbKey = key;
+
+      // Afficher le bandeau envoyé
+      document.getElementById('sentMoodLine').textContent = moodEmoji[selectedMood]+' '+moodLabel[selectedMood];
+      document.getElementById('sentMsgLine').textContent = msg ? '💬 "'+msg+'"' : '';
+      document.getElementById('sentBanner').style.display='block';
+      document.getElementById('sentBanner').scrollIntoView({behavior:'smooth',block:'center'});
+
+      // Countdown 5 minutes
+      startCountdown(5*60);
+
+      // Vider le message
+      document.getElementById('mamMsg').value='';
+    }catch(e){alert('Erreur de connexion.');}
+    btn.disabled=false; btn.textContent='💛 Envoyer mes nouvelles à mes enfants';
+  }
+
+  function startCountdown(seconds){
+    if(countdownInterval) clearInterval(countdownInterval);
+    let remaining = seconds;
+    updateCountdownDisplay(remaining);
+    countdownInterval = setInterval(()=>{
+      remaining--;
+      updateCountdownDisplay(remaining);
+      if(remaining<=0){
+        clearInterval(countdownInterval);
+        hideSentBanner();
+      }
+    },1000);
+  }
+
+  function updateCountdownDisplay(sec){
+    const m=Math.floor(sec/60);
+    const s=sec%60;
+    document.getElementById('countdownTimer').textContent=`${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  function hideSentBanner(){
+    document.getElementById('sentBanner').style.display='none';
+    sentFbKey=null;
+  }
+
+  async function deleteSentMsg(){
+    if(sentFbKey && window._fbDelStatus) await window._fbDelStatus(sentFbKey);
+    if(countdownInterval) clearInterval(countdownInterval);
+    hideSentBanner();
+    showToast('🗑️ Message supprimé');
+  }
+
+  // HELPERS
+  function fmtTs(ts){
+    if(!ts) return '';
+    const d=new Date(ts);
+    const m=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+    return `${d.getDate()} ${m[d.getMonth()]} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  function fmtDate(d){
+    if(!d) return '';
+    const [y,m,day]=d.split('-');
+    const mois=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+    return `${parseInt(day)} ${mois[parseInt(m)-1]} ${y}`;
+  }
+  function showToast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2800);
+  }
+
+  document.getElementById('rdvDate').value=new Date().toISOString().slice(0,10);
+
+  // MOLETTE RDV
+  let mamRdvHour=new Date().getHours(), mamRdvMin=0;
+  (function buildMamRdvWheels(){
+    const IH=38;
+    const pad=`<div style="height:46px;"></div>`;
+    const hw=document.getElementById('mamRdvHourWheel');
+    const mw=document.getElementById('mamRdvMinWheel');
+    let hHtml=pad,mHtml=pad;
+    for(let h=0;h<24;h++) hHtml+=`<div class="wi" style="height:${IH}px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#d0b0c0;transition:color 0.15s,font-size 0.15s;user-select:none;">${String(h).padStart(2,'0')}</div>`;
+    for(let m=0;m<60;m+=5) mHtml+=`<div class="wi" style="height:${IH}px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#d0b0c0;transition:color 0.15s,font-size 0.15s;user-select:none;">${String(m).padStart(2,'0')}</div>`;
+    hHtml+=pad; mHtml+=pad;
+    hw.innerHTML=hHtml; mw.innerHTML=mHtml;
+    initMamWheel(hw,'h',IH); initMamWheel(mw,'m',IH);
+  })();
+
+  function initMamWheel(wheel,type,IH){
+    let s0=0,o0=0,co=0,drag=false,vel=0,ly=0,lt=0,raf=null;
+    const init=type==='h'?mamRdvHour:0;
+    const initOff=type==='h'?init*IH:0;
+    function gmax(){return type==='h'?23*IH:11*IH;}
+    function snap(o){return Math.round(o/IH)*IH;}
+    function clamp(v){return Math.max(0,Math.min(gmax(),v));}
+    function setO(o,anim){
+      co=clamp(o);
+      wheel.style.transition=anim?'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
+      wheel.style.transform=`translateY(${46-co}px)`;
+      upSel();
+    }
+    function upSel(){
+      const idx=Math.round(co/IH);
+      const val=type==='h'?idx:idx*5;
+      if(type==='h') mamRdvHour=val; else mamRdvMin=val;
+      document.getElementById('rdvTime').value=String(mamRdvHour).padStart(2,'0')+':'+String(mamRdvMin).padStart(2,'0');
+      wheel.querySelectorAll('.wi').forEach((el,i)=>{
+        const d=Math.abs(i-idx);
+        if(d===0){el.style.color='#7d4e6b';el.style.fontSize='1.7rem';}
+        else if(d===1){el.style.color='#c4789a';el.style.fontSize='1.3rem';}
+        else{el.style.color='#d0b0c0';el.style.fontSize='1.05rem';}
+      });
+    }
+    function fling(){let v=vel;function st(){if(Math.abs(v)<0.5){setO(snap(co),true);return;}co=clamp(co+v);wheel.style.transform=`translateY(${46-co}px)`;upSel();v*=0.92;raf=requestAnimationFrame(st);}raf=requestAnimationFrame(st);}
+    wheel.addEventListener('touchstart',(e)=>{if(raf)cancelAnimationFrame(raf);drag=true;vel=0;s0=e.touches[0].clientY;o0=co;ly=s0;lt=Date.now();wheel.style.transition='none';},{passive:true});
+    wheel.addEventListener('touchmove',(e)=>{if(!drag)return;const y=e.touches[0].clientY;const now=Date.now();vel=(ly-y)/(now-lt+1)*14;ly=y;lt=now;setO(o0+(s0-y));},{passive:true});
+    wheel.addEventListener('touchend',()=>{drag=false;fling();});
+    wheel.addEventListener('mousedown',(e)=>{if(raf)cancelAnimationFrame(raf);drag=true;vel=0;s0=e.clientY;o0=co;ly=s0;lt=Date.now();wheel.style.cursor='grabbing';wheel.style.transition='none';e.preventDefault();});
+    document.addEventListener('mousemove',(e)=>{if(!drag)return;const now=Date.now();vel=(ly-e.clientY)/(now-lt+1)*14;ly=e.clientY;lt=now;setO(o0+(s0-e.clientY));});
+    document.addEventListener('mouseup',()=>{if(!drag)return;drag=false;wheel.style.cursor='grab';fling();});
+    wheel.parentElement.addEventListener('wheel',(e)=>{e.preventDefault();setO(co+e.deltaY*0.4);clearTimeout(wheel._st);wheel._st=setTimeout(()=>setO(snap(co),true),150);},{passive:false});
+    setTimeout(()=>setO(initOff),80);
+  }
+</script>
+</body>
+</html>

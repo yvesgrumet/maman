@@ -1,0 +1,15 @@
+{
+  "name": "Suivi Maman 💛",
+  "short_name": "Suivi Maman",
+  "description": "Un carnet partagé pour prendre soin de Maman ensemble",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#fdf6f9",
+  "theme_color": "#a05878",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-famille.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "icon-famille.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-famille.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
