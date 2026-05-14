@@ -156,6 +156,11 @@
   </div>
 </div>
 <div class="sync-bar" id="syncBar">⏳ Connexion...</div>
+<div id="notifBanner" style="display:none;background:#fff8e0;padding:10px 16px;text-align:center;border-bottom:1px solid #f0c030;">
+  <span style="font-size:0.85rem;color:#7a5000;font-weight:700;">🔔 Activez les notifications pour être alerté quand Maman envoie ses nouvelles</span>
+  <button onclick="askNotifPermission()" style="margin-left:10px;background:#f0a030;color:#fff;border:none;border-radius:10px;padding:5px 14px;cursor:pointer;font-size:0.82rem;font-weight:700;font-family:'Lato',sans-serif;">Activer</button>
+  <button onclick="document.getElementById('notifBanner').style.display='none'" style="margin-left:6px;background:none;border:none;cursor:pointer;font-size:1rem;color:#9a6000;">✕</button>
+</div>
 
 <div class="main">
 
@@ -479,59 +484,65 @@
   });
 
   // NOTIFICATIONS PUSH — via navigateur natif + Firebase
+  let _notifLastEntry = null, _notifLastStatus = null;
+
   async function setupNotifications() {
     try {
       if(!('Notification' in window)) return;
-      const permission = await Notification.requestPermission();
-      if(permission !== 'granted') return;
-
-      // Écouter les nouveaux statuts de Maman en temps réel
-      onValue(ref(db,'maman_status'), (snap) => {
-        const statuses=[];
-        if(snap.exists()) snap.forEach(c=>statuses.push(c.val()));
-        statuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-        if(!statuses.length) return;
-        const last = statuses[0];
-        // Notifier seulement si c'est récent (moins de 30 secondes)
-        const age = (Date.now() - new Date(last.ts).getTime()) / 1000;
-        if(age < 30) {
-          const emoji = last.mood==='mal'?'🚨':last.mood==='moyen'?'😐':'😊';
-          sendBrowserNotif(
-            `${emoji} Nouvelles de Maman`,
-            `${last.moodLabel||''}${last.message?' — "'+last.message+'"':''}`,
-            last.mood==='mal'
-          );
-        }
-      });
-
-      // Écouter les nouvelles visites
-      onValue(ref(db,'entries'), (snap) => {
-        const all=[];
-        if(snap.exists()) snap.forEach(e=>all.push(e.val()));
-        all.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-        if(!all.length) return;
-        const last = all[0];
-        const age = (Date.now() - new Date(last.ts).getTime()) / 1000;
-        if(age < 30 && last.who) {
-          sendBrowserNotif('💛 Nouvelle visite', `${last.who} vient d'enregistrer une visite`);
-        }
-      });
-
+      if(Notification.permission === 'default') {
+        document.getElementById('notifBanner').style.display = 'block';
+      } else if(Notification.permission === 'granted') {
+        startListeningForNotifs();
+      }
     } catch(e) { console.log('Notifications:', e); }
+  }
+
+  window.askNotifPermission = async function() {
+    const permission = await Notification.requestPermission();
+    document.getElementById('notifBanner').style.display = 'none';
+    if(permission === 'granted') {
+      startListeningForNotifs();
+    }
+  };
+
+  function startListeningForNotifs() {
+    onValue(ref(db,'maman_status'), (snap) => {
+      const statuses=[];
+      if(snap.exists()) snap.forEach(c=>statuses.push(c.val()));
+      statuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+      if(!statuses.length) return;
+      const last = statuses[0];
+      if(_notifLastStatus === last.ts) return;
+      const age = (Date.now() - new Date(last.ts).getTime()) / 1000;
+      if(age < 30) {
+        const emoji = last.mood==='mal'?'🚨':last.mood==='moyen'?'😐':'😊';
+        sendBrowserNotif(`${emoji} Nouvelles de Maman`, `${last.moodLabel||''}${last.message?' — "'+last.message+'"':''}`, last.mood==='mal');
+      }
+      _notifLastStatus = last.ts;
+    });
+    onValue(ref(db,'entries'), (snap) => {
+      const all=[];
+      if(snap.exists()) snap.forEach(e=>all.push(e.val()));
+      all.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+      if(!all.length) return;
+      const last = all[0];
+      if(_notifLastEntry === last.ts) return;
+      const age = (Date.now() - new Date(last.ts).getTime()) / 1000;
+      if(age < 30 && last.who) sendBrowserNotif('💛 Nouvelle visite', `${last.who} vient d'enregistrer une visite`);
+      _notifLastEntry = last.ts;
+    });
   }
 
   function sendBrowserNotif(title, body, urgent=false) {
     if(Notification.permission !== 'granted') return;
-    const n = new Notification(title, {
-      body,
-      icon: '/icon-famille.png',
-      badge: '/icon-famille.png',
-      vibrate: urgent ? [300,100,300,100,300] : [200,100,200],
-      tag: 'suivi-maman',
-      renotify: true,
-      requireInteraction: urgent
-    });
-    n.onclick = () => { window.focus(); n.close(); };
+    try {
+      const n = new Notification(title, {
+        body, icon: '/icon-famille.png', badge: '/icon-famille.png',
+        vibrate: urgent ? [300,100,300,100,300] : [200,100,200],
+        tag: 'suivi-maman-'+Date.now(), renotify: true, requireInteraction: urgent
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch(e) { console.log('Notif error:', e); }
   }
 
   setupNotifications();
