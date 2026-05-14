@@ -850,9 +850,23 @@
   // MAMAN STATUS
   function renderMamanStatus(status){
     const moodColor={bien:'#89b5a0',moyen:'#e8c870',mal:'#e08fa0'};
-    const coursesHTML=status.courses&&status.courses.length?`<div style="margin-bottom:10px;"><div style="font-size:0.78rem;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">🛒 Liste de courses</div><div class="maman-courses-list">${status.courses.map(c=>`<span class="course-tag">${c}</span>`).join('')}</div></div>`:'';
-    const msgHTML=status.message?`<div class="maman-message-text">💬 "${status.message}"</div>`:'';
-    document.getElementById('mamanStatusArea').innerHTML=`<div class="maman-status-card" style="border-color:${moodColor[status.mood]||'#edd9e8'}"><div class="maman-mood-big">${status.moodEmoji||'💛'}</div><div class="maman-mood-label">${status.moodLabel||''}</div><div class="maman-mood-time">Dernière mise à jour · ${fmtTs(status.ts)}</div>${msgHTML}${coursesHTML}</div>`;
+    // courses peut être un objet Firebase ou un tableau
+    let coursesList = [];
+    if(status.courses) {
+      if(Array.isArray(status.courses)) coursesList = status.courses;
+      else coursesList = Object.values(status.courses);
+    }
+    const coursesHTML = coursesList.length
+      ? `<div style="margin-bottom:10px;"><div style="font-size:0.78rem;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">🛒 Liste de courses</div><div class="maman-courses-list">${coursesList.map(c=>`<span class="course-tag">${typeof c==='object'?c.text||JSON.stringify(c):c}</span>`).join('')}</div></div>` : '';
+    const msgHTML = status.message ? `<div class="maman-message-text">💬 "${status.message}"</div>` : '';
+    const div = document.getElementById('mamanStatusArea');
+    if(div) div.innerHTML=`<div class="maman-status-card" style="border-color:${moodColor[status.mood]||'#edd9e8'}"><div class="maman-mood-big">${status.moodEmoji||'💛'}</div><div class="maman-mood-label">${status.moodLabel||''}</div><div class="maman-mood-time">Dernière mise à jour · ${fmtTs(status.ts)}</div>${msgHTML}${coursesHTML}</div>`;
+    // Mettre à jour le bouton onglet Maman
+    const btn=document.getElementById('btnMaman');
+    if(btn){
+      if(status.mood==='mal') btn.innerHTML='🌸 Maman <span class="notif-badge">!</span>';
+      else btn.innerHTML='🌸 Maman <span style="font-size:0.7rem;vertical-align:middle;">'+(status.moodEmoji||'')+'</span>';
+    }
   }
 
   // RDV FAMILY
