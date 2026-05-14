@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Suivi Maman">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#a05878">
-<link rel="apple-touch-icon" href="ic%C3%B4ne-famille.png">
-<link rel="icon" type="image/png" href="ic%C3%B4ne-famille.png">
+<link rel="apple-touch-icon" href="icone-famille.png">
+<link rel="icon" type="image/png" href="icone-famille.png">
 <link rel="manifest" href="manifest-famille.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -156,9 +156,9 @@
   </div>
 </div>
 <div class="sync-bar" id="syncBar">⏳ Connexion...</div>
-<div id="notifBanner" style="display:none;background:#fff8e0;padding:10px 16px;text-align:center;border-bottom:1px solid #f0c030;">
-  <span style="font-size:0.85rem;color:#7a5000;font-weight:700;">🔔 Activez les notifications pour être alerté quand Maman envoie ses nouvelles</span>
-  <button onclick="askNotifPermission()" style="margin-left:10px;background:#f0a030;color:#fff;border:none;border-radius:10px;padding:5px 14px;cursor:pointer;font-size:0.82rem;font-weight:700;font-family:'Lato',sans-serif;">Activer</button>
+<div id="notifBanner" style="display:block;background:#fff8e0;padding:10px 16px;text-align:center;border-bottom:2px solid #f0c030;">
+  <span style="font-size:0.85rem;color:#7a5000;font-weight:700;">🔔 Activez les notifications pour être alertée quand Maman envoie ses nouvelles</span>
+  <button onclick="askNotifPermission()" style="margin-left:10px;background:#f0a030;color:#fff;border:none;border-radius:10px;padding:6px 16px;cursor:pointer;font-size:0.85rem;font-weight:700;font-family:'Lato',sans-serif;">✅ Activer</button>
   <button onclick="document.getElementById('notifBanner').style.display='none'" style="margin-left:6px;background:none;border:none;cursor:pointer;font-size:1rem;color:#9a6000;">✕</button>
 </div>
 
@@ -488,21 +488,31 @@
 
   async function setupNotifications() {
     try {
-      if(!('Notification' in window)) return;
-      if(Notification.permission === 'default') {
-        document.getElementById('notifBanner').style.display = 'block';
-      } else if(Notification.permission === 'granted') {
-        startListeningForNotifs();
+      if(!('Notification' in window)) {
+        document.getElementById('notifBanner').style.display='none';
+        return;
       }
+      if(Notification.permission === 'granted') {
+        document.getElementById('notifBanner').style.display='none';
+        startListeningForNotifs();
+      } else if(Notification.permission === 'denied') {
+        document.getElementById('notifBanner').innerHTML = '<span style="font-size:0.82rem;color:#c0506a;font-weight:700;">🔕 Notifications bloquées — activez-les dans les paramètres Chrome → Paramètres du site → Notifications</span>';
+      }
+      // Si 'default' le bandeau reste visible avec le bouton Activer
     } catch(e) { console.log('Notifications:', e); }
   }
 
   window.askNotifPermission = async function() {
-    const permission = await Notification.requestPermission();
-    document.getElementById('notifBanner').style.display = 'none';
-    if(permission === 'granted') {
-      startListeningForNotifs();
-    }
+    try {
+      const permission = await Notification.requestPermission();
+      if(permission === 'granted') {
+        document.getElementById('notifBanner').style.display='none';
+        showToast('🔔 Notifications activées ! 💛');
+        startListeningForNotifs();
+      } else {
+        document.getElementById('notifBanner').innerHTML = '<span style="font-size:0.82rem;color:#c0506a;font-weight:700;">🔕 Refusé — allez dans Chrome ⋮ → Paramètres → Paramètres du site → Notifications → maman-omega.vercel.app → Autoriser</span>';
+      }
+    } catch(e) { showToast('❌ Erreur: '+e.message); }
   };
 
   function startListeningForNotifs() {
@@ -537,7 +547,7 @@
     if(Notification.permission !== 'granted') return;
     try {
       const n = new Notification(title, {
-        body, icon: '/ic%C3%B4ne-famille.png', badge: '/ic%C3%B4ne-famille.png',
+        body, icon: '/icone-famille.png', badge: '/icone-famille.png',
         vibrate: urgent ? [300,100,300,100,300] : [200,100,200],
         tag: 'suivi-maman-'+Date.now(), renotify: true, requireInteraction: urgent
       });
