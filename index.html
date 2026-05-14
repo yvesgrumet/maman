@@ -345,6 +345,36 @@
         <button class="emotion-btn" data-cat="cat-mixte" onclick="toggleEmotion(this)">🌀 Hypervigilante</button>
       </div></div>
     </div>
+
+    <!-- PAS DISPONIBLE -->
+    <div class="card" style="border:2px solid #f0c0c8;">
+      <div class="card-title">🚫 Signaler une indisponibilité</div>
+      <p style="font-size:0.78rem;color:var(--text-soft);margin-bottom:14px;font-style:italic;">Indiquer à la famille que tu ne pourras pas passer pendant une période</p>
+      <div class="who-selector" style="margin-bottom:14px;" id="unavailWhoSelector">
+        <div class="who-chip" data-who="Françoise" onclick="selectUnavailWho(this)">Françoise</div>
+        <div class="who-chip" data-who="Martine"   onclick="selectUnavailWho(this)">Martine</div>
+        <div class="who-chip" data-who="Nicole"    onclick="selectUnavailWho(this)">Nicole</div>
+        <div class="who-chip" data-who="Pascale"   onclick="selectUnavailWho(this)">Pascale</div>
+        <div class="who-chip" data-who="Isabelle"  onclick="selectUnavailWho(this)">Isabelle</div>
+        <div class="who-chip" data-who="Yves"      onclick="selectUnavailWho(this)">Yves</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div class="form-group" style="margin:0">
+          <label>Du</label>
+          <input type="date" id="unavailFrom">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Au</label>
+          <input type="date" id="unavailTo">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Raison (optionnel)</label>
+        <input type="text" id="unavailReason" placeholder="Ex : vacances, travail...">
+      </div>
+      <button onclick="saveUnavail()" style="width:100%;background:linear-gradient(135deg,#c0506a,#e08fa0);color:#fff;border:none;border-radius:14px;padding:12px;font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(192,80,106,0.3);transition:all 0.2s;">🚫 Signaler mon indisponibilité</button>
+    </div>
+
     <button class="submit-btn" id="submitBtn" onclick="saveEntry()">💛 Enregistrer cette visite</button>
   </div>
 
@@ -363,6 +393,7 @@
         <div class="legend-item"><div class="legend-dot dot-fear"></div> Angoisse</div>
         <div class="legend-item"><div class="legend-dot dot-anger"></div> Colère</div>
         <div class="legend-item"><div class="legend-dot dot-rdv"></div> Rendez-vous</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c0506a"></div> Indisponible</div>
       </div>
     </div>
     <div id="dayDetail"></div>
@@ -379,6 +410,7 @@
       <div class="filter-chip" data-filter="médecin"       onclick="setFilter(this)">🏥 RDV méd.</div>
       <div class="filter-chip" data-filter="cat-joie"      onclick="setFilter(this)">😊 Positive</div>
       <div class="filter-chip" data-filter="cat-triste"    onclick="setFilter(this)">😞 Triste</div>
+      <div class="filter-chip" data-filter="unavail"        onclick="setFilter(this)">🚫 Indispos</div>
     </div>
     <div id="journalList"></div>
   </div>
@@ -438,6 +470,14 @@
   window._fbSendReply  = async(m)=>await push(ref(db,'messages_enfants'),m);
   window._fbAddRdv     = async(r)=>await push(ref(db,'maman_rdv'),r);
   window._fbDelRdv     = async(k)=>await remove(ref(db,'maman_rdv/'+k));
+  window._fbAddUnavail = async(u)=>await push(ref(db,'unavailabilities'),u);
+  window._fbDelUnavail = async(k)=>await remove(ref(db,'unavailabilities/'+k));
+
+  onValue(ref(db,'unavailabilities'), (snap) => {
+    unavailList=[];
+    if(snap.exists()) snap.forEach(u=>unavailList.push({...u.val(),_fbKey:u.key}));
+    refreshActiveTab();
+  });
 
   // NOTIFICATIONS PUSH
   async function setupNotifications() {
@@ -469,7 +509,7 @@
 </script>
 
 <script>
-  let entries=[], rdvEntries=[], selectedWho='', selectedReplyWho='';
+  let entries=[], rdvEntries=[], unavailList=[], selectedWho='', selectedReplyWho='', selectedUnavailWho='';
   let selectedPeriods=[], selectedEmotions=[], selectedActions=[], selectedPhoto=null;
   let calYear, calMonth, activeFilter='all', lastViewedDate=null;
 
@@ -714,6 +754,29 @@
 
   function selectWho(el){document.querySelectorAll('#tab-add .who-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedWho=el.dataset.who;}
   function selectReplyWho(el){document.querySelectorAll('#replyWhoSelector .who-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedReplyWho=el.dataset.who;}
+  function selectUnavailWho(el){document.querySelectorAll('#unavailWhoSelector .who-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedUnavailWho=el.dataset.who;}
+
+  async function saveUnavail(){
+    if(!selectedUnavailWho){showToast('⚠️ Choisis ton prénom !');return;}
+    const from=document.getElementById('unavailFrom').value;
+    const to=document.getElementById('unavailTo').value;
+    if(!from||!to){showToast('⚠️ Choisis les deux dates !');return;}
+    if(to<from){showToast('⚠️ La date de fin doit être après le début !');return;}
+    const reason=document.getElementById('unavailReason').value.trim();
+    try{
+      await window._fbAddUnavail({who:selectedUnavailWho,from,to,reason,ts:new Date().toISOString()});
+      document.querySelectorAll('#unavailWhoSelector .who-chip').forEach(c=>c.classList.remove('selected'));
+      selectedUnavailWho='';
+      document.getElementById('unavailFrom').value='';
+      document.getElementById('unavailTo').value='';
+      document.getElementById('unavailReason').value='';
+      showToast('🚫 Indisponibilité enregistrée !');
+    }catch(e){showToast('❌ Erreur de connexion');}
+  }
+  async function deleteUnavail(key){
+    if(window._fbDelUnavail) await window._fbDelUnavail(key);
+    showToast('✅ Indisponibilité supprimée');
+  }
   function togglePeriod(el){el.classList.toggle('selected');const p=el.dataset.period;selectedPeriods=selectedPeriods.includes(p)?selectedPeriods.filter(x=>x!==p):[...selectedPeriods,p];}
   function toggleAction(el){el.classList.toggle('selected');const a=el.dataset.action;selectedActions=selectedActions.includes(a)?selectedActions.filter(x=>x!==a):[...selectedActions,a];}
   function toggleEmotion(el){el.classList.toggle('selected');const label=el.textContent.trim(),cat=el.dataset.cat,key=label+'|'+cat;if(selectedEmotions.find(e=>e.key===key))selectedEmotions=selectedEmotions.filter(e=>e.key!==key);else selectedEmotions.push({label,cat,key});}
@@ -804,13 +867,16 @@
       const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const dayEntries=entries.filter(e=>e.date===dateStr);
       const dayRdv=rdvEntries.filter(r=>r.date===dateStr);
+      const dayUnavail=unavailList.filter(u=>u.from<=dateStr&&u.to>=dateStr);
       let cls='cal-day';
       if(dateStr===todayStr) cls+=' today';
       if(dayEntries.length) cls+=' has-entry';
       if(dayRdv.length) cls+=' has-rdv';
+      if(dayUnavail.length) cls+=' has-unavail';
       const seen=new Set();let dots='';
       dayEntries.forEach(e=>(e.emotions||[]).forEach(em=>{const dc=catDot[em.cat];if(dc&&!seen.has(dc)){dots+=`<div class="dot ${dc}"></div>`;seen.add(dc);}}));
       if(dayRdv.length&&!seen.has('dot-rdv')){dots+=`<div class="dot dot-rdv"></div>`;}
+      if(dayUnavail.length&&!seen.has('dot-unavail')){dots+=`<div class="dot" style="background:#c0506a"></div>`;seen.add('dot-unavail');}
       html+=`<div class="${cls}" onclick="showDayDetail('${dateStr}')"><span>${d}</span>${dots?`<div class="dot-row">${dots}</div>`:''}</div>`;
     }
     grid.innerHTML=html;
@@ -822,9 +888,15 @@
     lastViewedDate=dateStr;
     const dayEntries=entries.filter(e=>e.date===dateStr);
     const dayRdv=rdvEntries.filter(r=>r.date===dateStr);
+    const dayUnavail=unavailList.filter(u=>u.from<=dateStr&&u.to>=dateStr);
     const div=document.getElementById('dayDetail');
-    if(!dayEntries.length&&!dayRdv.length){div.innerHTML=`<div class="card"><p style="color:var(--text-soft);text-align:center;padding:10px">Aucune entrée ce jour-là</p></div>`;return;}
+    if(!dayEntries.length&&!dayRdv.length&&!dayUnavail.length){div.innerHTML=`<div class="card"><p style="color:var(--text-soft);text-align:center;padding:10px">Aucune entrée ce jour-là</p></div>`;return;}
     let html='';
+    dayUnavail.forEach(u=>{html+=`<div style="background:#fff0f3;border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #c0506a;box-shadow:0 2px 10px rgba(192,80,106,0.1);">
+      <div style="font-weight:700;color:#c0506a;font-size:0.9rem;">🚫 ${u.who} — Pas disponible</div>
+      <div style="font-size:0.78rem;color:#9a3050;margin-top:3px;">Du ${fmtDate(u.from)} au ${fmtDate(u.to)}${u.reason?' · '+u.reason:''}</div>
+      <button onclick="deleteUnavail('${u._fbKey}')" style="margin-top:8px;background:#fff0f3;border:1.5px solid #f0c0c8;color:#c0506a;border-radius:10px;padding:4px 10px;cursor:pointer;font-size:0.75rem;font-weight:700;font-family:'Lato',sans-serif;">🗑️ Supprimer</button>
+    </div>`;});
     dayRdv.forEach(r=>{html+=`<div class="rdv-entry-card"><div class="rdv-entry-title">📅 ${r.title}</div><div class="rdv-entry-date">${fmtDate(r.date)}${r.time?' à '+r.time:''}</div><button class="rdv-del-btn" onclick="deleteRdvFromFamily('${r._fbKey}')">🗑️ Supprimer</button></div>`;});
     html+=dayEntries.map(e=>entryCardHTML(e,true)).join('');
     div.innerHTML=html;
@@ -834,12 +906,15 @@
   function setFilter(el){document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');activeFilter=el.dataset.filter;renderJournal();}
   function renderJournal(){
     const list=document.getElementById('journalList');
-    // Merge entries + RDV
+    // Merge entries + RDV + unavail
     let allItems=[];
     if(activeFilter==='all'||activeFilter==='rdv'){
       rdvEntries.forEach(r=>allItems.push({...r,_type:'rdv'}));
     }
-    if(activeFilter!=='rdv'){
+    if(activeFilter==='all'||activeFilter==='unavail'){
+      unavailList.forEach(u=>allItems.push({...u,_type:'unavail'}));
+    }
+    if(activeFilter!=='rdv'&&activeFilter!=='unavail'){
       let filteredEntries=entries;
       if(activeFilter!=='all'){filteredEntries=entries.filter(e=>(e.actions&&e.actions.includes(activeFilter))||(e.emotions&&e.emotions.find(em=>em.cat===activeFilter)));}
       filteredEntries.forEach(e=>allItems.push({...e,_type:'entry'}));
@@ -848,6 +923,11 @@
     if(!allItems.length){list.innerHTML=`<div class="empty-state"><div class="big-emoji">📖</div><p>Aucune entrée pour l'instant.</p></div>`;return;}
     list.innerHTML=allItems.map(item=>{
       if(item._type==='rdv') return `<div class="rdv-entry-card"><div class="rdv-entry-title">📅 ${item.title}</div><div class="rdv-entry-date">${fmtDate(item.date)}${item.time?' à '+item.time:''}</div><button class="rdv-del-btn" onclick="deleteRdvFromFamily('${item._fbKey}')">🗑️ Supprimer</button></div>`;
+      if(item._type==='unavail') return `<div style="background:#fff0f3;border-radius:14px;padding:14px 16px;margin-bottom:12px;border-left:4px solid #c0506a;box-shadow:0 2px 10px rgba(192,80,106,0.1);animation:slideIn 0.3s ease;">
+        <div style="font-weight:700;color:#c0506a;font-size:0.9rem;">🚫 ${item.who} — Pas disponible</div>
+        <div style="font-size:0.78rem;color:#9a3050;margin-top:3px;">Du ${fmtDate(item.from)} au ${fmtDate(item.to)}${item.reason?' · '+item.reason:''}</div>
+        <button onclick="deleteUnavail('${item._fbKey}')" style="margin-top:8px;background:#fff0f3;border:1.5px solid #f0c0c8;color:#c0506a;border-radius:10px;padding:4px 10px;cursor:pointer;font-size:0.75rem;font-weight:700;font-family:'Lato',sans-serif;">🗑️ Supprimer</button>
+      </div>`;
       return entryCardHTML(item,true);
     }).join('');
   }

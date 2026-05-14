@@ -113,10 +113,17 @@
     <span id="weatherText">Chargement météo...</span>
   </div>
   <div class="rdv-banner" id="rdvBanner">
-    <span class="rdv-banner-emoji">📅</span>
+    <span class="rdv-banner-emoji" id="rdvBannerEmoji">📅</span>
     <div class="rdv-banner-text">
-      <div class="rdv-banner-title">Rendez-vous aujourd'hui</div>
+      <div class="rdv-banner-title" id="rdvBannerTitle">Rendez-vous aujourd'hui</div>
       <div class="rdv-banner-detail" id="rdvBannerDetail"></div>
+    </div>
+  </div>
+  <div class="rdv-banner" id="rdvBannerTomorrow" style="margin-top:6px;background:rgba(240,200,100,0.2);border-color:rgba(240,200,100,0.5);">
+    <span class="rdv-banner-emoji">🔔</span>
+    <div class="rdv-banner-text">
+      <div class="rdv-banner-title" style="color:#ffe090;">Demain — Rappel</div>
+      <div class="rdv-banner-detail" id="rdvBannerTomorrowDetail"></div>
     </div>
   </div>
   <div class="sync-label"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Connexion...</span></div>
@@ -380,14 +387,21 @@
   function deleteRdv(key){ if(window._fbDelRdv) window._fbDelRdv(key); }
   function renderRdv(){
     const ul=document.getElementById('rdvList');
-    const todayStr=new Date().toISOString().slice(0,10);
+    const now=new Date();
+    const todayStr=now.toISOString().slice(0,10);
+    const tomorrow=new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
+    const tomorrowStr=tomorrow.toISOString().slice(0,10);
     const future=rdvItems.filter(r=>r.date>=todayStr);
     if(!future.length){ul.innerHTML='<li style="text-align:center;color:#c0a0b8;padding:14px;font-size:1rem;">Aucun rendez-vous à venir 📅</li>';return;}
     ul.innerHTML=future.map(r=>{
       const isToday=r.date===todayStr;
+      const isTomorrow=r.date===tomorrowStr;
+      let badge='';
+      if(isToday) badge='<span class="today-badge">Aujourd\'hui !</span>';
+      else if(isTomorrow) badge='<span class="today-badge" style="background:#e8a030;">Demain 🔔</span>';
       return `<li class="rdv-item ${isToday?'today':''}">
         <div style="flex:1">
-          <div class="rdv-item-title">📅 ${r.title}${isToday?'<span class="today-badge">Aujourd\'hui !</span>':''}</div>
+          <div class="rdv-item-title">📅 ${r.title}${badge}</div>
           <div class="rdv-item-date">${fmtDate(r.date)}${r.time?' à '+r.time:''}</div>
         </div>
         <button class="del-btn-sm" onclick="deleteRdv('${r.key}')">✕</button>
@@ -395,13 +409,34 @@
     }).join('');
   }
   function checkTodayRdv(){
-    const todayStr=new Date().toISOString().slice(0,10);
-    const today=rdvItems.filter(r=>r.date===todayStr);
-    const banner=document.getElementById('rdvBanner');
-    if(today.length){
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0,10);
+    // Demain
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate()+1);
+    const tomorrowStr = tomorrow.toISOString().slice(0,10);
+
+    // Aujourd'hui
+    const todayRdv = rdvItems.filter(r=>r.date===todayStr);
+    const banner = document.getElementById('rdvBanner');
+    if(todayRdv.length){
       banner.classList.add('show');
-      document.getElementById('rdvBannerDetail').textContent=today.map(r=>`${r.title}${r.time?' à '+r.time:''}`).join(' · ');
-    } else { banner.classList.remove('show'); }
+      document.getElementById('rdvBannerEmoji').textContent = '📅';
+      document.getElementById('rdvBannerTitle').textContent = 'Rendez-vous aujourd\'hui !';
+      document.getElementById('rdvBannerDetail').textContent = todayRdv.map(r=>`${r.title}${r.time?' à '+r.time:''}`).join(' · ');
+    } else {
+      banner.classList.remove('show');
+    }
+
+    // Demain
+    const tomorrowRdv = rdvItems.filter(r=>r.date===tomorrowStr);
+    const bannerTomorrow = document.getElementById('rdvBannerTomorrow');
+    if(tomorrowRdv.length){
+      bannerTomorrow.classList.add('show');
+      document.getElementById('rdvBannerTomorrowDetail').textContent = tomorrowRdv.map(r=>`${r.title}${r.time?' à '+r.time:''}`).join(' · ');
+    } else {
+      bannerTomorrow.classList.remove('show');
+    }
   }
 
   // MESSAGES
