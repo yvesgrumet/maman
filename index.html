@@ -447,48 +447,41 @@
   const syncBar = document.getElementById('syncBar');
 
   onValue(ref(db,'entries'), (snap) => {
-    entries=[];
-    if(snap.exists()) snap.forEach(c=>entries.push({...c.val(),_fbKey:c.key}));
-    entries.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-    syncBar.textContent='🟢 Synchronisé — toute la famille voit les mises à jour en temps réel';
-    syncBar.className='sync-bar ok';
-    // Badge sur l'icône — nouvelles entrées depuis dernière visite
-    updateAppBadge();
-    refreshActiveTab();
-  },()=>{syncBar.textContent='🔴 Erreur de connexion';syncBar.className='sync-bar err';});
+    window.entries=[];
+    if(snap.exists()) snap.forEach(c=>window.entries.push({...c.val(),_fbKey:c.key}));
+    window.entries.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    document.getElementById('syncBar').textContent='🟢 Synchronisé — toute la famille voit les mises à jour en temps réel';
+    document.getElementById('syncBar').className='sync-bar ok';
+    if(window.updateAppBadge) window.updateAppBadge();
+    if(window.refreshActiveTab) window.refreshActiveTab();
+  },()=>{
+    document.getElementById('syncBar').textContent='🔴 Erreur de connexion';
+    document.getElementById('syncBar').className='sync-bar err';
+  });
 
   onValue(ref(db,'maman_rdv'), (snap) => {
-    rdvEntries=[];
-    if(snap.exists()) snap.forEach(r=>rdvEntries.push({...r.val(),_fbKey:r.key}));
-    rdvEntries.sort((a,b)=>new Date(a.date)-new Date(b.date));
-    renderFamilyRdv();
-    refreshActiveTab();
+    window.rdvEntries=[];
+    if(snap.exists()) snap.forEach(r=>window.rdvEntries.push({...r.val(),_fbKey:r.key}));
+    window.rdvEntries.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    if(window.renderFamilyRdv) window.renderFamilyRdv();
+    if(window.refreshActiveTab) window.refreshActiveTab();
   });
 
   onValue(ref(db,'maman_status'), (snap) => {
     const statuses=[];
     if(snap.exists()) snap.forEach(c=>statuses.push(c.val()));
     statuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-    if(statuses.length) renderMamanStatus(statuses[0]);
-    // Historique 7 derniers
-    renderMamanHistory(statuses.slice(0,7));
+    if(statuses.length&&window.renderMamanStatus) window.renderMamanStatus(statuses[0]);
+    if(window.renderMamanHistory) window.renderMamanHistory(statuses.slice(0,7));
     const btn=document.getElementById('btnMaman');
-    if(statuses.length&&statuses[0].mood==='mal')
+    if(btn&&statuses.length&&statuses[0].mood==='mal')
       btn.innerHTML='🌸 Maman <span class="notif-badge">!</span>';
   });
 
-  window._fbSave       = async(e)=>await push(ref(db,'entries'),e);
-  window._fbDelete     = async(k)=>await remove(ref(db,'entries/'+k));
-  window._fbSendReply  = async(m)=>await push(ref(db,'messages_enfants'),m);
-  window._fbAddRdv     = async(r)=>await push(ref(db,'maman_rdv'),r);
-  window._fbDelRdv     = async(k)=>await remove(ref(db,'maman_rdv/'+k));
-  window._fbAddUnavail = async(u)=>await push(ref(db,'unavailabilities'),u);
-  window._fbDelUnavail = async(k)=>await remove(ref(db,'unavailabilities/'+k));
-
   onValue(ref(db,'unavailabilities'), (snap) => {
-    unavailList=[];
-    if(snap.exists()) snap.forEach(u=>unavailList.push({...u.val(),_fbKey:u.key}));
-    refreshActiveTab();
+    window.unavailList=[];
+    if(snap.exists()) snap.forEach(u=>window.unavailList.push({...u.val(),_fbKey:u.key}));
+    if(window.refreshActiveTab) window.refreshActiveTab();
   });
 
   // NOTIFICATIONS PUSH — via navigateur natif + Firebase
@@ -565,9 +558,8 @@
   }
 
   setupNotifications();
-</script>
 
-<script>
+  // APP BADGE
   function updateAppBadge(){
     try {
       const lastVisit = parseInt(localStorage.getItem('lastVisitTs')||'0');
@@ -587,6 +579,11 @@
       if('clearAppBadge' in navigator) navigator.clearAppBadge();
     }
   });
+</script>
+
+<script>
+  window.entries=[]; window.rdvEntries=[]; window.unavailList=[];
+  let selectedWho='', selectedReplyWho='', selectedUnavailWho='';
   let selectedPeriods=[], selectedEmotions=[], selectedActions=[], selectedPhoto=null;
   let calYear, calMonth, activeFilter='all', lastViewedDate=null;
 
@@ -816,6 +813,7 @@
     if(id==='tab-journal') renderJournal();
     if(id==='tab-stats') renderStats();
   }
+  window.refreshActiveTab = refreshActiveTab;
 
   function showTab(t,btn){
     document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -826,6 +824,7 @@
     if(t==='journal') renderJournal();
     if(t==='stats') renderStats();
   }
+  window.showTab = showTab;
 
   function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
@@ -913,6 +912,9 @@
         <div style="width:10px;height:10px;border-radius:50%;background:${moodColor[s.mood]||'#ccc'};flex-shrink:0;"></div>
       </div>`).join('');
   }
+  window.renderMamanHistory = renderMamanHistory;
+
+  function addRdvFromFamily(){
     const title=document.getElementById('rdvTitle').value.trim();
     const date=document.getElementById('rdvDate').value;
     const time=document.getElementById('rdvTime').value;
@@ -927,7 +929,7 @@
   function renderFamilyRdv(){
     const div=document.getElementById('familyRdvList');if(!div) return;
     const todayStr=new Date().toISOString().slice(0,10);
-    const future=rdvEntries.filter(r=>r.date>=todayStr);
+    const future=window.window.rdvEntries.filter(r=>r.date>=todayStr);
     if(!future.length){div.innerHTML='<p style="color:var(--text-soft);font-size:0.85rem;text-align:center;padding:10px">Aucun rendez-vous à venir</p>';return;}
     div.innerHTML=future.map(r=>{
       const isToday=r.date===todayStr;
@@ -938,6 +940,7 @@
       </div>`;
     }).join('');
   }
+  window.renderFamilyRdv = renderFamilyRdv;
 
   // REPLY
   function setQuickReply(text){document.getElementById('replyText').value=text;}
@@ -970,9 +973,9 @@
     const todayStr=today.toISOString().slice(0,10);
     for(let d=1;d<=daysInMonth;d++){
       const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const dayEntries=entries.filter(e=>e.date===dateStr);
-      const dayRdv=rdvEntries.filter(r=>r.date===dateStr);
-      const dayUnavail=unavailList.filter(u=>u.from<=dateStr&&u.to>=dateStr);
+      const dayEntries=window.entries.filter(e=>e.date===dateStr);
+      const dayRdv=window.rdvEntries.filter(r=>r.date===dateStr);
+      const dayUnavail=window.unavailList.filter(u=>u.from<=dateStr&&u.to>=dateStr);
       let cls='cal-day';
       if(dateStr===todayStr) cls+=' today';
       if(dayEntries.length) cls+=' has-entry';
@@ -991,9 +994,9 @@
   function changeMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}lastViewedDate=null;renderCalendar();}
   function showDayDetail(dateStr){
     lastViewedDate=dateStr;
-    const dayEntries=entries.filter(e=>e.date===dateStr);
-    const dayRdv=rdvEntries.filter(r=>r.date===dateStr);
-    const dayUnavail=unavailList.filter(u=>u.from<=dateStr&&u.to>=dateStr);
+    const dayEntries=window.entries.filter(e=>e.date===dateStr);
+    const dayRdv=window.rdvEntries.filter(r=>r.date===dateStr);
+    const dayUnavail=window.unavailList.filter(u=>u.from<=dateStr&&u.to>=dateStr);
     const div=document.getElementById('dayDetail');
     if(!dayEntries.length&&!dayRdv.length&&!dayUnavail.length){div.innerHTML=`<div class="card"><p style="color:var(--text-soft);text-align:center;padding:10px">Aucune entrée ce jour-là</p></div>`;return;}
     let html='';
@@ -1014,14 +1017,14 @@
     // Merge entries + RDV + unavail
     let allItems=[];
     if(activeFilter==='all'||activeFilter==='rdv'){
-      rdvEntries.forEach(r=>allItems.push({...r,_type:'rdv'}));
+      window.rdvEntries.forEach(r=>allItems.push({...r,_type:'rdv'}));
     }
     if(activeFilter==='all'||activeFilter==='unavail'){
-      unavailList.forEach(u=>allItems.push({...u,_type:'unavail'}));
+      window.unavailList.forEach(u=>allItems.push({...u,_type:'unavail'}));
     }
     if(activeFilter!=='rdv'&&activeFilter!=='unavail'){
       let filteredEntries=entries;
-      if(activeFilter!=='all'){filteredEntries=entries.filter(e=>(e.actions&&e.actions.includes(activeFilter))||(e.emotions&&e.emotions.find(em=>em.cat===activeFilter)));}
+      if(activeFilter!=='all'){filteredEntries=window.entries.filter(e=>(e.actions&&e.actions.includes(activeFilter))||(e.emotions&&e.emotions.find(em=>em.cat===activeFilter)));}
       filteredEntries.forEach(e=>allItems.push({...e,_type:'entry'}));
     }
     allItems.sort((a,b)=>new Date(b.date+' '+(b.time||b.ts||'00:00'))-new Date(a.date+' '+(a.time||a.ts||'00:00')));
@@ -1057,16 +1060,16 @@
   // STATS
   function renderStats(){
     const div=document.getElementById('statsContent');
-    if(!entries.length){div.innerHTML=`<div class="empty-state"><div class="big-emoji">📊</div><p>Les statistiques apparaîtront après les premières visites.</p></div>`;return;}
-    const total=entries.length;
-    const thisMonth=entries.filter(e=>{const d=new Date(e.date);return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear();}).length;
-    const people=[...new Set(entries.map(e=>e.who))].length;
+    if(!window.entries.length){div.innerHTML=`<div class="empty-state"><div class="big-emoji">📊</div><p>Les statistiques apparaîtront après les premières visites.</p></div>`;return;}
+    const total=window.entries.length;
+    const thisMonth=window.entries.filter(e=>{const d=new Date(e.date);return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear();}).length;
+    const people=[...new Set(window.entries.map(e=>e.who))].length;
     const catLabels={'cat-joie':'🤗 Positive','cat-perte':'😔 Deuil/Perte','cat-peur':'😰 Angoisse','cat-triste':'😞 Tristesse','cat-colere':'😤 Colère','cat-honte':'😳 Honte','cat-mixte':'🌀 Mixte'};
     const catColors={'cat-joie':'#89b5a0','cat-perte':'#9b7ec8','cat-peur':'#90afd0','cat-triste':'#a0a0c0','cat-colere':'#d08060','cat-honte':'#e08fa0','cat-mixte':'#c4c478'};
-    const catCounts={};entries.forEach(e=>{if(e.emotions)e.emotions.forEach(em=>catCounts[em.cat]=(catCounts[em.cat]||0)+1);});
+    const catCounts={};window.entries.forEach(e=>{if(e.emotions)e.emotions.forEach(em=>catCounts[em.cat]=(catCounts[em.cat]||0)+1);});
     const maxCat=Math.max(...Object.values(catCounts),1);
     const emotionBars=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).map(([cat,c])=>`<div class="bar-row"><div class="bar-label">${catLabels[cat]||cat}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxCat*100)}%;background:${catColors[cat]}"></div></div><div class="bar-count">${c}</div></div>`).join('');
-    const actCounts={};entries.forEach(e=>{if(e.actions)e.actions.forEach(a=>actCounts[a]=(actCounts[a]||0)+1);});
+    const actCounts={};window.entries.forEach(e=>{if(e.actions)e.actions.forEach(a=>actCounts[a]=(actCounts[a]||0)+1);});
     const actList=Object.entries(actCounts).sort((a,b)=>b[1]-a[1]).map(([a,c])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--warm);font-size:0.87rem;"><span>${actionInfo[a]||a}</span><span style="font-weight:700;color:var(--brown)">${c}×</span></div>`).join('');
     div.innerHTML=`<div class="stats-row"><div class="stat-box"><div class="stat-number">${total}</div><div class="stat-label">Total entrées</div></div><div class="stat-box"><div class="stat-number">${thisMonth}</div><div class="stat-label">Ce mois</div></div><div class="stat-box"><div class="stat-number">${people}</div><div class="stat-label">Proches actifs</div></div></div><div class="card"><div class="card-title">💭 États émotionnels</div>${emotionBars||'<p style="color:var(--text-soft);font-size:0.85rem">Pas encore de données</p>'}</div><div class="card"><div class="card-title">✅ Actions réalisées</div>${actList||'<p style="color:var(--text-soft);font-size:0.85rem">Pas encore de données</p>'}</div>`;
   }
