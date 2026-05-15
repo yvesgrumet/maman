@@ -1,0 +1,14 @@
+{
+  "name": "Bonjour Maman 🌸",
+  "short_name": "Maman",
+  "description": "L'application de Maman pour envoyer ses nouvelles",
+  "start_url": "/maman-tablette.html",
+  "display": "standalone",
+  "background_color": "#f5eef8",
+  "theme_color": "#7d4e6b",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icone-maman.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icône-maman.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
