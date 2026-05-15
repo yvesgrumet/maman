@@ -407,7 +407,7 @@ db.ref('maman_status').on('value',snap=>{
   renderMamanStatus(all[0]||null);
   renderMamanHist(all.slice(0,7));
   const btn=document.getElementById('btnMaman');
-  if(btn)btn.innerHTML='🌸 Maman'+(all.length&&all[0].mood==='mal'?'<span class="nb">!</span>':'');
+  if(btn)btn.innerHTML='🌸 Maman'+(all.length&&all[0].mood==='mal'?'<span class="nb">!</span>':all.length?' '+all[0].moodEmoji:'');
   if(all.length){
     const last=all[0];
     const age=(Date.now()-new Date(last.ts).getTime())/1000;
@@ -589,10 +589,24 @@ function renderMamanStatus(s){
   div.innerHTML='<div class="msc" style="border-color:'+(mc[s.mood]||'#edd9e8')+'"><div style="font-size:3rem;text-align:center;margin-bottom:6px;">'+(s.moodEmoji||'💛')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:1.2rem;color:#7d4e6b;text-align:center;margin-bottom:3px;">'+(s.moodLabel||'')+'</div><div style="font-size:0.74rem;color:#8a6080;text-align:center;margin-bottom:13px;">Dernière mise à jour · '+ft(s.ts)+'</div>'+mh+ch+'</div>';
 }
 function renderMamanHist(all){
-  const div=document.getElementById('mamanHist');if(!div)return;
-  if(!all.length){div.innerHTML='<p style="color:#8a6080;font-size:0.83rem;text-align:center;padding:8px">Pas encore de messages...</p>';return;}
+  // Chercher le div même s'il n'est pas visible
+  const div=document.getElementById('mamanHist');
+  if(!div)return;
+  if(!all||!all.length){
+    div.innerHTML='<p style="color:#8a6080;font-size:0.83rem;text-align:center;padding:8px">Pas encore de messages...</p>';
+    return;
+  }
   const mc={bien:'#89b5a0',moyen:'#e8c870',mal:'#e08fa0'};
-  div.innerHTML=all.map(s=>'<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #faedf3;"><span style="font-size:1.5rem;">'+(s.moodEmoji||'💛')+'</span><div style="flex:1;"><div style="font-weight:700;color:#7d4e6b;font-size:0.85rem;">'+(s.moodLabel||'')+'</div>'+(s.message?'<div style="font-size:0.8rem;color:#8a6080;font-style:italic;">"'+s.message+'"</div>':'')+'<div style="font-size:0.69rem;color:#c0a0b8;margin-top:2px;">'+ft(s.ts)+'</div></div><div style="width:8px;height:8px;border-radius:50%;background:'+(mc[s.mood]||'#ccc')+';flex-shrink:0;"></div></div>').join('');
+  div.innerHTML=all.map(s=>'<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #faedf3;">'
+    +'<span style="font-size:1.5rem;">'+(s.moodEmoji||'💛')+'</span>'
+    +'<div style="flex:1;">'
+    +'<div style="font-weight:700;color:#7d4e6b;font-size:0.85rem;">'+(s.moodLabel||'')+'</div>'
+    +(s.message?'<div style="font-size:0.8rem;color:#8a6080;font-style:italic;">"'+s.message+'"</div>':'')
+    +'<div style="font-size:0.69rem;color:#c0a0b8;margin-top:2px;">'+ft(s.ts)+'</div>'
+    +'</div>'
+    +'<div style="width:9px;height:9px;border-radius:50%;background:'+(mc[s.mood]||'#ccc')+';flex-shrink:0;"></div>'
+    +'</div>'
+  ).join('');
 }
 
 // Calendar
