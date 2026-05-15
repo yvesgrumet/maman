@@ -18,7 +18,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 :root{--top:0px;}
 
 /* BARRE FIXE HAUT */
-.top-bar{position:sticky;top:0;z-index:200;width:100%;background:linear-gradient(135deg,#7d4e6b 0%,#c47898 60%,#e0a0bf 100%);padding:12px 18px 10px;text-align:center;box-shadow:0 4px 20px rgba(125,78,107,0.4);}
+.top-bar{position:sticky;top:0;z-index:200;width:100%;background:linear-gradient(135deg,#7d4e6b 0%,#c47898 60%,#e0a0bf 100%);padding:10px 14px 0;text-align:center;box-shadow:0 4px 20px rgba(125,78,107,0.4);}
 .top-date{font-family:'Playfair Display',serif;font-size:1.15rem;color:#fff8ee;}
 .top-time{font-size:2.4rem;font-weight:700;color:#fff;letter-spacing:2px;line-height:1.1;}
 .top-weather{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.2);border-radius:14px;padding:4px 14px;color:#fff8ee;font-size:0.88rem;font-weight:700;margin-top:5px;}
@@ -32,28 +32,28 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .mb.bien.active{background:#eef8f3;border-color:#89b5a0;}.mb.bien.active .ml{color:#2e6b50;}
 .mb.moyen.active{background:#fffbe8;border-color:#e8c870;}.mb.moyen.active .ml{color:#7a6000;}
 .mb.mal.active{background:#fff0f3;border-color:#e08fa0;}.mb.mal.active .ml{color:#c0506a;}
-.msg-jour{width:calc(100% - 30px);margin:8px auto 0;display:block;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.3);border-radius:12px;padding:8px 12px;font-family:'Lato',sans-serif;font-size:0.88rem;color:#fff8ee;resize:none;min-height:48px;outline:none;line-height:1.5;}
+.msg-jour{width:calc(100% - 20px);margin:6px auto 0;display:block;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.3);border-radius:10px;padding:6px 10px;font-family:'Lato',sans-serif;font-size:0.85rem;color:#fff8ee;resize:none;height:38px;outline:none;line-height:1.4;}
 .msg-jour::placeholder{color:rgba(255,255,255,0.6);}
-.send-btn{display:block;width:calc(100% - 30px);margin:8px auto 0;background:rgba(255,255,255,0.22);color:#fff8ee;border:2px solid rgba(255,255,255,0.4);border-radius:12px;padding:8px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;transition:all 0.2s;}
+.send-btn{display:block;width:calc(100% - 20px);margin:5px auto 6px;background:rgba(255,255,255,0.22);color:#fff8ee;border:2px solid rgba(255,255,255,0.4);border-radius:10px;padding:6px;font-family:'Playfair Display',serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
 .send-btn:hover{background:rgba(255,255,255,0.35);}
 
 /* RACCOURCIS */
-.sc-bar{position:sticky;z-index:190;background:#fff;padding:10px 12px;box-shadow:0 2px 10px rgba(125,78,107,0.1);border-bottom:2px solid #edd9e8;}
-.sc-lbl{font-size:0.65rem;font-weight:700;color:#b07898;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px;text-align:center;}
+.sc-bar{background:rgba(255,255,255,0.12);padding:8px 10px 6px;border-top:1px solid rgba(255,255,255,0.2);}
+.sc-lbl{font-size:0.6rem;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;text-align:center;}
 .sc-grid{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;}
 .sc-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;background:#faedf3;border:2px solid #edd9e8;border-radius:14px;padding:8px 10px;cursor:pointer;transition:all 0.2s;min-width:58px;text-decoration:none;}
-.sc-btn:hover,.sc-btn.active{transform:translateY(-2px);box-shadow:0 4px 14px rgba(196,120,154,0.3);border-color:#c4789a;background:#fff0f7;}
-.sc-btn .si{font-size:1.6rem;}
-.sc-btn .sl{font-size:0.68rem;font-weight:700;color:#7d4e6b;text-align:center;}
-.sc-btn.svc{background:#e8f4ff;border-color:#90afd0;}
-.sc-btn.svc:hover,.sc-btn.svc.active{background:#d0e8ff;border-color:#5090c0;}
-.sc-btn.svc .sl{color:#2060a0;}
-.sc-btn.ggl{background:#fff8f0;border-color:#fbbc05;}
-.sc-btn.ggl:hover,.sc-btn.ggl.active{background:#fff3e0;border-color:#f4a030;}
-.sc-btn.ggl .sl{color:#4285f4;}
-.sc-btn.fb{background:#f0f4ff;border-color:#1877f2;}
-.sc-btn.fb:hover,.sc-btn.fb.active{background:#e0eaff;border-color:#1060c8;}
-.sc-btn.fb .sl{color:#1877f2;}
+.sc-btn:hover,.sc-btn.active{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,0.2);border-color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.35);}
+.sc-btn .si{font-size:1.3rem;}
+.sc-btn .sl{font-size:0.62rem;font-weight:700;color:#fff8ee;text-align:center;}
+.sc-btn.svc{background:rgba(100,180,255,0.25);border-color:rgba(144,175,208,0.5);}
+.sc-btn.svc:hover,.sc-btn.svc.active{background:rgba(100,180,255,0.45);border-color:rgba(80,144,192,0.8);}
+.sc-btn.svc .sl{color:#fff8ee;}
+.sc-btn.ggl{background:rgba(251,188,5,0.25);border-color:rgba(251,188,5,0.5);}
+.sc-btn.ggl:hover,.sc-btn.ggl.active{background:rgba(251,188,5,0.45);border-color:rgba(244,160,48,0.8);}
+.sc-btn.ggl .sl{color:#fff8ee;}
+.sc-btn.fb{background:rgba(24,119,242,0.25);border-color:rgba(24,119,242,0.5);}
+.sc-btn.fb:hover,.sc-btn.fb.active{background:rgba(24,119,242,0.45);border-color:rgba(16,96,200,0.8);}
+.sc-btn.fb .sl{color:#fff8ee;}
 .badge{position:absolute;top:-6px;right:-6px;background:#e53935;color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff;animation:pulse 1.5s infinite;}
 .badge.show{display:flex;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
@@ -122,7 +122,6 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
   </div>
   <textarea class="msg-jour" id="msgJour" placeholder="Mon message du jour..." rows="2"></textarea>
   <button class="send-btn" onclick="sendAll()">💛 Envoyer mes nouvelles à mes enfants</button>
-</div>
 
 <!-- RACCOURCIS -->
 <div class="sc-bar" id="scBar">
@@ -163,6 +162,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     <button class="sc-btn ggl" onclick="openPanel('google',this)"><span class="si">🔍</span><span class="sl">Google</span></button>
     <button class="sc-btn fb" onclick="openPanel('facebook',this)"><span class="badge" id="b-facebook">0</span><span class="si">📘</span><span class="sl">Facebook</span></button>
   </div>
+</div>
 </div>
 
 <!-- MAIN -->
@@ -376,11 +376,7 @@ db.ref('messages_enfants').on('value', snap=>{
 });
 
 // ===== STICKY HEIGHTS =====
-function updateSticky(){
-  const th=document.getElementById('topBar').offsetHeight;
-  document.getElementById('scBar').style.top=th+'px';
-}
-updateSticky(); window.addEventListener('resize',updateSticky);
+// sc-bar is inside top-bar, no need for dynamic sticky offset
 
 // ===== HORLOGE =====
 function updateClock(){
