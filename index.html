@@ -78,7 +78,7 @@ textarea{resize:vertical;min-height:70px;}
 .cdh{text-align:center;font-size:0.67rem;font-weight:700;color:#8a6080;padding:3px 0;text-transform:uppercase;}
 .cd{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
 .cd:not(.emp):hover{background:#faedf3;}
-.cd.tod{background:#e8d0f0;font-weight:700;color:#7d4e6b;}
+.cd.tod{background:#e8d0f0;font-weight:700;color:#7d4e6b;} .cd.hv{background:#d4edda !important;} .cd.hv.tod{background:#b8dfc8 !important;}
 .cd.hv{background:#d4edda;}
 .cd.hv.tod{background:#b8dfc8;}
 .cd.hr{background:#fff8e0;}
@@ -171,7 +171,7 @@ textarea{resize:vertical;min-height:70px;}
     </div>
     <div style="display:flex;gap:6px;margin-bottom:8px;">
       <input type="text" id="rTxt" placeholder="Écris un message à Maman..." onkeydown="if(event.key==='Enter')sendReply()">
-      <button class="rbtn" onclick="sendReply()">💌</button>
+      <button class="rbtn" onclick="sendReply()">💌 Envoyer</button>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:4px;">
       <button class="qbtn" onclick="document.getElementById('rTxt').value='Je t\'appelle ce soir 📞'">📞 Ce soir</button>
@@ -400,14 +400,15 @@ db.ref('maman_rdv').on('value',snap=>{
   rdvs.sort((a,b)=>new Date(a.date)-new Date(b.date));
   renderRdvList();refreshView();
 });
+let mamanStatuses=[];
 db.ref('maman_status').on('value',snap=>{
-  const all=[];
-  if(snap.exists())snap.forEach(c=>all.push(c.val()));
-  all.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-  renderMamanStatus(all[0]||null);
-  renderMamanHist(all.slice(0,7));
+  mamanStatuses=[];
+  if(snap.exists())snap.forEach(c=>mamanStatuses.push(c.val()));
+  mamanStatuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  renderMamanStatus(mamanStatuses[0]||null);
+  renderMamanHist(mamanStatuses.slice(0,7));
   const btn=document.getElementById('btnMaman');
-  if(btn)btn.innerHTML='🌸 Maman'+(all.length&&all[0].mood==='mal'?'<span class="nb">!</span>':all.length?' '+all[0].moodEmoji:'');
+  if(btn)btn.innerHTML='🌸 Maman'+(mamanStatuses.length&&mamanStatuses[0].mood==='mal'?'<span class="nb">!</span>':mamanStatuses.length?' '+mamanStatuses[0].moodEmoji:'');
   if(all.length){
     const last=all[0];
     const age=(Date.now()-new Date(last.ts).getTime())/1000;
@@ -496,6 +497,7 @@ function goTab(name,btn){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-'+name).classList.add('on');
   btn.classList.add('on');
+  if(name==='maman'){renderMamanStatus(mamanStatuses[0]||null);renderMamanHist(mamanStatuses.slice(0,7));}
   if(name==='cal')renderCal();
   if(name==='journal')renderJournal();
   if(name==='stats')renderStats();

@@ -260,6 +260,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
       <span class="sc" onclick="addSug('🥛 Lait')">Lait</span>
     </div>
     <ul id="courseList"></ul>
+    <button onclick="sendCourses()" id="sendCoursesBtn" style="width:100%;background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:12px;padding:11px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;margin-top:10px;display:none;">📤 Envoyer ma liste de courses à mes enfants</button>
   </div>
 
   <!-- RDV -->
@@ -321,7 +322,11 @@ let selMoodV='',courses=[],rdvItems=[],sentKey=null,cntInt=null;
 let rH=new Date().getHours(),rM=0;
 
 // Firebase
-db.ref('maman_courses').on('value',snap=>{courses=[];if(snap.exists())snap.forEach(c=>courses.push({...c.val(),_k:c.key}));renderCourses();});
+db.ref('maman_courses').on('value',snap=>{
+  courses=[];
+  if(snap.exists())snap.forEach(c=>courses.push({...c.val(),_k:c.key}));
+  renderCourses();
+});
 db.ref('maman_rdv').on('value',snap=>{rdvItems=[];if(snap.exists())snap.forEach(r=>rdvItems.push({...r.val(),_k:r.key}));rdvItems.sort((a,b)=>new Date(a.date)-new Date(b.date));renderRdv();checkRdv();});
 db.ref('messages_enfants').on('value',snap=>{const msgs=[];if(snap.exists())snap.forEach(m=>msgs.push({...m.val(),_k:m.key}));msgs.sort((a,b)=>new Date(b.ts)-new Date(a.ts));renderChildMsgs(msgs.slice(0,7));});
 
@@ -380,16 +385,51 @@ function checkRdv(){
 function selMood(btn,mood){document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');selMoodV=mood;}
 
 // Courses
-function addCourse(){const inp=document.getElementById('courseInp');const v=inp.value.trim();if(!v)return;courses.push({text:v,done:false});inp.value='';renderCourses();saveCourses();}
-function addSug(t){if(courses.find(c=>c.text===t))return;courses.push({text:t,done:false});renderCourses();saveCourses();}
+function addCourse(){
+  const inp=document.getElementById('courseInp');
+  const v=inp.value.trim();
+  if(!v)return;
+  if(!courses.find(c=>c.text===v)){courses.push({text:v,done:false});}
+  inp.value='';renderCourses();saveCourses();
+}
+function addSug(t){
+  if(courses.find(c=>c.text===t)){toast('✅ Déjà dans la liste !');return;}
+  courses.push({text:t,done:false});
+  renderCourses();saveCourses();
+}
 function togCourse(i){courses[i].done=!courses[i].done;renderCourses();saveCourses();}
 function delCourse(i){courses.splice(i,1);renderCourses();saveCourses();}
 function renderCourses(){
   const ul=document.getElementById('courseList');
-  if(!courses.length){ul.innerHTML='<li style="text-align:center;color:#c0a0b8;padding:11px;font-size:0.88rem;">Liste vide 🛒</li>';return;}
+  const btn=document.getElementById('sendCoursesBtn');
+  if(!courses.length){
+    ul.innerHTML='<li style="text-align:center;color:#c0a0b8;padding:11px;font-size:0.88rem;">Liste vide 🛒</li>';
+    if(btn)btn.style.display='none';
+    return;
+  }
+  if(btn)btn.style.display='block';
   ul.innerHTML=courses.map((c,i)=>'<li class="ci '+(c.done?'done':'')+'"><div style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer;" onclick="togCourse('+i+')"><div class="chk">'+(c.done?'✓':'')+'</div><span>'+c.text+'</span></div><button onclick="delCourse('+i+')" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;padding:4px 7px;">✕</button></li>').join('');
 }
-function saveCourses(){db.ref('maman_courses').remove().then(()=>{courses.forEach(c=>db.ref('maman_courses').push(c));});}
+function saveCourses(){
+  db.ref('maman_courses').remove().then(()=>{
+    courses.forEach(c=>db.ref('maman_courses').push(c));
+  });
+}
+async function sendCourses(){
+  const list=courses.filter(c=>!c.done).map(c=>c.text);
+  if(!list.length){toast('⚠️ Aucun article à envoyer !');return;}
+  try{
+    await db.ref('maman_status').push({
+      mood:selMoodV||'bien',
+      moodEmoji:selMoodV==='mal'?'😔':selMoodV==='moyen'?'😐':'😊',
+      moodLabel:'Ma liste de courses',
+      message:'Voici ma liste de courses 🛒',
+      courses:list,
+      ts:new Date().toISOString()
+    });
+    toast('📤 Liste de courses envoyée à tes enfants !');
+  }catch(e){toast('❌ Erreur : '+e.message);}
+}
 
 // RDV
 function addRdv(){
