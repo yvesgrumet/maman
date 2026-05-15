@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Suivi Maman">
 <meta name="theme-color" content="#a05878">
-<link rel="apple-touch-icon" href="icone-famille.png">
+<link rel="apple-touch-icon" href="icône-famille.png">
 <link rel="manifest" href="manifest-famille.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -158,6 +158,10 @@ textarea{resize:vertical;min-height:70px;}
   <div class="card">
     <div class="ct">📋 7 derniers messages de Maman</div>
     <div id="mamanHist"><p style="color:#8a6080;font-size:0.83rem;text-align:center;padding:8px">Pas encore de messages...</p></div>
+  </div>
+  <div class="card" id="mamanCoursesCard" style="display:none;">
+    <div class="ct">🛒 Liste de courses de Maman</div>
+    <div id="mamanCoursesList"></div>
   </div>
   <div class="card">
     <div class="ct">💌 Répondre à Maman</div>
@@ -409,8 +413,8 @@ db.ref('maman_status').on('value',snap=>{
   renderMamanHist(mamanStatuses.slice(0,7));
   const btn=document.getElementById('btnMaman');
   if(btn)btn.innerHTML='🌸 Maman'+(mamanStatuses.length&&mamanStatuses[0].mood==='mal'?'<span class="nb">!</span>':mamanStatuses.length?' '+mamanStatuses[0].moodEmoji:'');
-  if(all.length){
-    const last=all[0];
+  if(mamanStatuses.length){
+    const last=mamanStatuses[0];
     const age=(Date.now()-new Date(last.ts).getTime())/1000;
     if(age<30&&Notification.permission==='granted'){
       try{new Notification((last.mood==='mal'?'🚨':'😊')+' Nouvelles de Maman',{body:(last.moodLabel||'')+(last.message?' — "'+last.message+'"':''),icon:'/icone-famille.png',tag:'maman',renotify:true});}catch(e){}
@@ -421,6 +425,15 @@ db.ref('unavailabilities').on('value',snap=>{
   unavails=[];
   if(snap.exists())snap.forEach(u=>unavails.push({...u.val(),_k:u.key}));
   refreshView();
+});
+// Écouter la liste de courses de Maman en temps réel
+let mamanCourses=[];
+db.ref('maman_courses').on('value',snap=>{
+  mamanCourses=[];
+  if(snap.exists())snap.forEach(c=>mamanCourses.push(c.val()));
+  // Mettre à jour l'affichage si l'onglet Maman est visible
+  const div=document.getElementById('mamanCoursesList');
+  if(div)renderMamanCoursesList(div);
 });
 db.ref('entries').limitToLast(1).on('child_added',snap=>{
   const e=snap.val();
@@ -497,7 +510,12 @@ function goTab(name,btn){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-'+name).classList.add('on');
   btn.classList.add('on');
-  if(name==='maman'){renderMamanStatus(mamanStatuses[0]||null);renderMamanHist(mamanStatuses.slice(0,7));}
+  if(name==='maman'){
+    renderMamanStatus(mamanStatuses[0]||null);
+    renderMamanHist(mamanStatuses.slice(0,7));
+    const div=document.getElementById('mamanCoursesList');
+    if(div)renderMamanCoursesList(div);
+  }
   if(name==='cal')renderCal();
   if(name==='journal')renderJournal();
   if(name==='stats')renderStats();
@@ -609,6 +627,21 @@ function renderMamanHist(all){
     +'<div style="width:9px;height:9px;border-radius:50%;background:'+(mc[s.mood]||'#ccc')+';flex-shrink:0;"></div>'
     +'</div>'
   ).join('');
+}
+
+function renderMamanCoursesList(div){
+  const card=document.getElementById('mamanCoursesCard');
+  if(!mamanCourses||!mamanCourses.length){
+    if(card)card.style.display='none';
+    return;
+  }
+  if(card)card.style.display='block';
+  const pending=mamanCourses.filter(c=>!c.done);
+  const done=mamanCourses.filter(c=>c.done);
+  div.innerHTML=(pending.length?'<div style="margin-bottom:6px;font-size:0.75rem;font-weight:700;color:#8a6080;text-transform:uppercase;">À acheter</div>'
+    +pending.map(c=>'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #faedf3;"><span style="font-size:1rem;">🔲</span><span style="font-size:0.88rem;color:#3d2040;">'+c.text+'</span></div>').join(''):'')
+    +(done.length?'<div style="margin:8px 0 4px;font-size:0.75rem;font-weight:700;color:#89b5a0;text-transform:uppercase;">Déjà dans le panier ✓</div>'
+    +done.map(c=>'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #faedf3;opacity:0.6;"><span style="font-size:1rem;">✅</span><span style="font-size:0.88rem;color:#3d2040;text-decoration:line-through;">'+c.text+'</span></div>').join(''):'');
 }
 
 // Calendar
