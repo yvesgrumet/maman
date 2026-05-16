@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Bonjour Maman">
 <meta name="theme-color" content="#7d4e6b">
-<link rel="apple-touch-icon" href="icone-maman.png">
+<link rel="apple-touch-icon" href="icône-maman.png">
 <link rel="manifest" href="manifest-maman.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -165,14 +165,11 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 
   <!-- BANDEAU ENVOI -->
   <div class="sent" id="sentBanner">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-family:'Playfair Display',serif;font-size:0.95rem;color:#2e6b50;">✅ Message envoyé !</div>
-      <button onclick="deleteSent()" style="background:#fff0f3;border:1.5px solid #f0c0c8;color:#c0506a;border-radius:9px;padding:3px 10px;cursor:pointer;font-size:0.76rem;font-weight:700;font-family:'Lato',sans-serif;">🗑️ Supprimer</button>
-    </div>
+    <div style="font-family:'Playfair Display',serif;font-size:0.95rem;color:#2e6b50;margin-bottom:8px;">✅ Message envoyé à tes enfants !</div>
     <div id="sentMood" style="font-size:1.1rem;margin-bottom:3px;"></div>
     <div id="sentMsg" style="font-size:0.88rem;color:#3d2040;font-style:italic;margin-bottom:8px;"></div>
     <div style="background:rgba(137,181,160,0.15);border-radius:9px;padding:7px 12px;display:flex;align-items:center;gap:7px;">
-      <span style="font-size:0.75rem;color:#5a8a70;font-weight:700;">⏳ Disparaît dans</span>
+      <span style="font-size:0.75rem;color:#5a8a70;font-weight:700;">⏳ Visible pendant encore</span>
       <span class="countdown" id="countdown">5:00</span>
     </div>
   </div>
@@ -321,7 +318,7 @@ const COLS={francoise:'#e040fb',martine:'#f06292',nicole:'#ba68c8',pascale:'#ff7
 let selMoodV='',courses=[],rdvItems=[],sentKey=null,cntInt=null;
 let rH=new Date().getHours(),rM=0;
 
-// Firebase
+// Firebase - courses : chaque action écrit directement dans Firebase, le listener met à jour l'affichage
 db.ref('maman_courses').on('value',snap=>{
   courses=[];
   if(snap.exists())snap.forEach(c=>courses.push({...c.val(),_k:c.key}));
@@ -384,21 +381,33 @@ function checkRdv(){
 // Humeur
 function selMood(btn,mood){document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');selMoodV=mood;}
 
-// Courses
+// Courses - approche simplifiée sans conflit Firebase
 function addCourse(){
   const inp=document.getElementById('courseInp');
   const v=inp.value.trim();
   if(!v)return;
-  if(!courses.find(c=>c.text===v)){courses.push({text:v,done:false});}
-  inp.value='';renderCourses();saveCourses();
+  inp.value='';
+  // Vérifier si déjà dans la liste
+  db.ref('maman_courses').orderByChild('text').equalTo(v).once('value',snap=>{
+    if(!snap.exists()){
+      db.ref('maman_courses').push({text:v,done:false});
+    } else {
+      toast('✅ Déjà dans la liste !');
+    }
+  });
 }
 function addSug(t){
-  if(courses.find(c=>c.text===t)){toast('✅ Déjà dans la liste !');return;}
-  courses.push({text:t,done:false});
-  renderCourses();saveCourses();
+  // Vérifier si déjà dans la liste avant d'ajouter
+  const exists=courses.find(c=>c.text===t);
+  if(exists){toast('✅ Déjà dans la liste !');return;}
+  db.ref('maman_courses').push({text:t,done:false});
 }
-function togCourse(i){courses[i].done=!courses[i].done;renderCourses();saveCourses();}
-function delCourse(i){courses.splice(i,1);renderCourses();saveCourses();}
+function togCourse(key,done){
+  db.ref('maman_courses/'+key).update({done:!done});
+}
+function delCourse(key){
+  db.ref('maman_courses/'+key).remove();
+}
 function renderCourses(){
   const ul=document.getElementById('courseList');
   const btn=document.getElementById('sendCoursesBtn');
@@ -408,12 +417,7 @@ function renderCourses(){
     return;
   }
   if(btn)btn.style.display='block';
-  ul.innerHTML=courses.map((c,i)=>'<li class="ci '+(c.done?'done':'')+'"><div style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer;" onclick="togCourse('+i+')"><div class="chk">'+(c.done?'✓':'')+'</div><span>'+c.text+'</span></div><button onclick="delCourse('+i+')" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;padding:4px 7px;">✕</button></li>').join('');
-}
-function saveCourses(){
-  db.ref('maman_courses').remove().then(()=>{
-    courses.forEach(c=>db.ref('maman_courses').push(c));
-  });
+  ul.innerHTML=courses.map((c)=>'<li class="ci '+(c.done?'done':'')+'"><div style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer;" onclick="togCourse(\''+c._k+'\','+c.done+')"><div class="chk">'+(c.done?'✓':'')+'</div><span>'+c.text+'</span></div><button onclick="delCourse(\''+c._k+'\')" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;padding:4px 7px;">✕</button></li>').join('');
 }
 async function sendCourses(){
   const list=courses.filter(c=>!c.done).map(c=>c.text);
@@ -422,7 +426,7 @@ async function sendCourses(){
     await db.ref('maman_status').push({
       mood:selMoodV||'bien',
       moodEmoji:selMoodV==='mal'?'😔':selMoodV==='moyen'?'😐':'😊',
-      moodLabel:'Ma liste de courses',
+      moodLabel:'Liste de courses envoyée',
       message:'Voici ma liste de courses 🛒',
       courses:list,
       ts:new Date().toISOString()
