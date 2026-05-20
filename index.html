@@ -395,7 +395,7 @@ db.ref('entries').on('value',snap=>{
   entries=[];
   if(snap.exists())snap.forEach(c=>entries.push({...c.val(),_k:c.key}));
   entries.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-  document.getElementById('syncBar').textContent='🟢 Synchronisé en temps réel';
+  document.getElementById('syncBar').textContent='🟢 Synchronisé · '+entries.length+' visite'+(entries.length>1?'s':'');
   document.getElementById('syncBar').className='sync ok';
   updateBadge();refreshView();
 },()=>{
@@ -535,7 +535,7 @@ function refreshView(){
   const a=document.querySelector('.sec.on');
   if(!a)return;
   renderCal();
-  if(a.id==='tab-journal')renderJournal();
+  renderJournal();
   if(a.id==='tab-stats')renderStats();
 }
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
@@ -563,6 +563,7 @@ async function saveEntry(){
     document.getElementById('eNote').value='';rmPhoto();initForm();
     if(savedDate){const[sy,sm]=savedDate.split('-').map(Number);calY=sy;calM=sm-1;lastDay=savedDate;}
     toast('✅ Visite enregistrée ! 💛');
+    setTimeout(()=>{const btnCal=document.querySelector('.tab[onclick*="\'cal\'"]');if(btnCal)goTab('cal',btnCal);},400);
   }catch(e){toast('❌ Erreur : '+e.message);}
   btn.disabled=false;btn.textContent='💛 Enregistrer cette visite';
 }
