@@ -131,7 +131,7 @@ textarea{resize:vertical;min-height:70px;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 @media(max-width:400px){.sr{grid-template-columns:repeat(2,1fr)}}
 .hfete{font-size:0.78rem;color:#ffeef7;font-style:italic;margin-top:1px;}
-.cours-chip{background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);border-radius:14px;padding:3px 9px;cursor:pointer;font-size:0.72rem;font-weight:700;color:#fff8ee;font-family:'Lato',sans-serif;transition:all 0.2s;}
+.cours-chip{background:#faedf3;border:1.5px solid #e0a0bf;border-radius:14px;padding:4px 10px;cursor:pointer;font-size:0.72rem;font-weight:700;color:#7d4e6b;font-family:'Lato',sans-serif;transition:all 0.2s;}
 .cours-chip:active,.cours-chip:hover{background:#7d4e6b;color:#fff;border-color:#7d4e6b;}
 </style>
 </head>
@@ -534,7 +534,7 @@ function goTab(name,btn){
 function refreshView(){
   const a=document.querySelector('.sec.on');
   if(!a)return;
-  if(a.id==='tab-cal')renderCal();
+  renderCal();
   if(a.id==='tab-journal')renderJournal();
   if(a.id==='tab-stats')renderStats();
 }
