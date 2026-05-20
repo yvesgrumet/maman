@@ -145,7 +145,7 @@ textarea{resize:vertical;min-height:70px;}
   <div class="tabs" style="margin-top:8px;">
     <button class="tab" onclick="goTab('maman',this)" id="btnMaman">🌸 Maman</button>
     <button class="tab on" onclick="goTab('add',this)">✏️ Ajouter</button>
-    <button class="tab" onclick="goTab('cal',this)">📅 Calendrier</button>
+    <button class="tab" id="tab-cal-btn" onclick="goTab('cal',this)">📅 Calendrier</button>
     <button class="tab" onclick="goTab('journal',this)">📖 Journal</button>
     <button class="tab" onclick="goTab('stats',this)">📊 Bilan</button>
   </div>
@@ -557,13 +557,14 @@ async function saveEntry(){
   btn.disabled=true;btn.textContent='⏳ Enregistrement...';
   try{
     const savedDate=document.getElementById('eDate').value;
+    if(savedDate){const[sy,sm]=savedDate.split('-').map(Number);calY=sy;calM=sm-1;lastDay=savedDate;}
     await db.ref('entries').push({who:selWho,date:savedDate,time:document.getElementById('eTime').value,periods:[...selPers],emotions:selEmos.map(e=>({label:e.label,cat:e.cat})),actions:[...selActs],note:document.getElementById('eNote').value.trim(),photo:selPhoto||null,ts:new Date().toISOString()});
     document.querySelectorAll('.chip.on,.per.on,.eb.on,.ab.on').forEach(el=>el.classList.remove('on'));
     selWho='';selPers=[];selEmos=[];selActs=[];
     document.getElementById('eNote').value='';rmPhoto();initForm();
-    if(savedDate){const[sy,sm]=savedDate.split('-').map(Number);calY=sy;calM=sm-1;lastDay=savedDate;}
     toast('✅ Visite enregistrée ! 💛');
-    setTimeout(()=>{const btnCal=document.querySelector('.tab[onclick*="\'cal\'"]');if(btnCal)goTab('cal',btnCal);},400);
+    const btnCal=document.getElementById('tab-cal-btn');
+    if(btnCal)setTimeout(()=>goTab('cal',btnCal),100);
   }catch(e){toast('❌ Erreur : '+e.message);}
   btn.disabled=false;btn.textContent='💛 Enregistrer cette visite';
 }

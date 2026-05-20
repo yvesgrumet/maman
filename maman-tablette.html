@@ -400,9 +400,9 @@ function addCourse(){
   });
 }
 function addSug(t){
-  const exists=courses.find(c=>c.text===t);
-  if(exists){db.ref('maman_courses/'+exists._k).remove();}
-  else{db.ref('maman_courses').push({text:t,done:false});}
+  const exists=courses.find(c=>c.text===t&&!c.done);
+  if(exists){toast('✅ Déjà dans ta liste !');return;}
+  db.ref('maman_courses').push({text:t,done:false});
 }
 function togCourse(key,done){
   db.ref('maman_courses/'+key).update({done:!done});
@@ -528,7 +528,7 @@ function openPanel(which,btn){
 }
 function closeAllPanels(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));}
 function closePanel(){closeAllPanels();document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));}
-function openExt(url){window.location.href=url;return false;}
+function openExt(url){window.open(url,'_blank');return false;}
 
 // MOLETTE
 function mkWheel(id,type,initV){
