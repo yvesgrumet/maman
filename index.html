@@ -652,20 +652,31 @@ function renderMamanCoursesList(div){
   if(card)card.style.display='block';
   const pending=mamanCourses.filter(c=>!c.done);
   const done=mamanCourses.filter(c=>c.done);
-  div.innerHTML=
-    (pending.length?'<div style="margin-bottom:6px;font-size:0.75rem;font-weight:700;color:#8a6080;text-transform:uppercase;">À acheter</div>'
-    +pending.map(c=>'<div style="padding:8px 0;border-bottom:1px solid #faedf3;">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1rem;">🔲</span><span style="font-size:0.88rem;color:#3d2040;font-weight:700;">'+c.text+'</span></div>'
-      +'<div style="font-size:0.7rem;color:#8a6080;margin-bottom:3px;font-weight:700;">Fait par :</div>'
-      +'<div style="display:flex;gap:4px;flex-wrap:wrap;">'
-      +ENFANTS.map(n=>'<button class="cours-chip" onclick="markCourseDone(\''+c._k+'\',\''+n+'\')">'+n+'</button>').join('')
-      +'</div></div>').join(''):'')
-    +(done.length?'<div style="margin:10px 0 4px;font-size:0.75rem;font-weight:700;color:#89b5a0;text-transform:uppercase;">Déjà dans le panier ✓</div>'
-    +done.map(c=>'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #faedf3;opacity:0.65;">'
-      +'<span style="font-size:1rem;">✅</span>'
-      +'<div><div style="font-size:0.88rem;color:#3d2040;text-decoration:line-through;">'+c.text+'</div>'
-      +(c.doneBy?'<div style="font-size:0.72rem;color:#89b5a0;font-weight:700;">par '+c.doneBy+'</div>':'')
-      +'</div></div>').join(''):'');
+  let html='';
+  if(pending.length){
+    html+='<div style="margin-bottom:6px;font-size:0.75rem;font-weight:700;color:#8a6080;text-transform:uppercase;">À acheter ('+pending.length+')</div>';
+    for(const c of pending){
+      html+='<div style="padding:8px 0;border-bottom:1px solid #faedf3;">';
+      html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1rem;">🔲</span><span style="font-size:0.88rem;color:#3d2040;font-weight:700;">'+c.text+'</span></div>';
+      html+='<div style="font-size:0.7rem;color:#8a6080;margin-bottom:3px;font-weight:700;">Fait par :</div>';
+      html+='<div style="display:flex;gap:4px;flex-wrap:wrap;">';
+      for(const n of ENFANTS){
+        html+='<button class="cours-chip" onclick="markCourseDone(\''+c._k+'\',\''+n+'\')">'+n+'</button>';
+      }
+      html+='</div></div>';
+    }
+  }
+  if(done.length){
+    html+='<div style="margin:10px 0 4px;font-size:0.75rem;font-weight:700;color:#89b5a0;text-transform:uppercase;">Déjà dans le panier ✓</div>';
+    for(const c of done){
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #faedf3;opacity:0.65;">';
+      html+='<span style="font-size:1rem;">✅</span>';
+      html+='<div><div style="font-size:0.88rem;color:#3d2040;text-decoration:line-through;">'+c.text+'</div>';
+      if(c.doneBy)html+='<div style="font-size:0.72rem;color:#89b5a0;font-weight:700;">par '+c.doneBy+'</div>';
+      html+='</div></div>';
+    }
+  }
+  div.innerHTML=html;
 }
 async function markCourseDone(k,by){
   try{await db.ref('maman_courses/'+k).update({done:true,doneBy:by});toast('✅ Fait par '+by+' !');}

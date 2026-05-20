@@ -18,34 +18,34 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 
 /* BARRE FIXE */
 .top{position:sticky;top:0;z-index:200;width:100%;background:linear-gradient(135deg,#7d4e6b 0%,#c47898 60%,#e0a0bf 100%);padding:10px 14px 8px;text-align:center;box-shadow:0 4px 20px rgba(125,78,107,0.4);}
-.t-date{font-family:'Playfair Display',serif;font-size:1.05rem;color:#fff8ee;}
-.t-time{font-size:2.2rem;font-weight:700;color:#fff;letter-spacing:2px;line-height:1.1;}
+.t-date{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff8ee;}
+.t-time{font-size:3rem;font-weight:700;color:#fff;letter-spacing:2px;line-height:1.1;}
 .t-anniv span{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.22);border-radius:10px;padding:2px 10px;margin:2px;font-size:0.74rem;color:#fff8ee;font-weight:700;}
 .t-weather{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.2);border-radius:12px;padding:3px 12px;color:#fff8ee;font-size:0.82rem;font-weight:700;margin-top:4px;}
 .t-rdv{display:none;background:rgba(255,240,150,0.25);border:1.5px solid rgba(255,220,80,0.5);border-radius:10px;padding:5px 12px;margin-top:6px;animation:blink 2s infinite;}
 .t-rdv.show{display:inline-flex;align-items:center;gap:7px;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.7}}
 .mood-row{display:flex;gap:7px;justify-content:center;margin-top:8px;}
-.mb{flex:1;max-width:110px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:13px;padding:6px 4px;cursor:pointer;text-align:center;transition:all 0.2s;}
-.mb .me{font-size:1.6rem;display:block;}
-.mb .ml{font-size:0.68rem;color:#fff8ee;font-weight:700;display:block;margin-top:2px;}
+.mb{flex:1;max-width:160px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:16px;padding:16px 8px;cursor:pointer;text-align:center;transition:all 0.2s;}
+.mb .me{font-size:2.8rem;display:block;}
+.mb .ml{font-size:0.95rem;color:#fff8ee;font-weight:700;display:block;margin-top:2px;}
 .mb.bien.on{background:#eef8f3;border-color:#89b5a0;}.mb.bien.on .ml{color:#2e6b50;}
 .mb.moyen.on{background:#fffbe8;border-color:#e8c870;}.mb.moyen.on .ml{color:#7a6000;}
 .mb.mal.on{background:#fff0f3;border-color:#e08fa0;}.mb.mal.on .ml{color:#c0506a;}
-.t-msg{width:calc(100% - 16px);margin:7px auto 0;display:block;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.3);border-radius:10px;padding:6px 10px;font-family:'Lato',sans-serif;font-size:0.85rem;color:#fff8ee;resize:none;height:36px;outline:none;line-height:1.4;}
+.t-msg{width:calc(100% - 16px);margin:7px auto 0;display:block;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.3);border-radius:10px;padding:10px 14px;font-family:'Lato',sans-serif;font-size:1.3rem;color:#fff8ee;resize:none;height:90px;outline:none;line-height:1.4;}
 .t-msg::placeholder{color:rgba(255,255,255,0.6);}
-.send-btn{display:block;width:calc(100% - 16px);margin:6px auto 8px;background:rgba(255,255,255,0.22);color:#fff8ee;border:2px solid rgba(255,255,255,0.4);border-radius:10px;padding:7px;font-family:'Playfair Display',serif;font-size:0.88rem;cursor:pointer;}
+.send-btn{display:block;width:calc(100% - 16px);margin:6px auto 8px;background:rgba(255,255,255,0.22);color:#fff8ee;border:2px solid rgba(255,255,255,0.4);border-radius:14px;padding:14px;font-family:'Playfair Display',serif;font-size:1.1rem;cursor:pointer;}
 
 /* RACCOURCIS - fond blanc, prénoms noirs */
 .sc-bar{background:#fff;padding:10px 12px 8px;box-shadow:0 2px 10px rgba(125,78,107,0.1);border-bottom:2px solid #edd9e8;}
 .sc-lbl{font-size:0.62rem;font-weight:700;color:#8a6080;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;text-align:center;}
 .sc-grid{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;}
-.sc-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;background:#faedf3;border:2px solid #edd9e8;border-radius:14px;padding:8px 10px;cursor:pointer;transition:all 0.2s;min-width:58px;}
+.sc-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;background:#faedf3;border:2px solid #edd9e8;border-radius:18px;padding:12px 10px;cursor:pointer;transition:all 0.2s;min-width:82px;}
 .sc-btn:hover,.sc-btn.active{transform:translateY(-2px);box-shadow:0 4px 14px rgba(196,120,154,0.3);border-color:#c4789a;background:#fff0f7;}
 /* Avatar initiales */
-.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Lato',sans-serif;font-size:0.75rem;font-weight:700;color:#fff;flex-shrink:0;}
-.sc-btn .sl{font-size:0.68rem;font-weight:700;color:#3d2040;text-align:center;} /* NOIR */
-.sc-btn.svc .sl{color:#3d2040;}
+.av{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Lato',sans-serif;font-size:0.9rem;font-weight:700;color:#fff;flex-shrink:0;}
+.sc-btn .sl{font-size:0.82rem;font-weight:700;color:#3d2040;text-align:center;} /* NOIR */
+.sc-btn.svc .sl{color:#3d2040;font-size:0.82rem;}
 .sc-btn.ggl .sl{color:#3d2040;}
 .sc-btn.fb .sl{color:#3d2040;}
 .badge{position:absolute;top:-5px;right:-5px;background:#e53935;color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.64rem;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff;animation:pulse 1.5s infinite;}
@@ -66,14 +66,14 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 
 /* CARDS */
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(180,120,160,0.1);}
-.ct{font-family:'Playfair Display',serif;font-size:1.1rem;color:#7d4e6b;margin-bottom:12px;text-align:center;}
-.ri{width:100%;padding:9px 12px;border:1.5px solid #edd9e8;border-radius:10px;font-family:'Lato',sans-serif;font-size:0.88rem;background:#fdf6f9;color:#3d2040;outline:none;}
+.ct{font-family:'Playfair Display',serif;font-size:1.35rem;color:#7d4e6b;margin-bottom:12px;text-align:center;}
+.ri{width:100%;padding:13px 14px;border:1.5px solid #edd9e8;border-radius:10px;font-family:'Lato',sans-serif;font-size:1.05rem;background:#fdf6f9;color:#3d2040;outline:none;}
 .ri:focus{border-color:#c4789a;background:#fff;}
-.ci{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:9px;margin-bottom:5px;background:#fdf6f9;}
+.ci{display:flex;align-items:center;justify-content:space-between;padding:14px 14px;border-radius:9px;margin-bottom:5px;background:#fdf6f9;min-height:60px;font-size:1rem;}
 .ci.done{text-decoration:line-through;color:#b0a0b0;background:#f5f0f5;}
-.chk{width:25px;height:25px;border-radius:50%;border:2.5px solid #c4789a;display:flex;align-items:center;justify-content:center;font-size:0.85rem;cursor:pointer;flex-shrink:0;}
+.chk{width:38px;height:38px;border-radius:50%;border:2.5px solid #c4789a;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
 .ci.done .chk{background:#89b5a0;border-color:#89b5a0;color:#fff;}
-.sc{background:#faedf3;border:1.5px solid #edd9e8;border-radius:16px;padding:5px 12px;font-size:0.83rem;color:#7d4e6b;cursor:pointer;font-weight:700;}
+.sc{background:#faedf3;border:1.5px solid #edd9e8;border-radius:20px;padding:10px 18px;font-size:1rem;color:#7d4e6b;cursor:pointer;font-weight:700;min-height:48px;display:inline-flex;align-items:center;}
 .sc:hover{background:#c4789a;color:#fff;}
 .ri2{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:9px;margin-bottom:5px;background:#fdf6f9;border-left:3px solid #e8c870;}
 .ri2.tod{background:#fffbe8;border-left-color:#f0a030;}
@@ -99,6 +99,9 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:#7d4e6b;color:#fff8ee;padding:10px 20px;border-radius:26px;font-size:0.86rem;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:999;transition:transform 0.3s ease;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);}
+.sc.on{background:#89b5a0;border-color:#89b5a0;color:#fff;}
+.ri{font-size:1.05rem;padding:13px 14px;}
+.open-btn{font-size:1.15rem;padding:18px;}
 </style>
 </head>
 <body>
@@ -233,28 +236,28 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 
   <!-- COURSES -->
   <div class="card">
-    <div class="ct">🛒 Ma liste de courses</div>
+    <div class="ct">🛒 Ma liste de courses <span id="coursesCount" style="font-size:0.85rem;background:#89b5a0;color:#fff;border-radius:12px;padding:2px 10px;margin-left:6px;display:none;"></span></div>
     <div style="display:flex;gap:7px;margin-bottom:9px;">
       <input class="ri" type="text" id="courseInp" placeholder="Ajouter un article..." onkeydown="if(event.key==='Enter')addCourse()">
       <button onclick="addCourse()" style="background:#c4789a;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:1.2rem;cursor:pointer;">＋</button>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;">
-      <span class="sc" onclick="addSug('🍪 Biscottes')">Biscottes</span>
-      <span class="sc" onclick="addSug('🧀 Fromage')">Fromage</span>
-      <span class="sc" onclick="addSug('🍖 Jambon')">Jambon</span>
-      <span class="sc" onclick="addSug('🍌 Fruits')">Fruits</span>
-      <span class="sc" onclick="addSug('🍮 Compote')">Compote</span>
-      <span class="sc" onclick="addSug('🥛 Yaourt')">Yaourt</span>
-      <span class="sc" onclick="addSug('☕ Café')">Café</span>
-      <span class="sc" onclick="addSug('🎂 Gâteau')">Gâteau</span>
-      <span class="sc" onclick="addSug('🧻 Papier toilette')">Papier toilette</span>
-      <span class="sc" onclick="addSug('🍽️ Produit vaisselle')">Vaisselle</span>
-      <span class="sc" onclick="addSug('🧴 Savon')">Savon</span>
-      <span class="sc" onclick="addSug('🫧 Lessive')">Lessive</span>
-      <span class="sc" onclick="addSug('🍹 Sirop')">Sirop</span>
-      <span class="sc" onclick="addSug('💊 Médicaments')">Médicaments</span>
-      <span class="sc" onclick="addSug('🍞 Pain')">Pain</span>
-      <span class="sc" onclick="addSug('🥛 Lait')">Lait</span>
+      <span class="sc" data-sug="🍪 Biscottes" onclick="addSug('🍪 Biscottes')">Biscottes</span>
+      <span class="sc" data-sug="🧀 Fromage" onclick="addSug('🧀 Fromage')">Fromage</span>
+      <span class="sc" data-sug="🍖 Jambon" onclick="addSug('🍖 Jambon')">Jambon</span>
+      <span class="sc" data-sug="🍌 Fruits" onclick="addSug('🍌 Fruits')">Fruits</span>
+      <span class="sc" data-sug="🍮 Compote" onclick="addSug('🍮 Compote')">Compote</span>
+      <span class="sc" data-sug="🥛 Yaourt" onclick="addSug('🥛 Yaourt')">Yaourt</span>
+      <span class="sc" data-sug="☕ Café" onclick="addSug('☕ Café')">Café</span>
+      <span class="sc" data-sug="🎂 Gâteau" onclick="addSug('🎂 Gâteau')">Gâteau</span>
+      <span class="sc" data-sug="🧻 Papier toilette" onclick="addSug('🧻 Papier toilette')">Papier toilette</span>
+      <span class="sc" data-sug="🍽️ Produit vaisselle" onclick="addSug('🍽️ Produit vaisselle')">Vaisselle</span>
+      <span class="sc" data-sug="🧴 Savon" onclick="addSug('🧴 Savon')">Savon</span>
+      <span class="sc" data-sug="🫧 Lessive" onclick="addSug('🫧 Lessive')">Lessive</span>
+      <span class="sc" data-sug="🍹 Sirop" onclick="addSug('🍹 Sirop')">Sirop</span>
+      <span class="sc" data-sug="💊 Médicaments" onclick="addSug('💊 Médicaments')">Médicaments</span>
+      <span class="sc" data-sug="🍞 Pain" onclick="addSug('🍞 Pain')">Pain</span>
+      <span class="sc" data-sug="🥛 Lait" onclick="addSug('🥛 Lait')">Lait</span>
     </div>
     <ul id="courseList"></ul>
     <button onclick="sendCourses()" id="sendCoursesBtn" style="width:100%;background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:12px;padding:11px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;margin-top:10px;display:none;">📤 Envoyer ma liste de courses à mes enfants</button>
@@ -397,10 +400,9 @@ function addCourse(){
   });
 }
 function addSug(t){
-  // Vérifier si déjà dans la liste avant d'ajouter
   const exists=courses.find(c=>c.text===t);
-  if(exists){toast('✅ Déjà dans la liste !');return;}
-  db.ref('maman_courses').push({text:t,done:false});
+  if(exists){db.ref('maman_courses/'+exists._k).remove();}
+  else{db.ref('maman_courses').push({text:t,done:false});}
 }
 function togCourse(key,done){
   db.ref('maman_courses/'+key).update({done:!done});
@@ -414,10 +416,20 @@ function renderCourses(){
   if(!courses.length){
     ul.innerHTML='<li style="text-align:center;color:#c0a0b8;padding:11px;font-size:0.88rem;">Liste vide 🛒</li>';
     if(btn)btn.style.display='none';
+    const cnt=document.getElementById('coursesCount');
+    if(cnt)cnt.style.display='none';
+    document.querySelectorAll('[data-sug]').forEach(btn=>{btn.classList.remove('on');});
     return;
   }
   if(btn)btn.style.display='block';
   ul.innerHTML=courses.map((c)=>'<li class="ci '+(c.done?'done':'')+'"><div style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer;" onclick="togCourse(\''+c._k+'\','+c.done+')"><div class="chk">'+(c.done?'✓':'')+'</div><span>'+c.text+'</span></div><button onclick="delCourse(\''+c._k+'\')" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;padding:4px 7px;">✕</button></li>').join('');
+  const cnt=document.getElementById('coursesCount');
+  const pendingCount=courses.filter(c=>!c.done).length;
+  if(cnt){if(pendingCount>0){cnt.textContent=pendingCount+' article'+(pendingCount>1?'s':'');cnt.style.display='inline';}else{cnt.style.display='none';}}
+  document.querySelectorAll('[data-sug]').forEach(btn=>{
+    const inList=courses.find(c=>c.text===btn.dataset.sug&&!c.done);
+    btn.classList.toggle('on',!!inList);
+  });
 }
 async function sendCourses(){
   const list=courses.filter(c=>!c.done).map(c=>c.text);
