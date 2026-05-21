@@ -440,6 +440,7 @@ async function sendCourses(){
       courses:list,
       ts:new Date().toISOString()
     });
+    for(const c of courses.filter(c=>c.done))await db.ref('maman_courses/'+c._k).remove();
     toast('📤 Liste de courses envoyée à tes enfants !');
   }catch(e){toast('❌ Erreur : '+e.message);}
 }
@@ -493,6 +494,7 @@ async function sendAll(){
     document.getElementById('sentMsg').textContent=msg?'"'+msg+'"':'';
     document.getElementById('sentBanner').classList.add('show');
     document.getElementById('sentBanner').scrollIntoView({behavior:'smooth',block:'start'});
+    for(const c of courses.filter(c=>c.done))await db.ref('maman_courses/'+c._k).remove();
     startCountdown(300);
     document.getElementById('tMsg').value='';
     toast('✅ Message envoyé à tes enfants ! 💛');

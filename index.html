@@ -662,16 +662,21 @@ function renderMamanCoursesList(div){
   let html='';
   if(pending.length){
     html+='<div style="margin-bottom:6px;font-size:0.75rem;font-weight:700;color:#8a6080;text-transform:uppercase;">À acheter ('+pending.length+')</div>';
-    for(const c of pending){
+    pending.forEach((c,idx)=>{
+      const isLast=idx===pending.length-1;
       html+='<div style="padding:8px 0;border-bottom:1px solid #faedf3;">';
-      html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="font-size:1rem;">🔲</span><span style="font-size:0.88rem;color:#3d2040;font-weight:700;">'+c.text+'</span></div>';
-      html+='<div style="font-size:0.7rem;color:#8a6080;margin-bottom:3px;font-weight:700;">Fait par :</div>';
-      html+='<div style="display:flex;gap:4px;flex-wrap:wrap;">';
-      for(const n of ENFANTS){
-        html+='<button class="cours-chip" onclick="markCourseDone(\''+c._k+'\',\''+n+'\')">'+n+'</button>';
+      html+='<div style="display:flex;align-items:center;gap:8px;">';
+      html+='<button onclick="markCourseByWho(\''+c._k+'\')" style="width:30px;height:30px;border-radius:50%;border:2px solid #c4789a;background:#fff;cursor:pointer;font-size:0.85rem;color:#c4789a;flex-shrink:0;">☐</button>';
+      html+='<span style="font-size:0.88rem;color:#3d2040;font-weight:700;">'+c.text+'</span>';
+      html+='</div>';
+      if(isLast){
+        html+='<div style="font-size:0.7rem;color:#8a6080;margin:6px 0 3px;font-weight:700;">Fait par :</div>';
+        html+='<div style="display:flex;gap:4px;flex-wrap:wrap;">';
+        for(const n of ENFANTS){html+='<button class="cours-chip" onclick="markCourseDone(\''+c._k+'\',\''+n+'\')">'+n+'</button>';}
+        html+='</div>';
       }
-      html+='</div></div>';
-    }
+      html+='</div>';
+    });
   }
   if(done.length){
     html+='<div style="margin:10px 0 4px;font-size:0.75rem;font-weight:700;color:#89b5a0;text-transform:uppercase;">Déjà dans le panier ✓</div>';
@@ -684,6 +689,10 @@ function renderMamanCoursesList(div){
     }
   }
   div.innerHTML=html;
+}
+function markCourseByWho(k){
+  if(!selWho){toast('⚠️ Dis-nous qui tu es (onglet Ajouter) !');return;}
+  markCourseDone(k,selWho);
 }
 async function markCourseDone(k,by){
   try{await db.ref('maman_courses/'+k).update({done:true,doneBy:by});toast('✅ Fait par '+by+' !');}
