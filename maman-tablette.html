@@ -62,9 +62,9 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 #splitView{display:none;flex-direction:column;flex:1;}
 #splitView.show{display:flex;}
 .split-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;flex-shrink:0;}
-.split-ext{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);border-radius:10px;padding:7px 13px;color:#fff;font-size:0.8rem;text-decoration:none;}
 .split-close-btn{background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;padding:7px 13px;color:#fff;font-size:0.8rem;cursor:pointer;}
-#splitIframe{flex:1;border:none;width:100%;background:#f9f9f9;}
+.split-open-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;color:#fff;border-radius:20px;padding:22px 50px;font-family:'Playfair Display',serif;font-size:1.2rem;cursor:pointer;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,0.2);transition:transform 0.15s,box-shadow 0.15s;}
+.split-open-btn:active{transform:scale(0.97);box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 
 /* CARDS */
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(180,120,160,0.1);}
@@ -175,16 +175,21 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 <!-- CONTENU -->
 <div class="main" id="mainContent">
 
-  <!-- ÉCRAN PARTAGÉ (iframe externe) -->
+  <!-- ÉCRAN PARTAGÉ (lanceur application) -->
   <div id="splitView">
     <div class="split-hdr" id="splitHdr">
       <span id="splitLabel" style="font-family:'Playfair Display',serif;font-size:0.9rem;font-weight:700;color:#fff;"></span>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <a id="splitExtLink" href="#" class="split-ext" target="_blank">🔗 Ouvrir dans le navigateur</a>
-        <button class="split-close-btn" onclick="closeSplit()">✕ Retour</button>
-      </div>
+      <button class="split-close-btn" onclick="closeSplit()">✕ Retour</button>
     </div>
-    <iframe id="splitIframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"></iframe>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 30px;text-align:center;background:#fdf6f9;">
+      <div id="splitIcon" style="font-size:5rem;margin-bottom:18px;"></div>
+      <div id="splitAppName" style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#7d4e6b;margin-bottom:12px;font-weight:700;"></div>
+      <div style="font-size:0.9rem;color:#b07898;margin-bottom:36px;line-height:1.7;max-width:320px;">
+        Appuie sur le bouton pour ouvrir l'application.<br>
+        <strong style="color:#7d4e6b;">← Retour</strong> pour revenir ici.
+      </div>
+      <a id="splitOpenBtn" href="#" target="_blank" class="split-open-btn"></a>
+    </div>
   </div>
 
   <!-- CARTES PRINCIPALES -->
@@ -539,17 +544,22 @@ function openPanel(which,btn){
   if(cfg[which])openSplit(cfg[which].url,cfg[which].label,cfg[which].color);
 }
 function openSplit(url,label,color){
+  const icon=label.match(/^(\S+)/)?.[1]||'📱';
+  const name=label.replace(/^\S+\s*/,'');
   document.getElementById('splitHdr').style.background=color;
   document.getElementById('splitLabel').textContent=label;
-  document.getElementById('splitExtLink').href=url;
-  document.getElementById('splitIframe').src=url;
+  document.getElementById('splitIcon').textContent=icon;
+  document.getElementById('splitAppName').textContent=name;
+  const btn=document.getElementById('splitOpenBtn');
+  btn.href=url;
+  btn.style.background=color;
+  btn.textContent=icon+' Ouvrir '+name;
   document.getElementById('splitView').classList.add('show');
   document.getElementById('mainCards').style.display='none';
 }
 function closeSplit(){
   document.getElementById('splitView').classList.remove('show');
   document.getElementById('mainCards').style.display='';
-  document.getElementById('splitIframe').src='about:blank';
   document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
 }
 
