@@ -819,17 +819,17 @@ function renderCal(){
     const de=entries.filter(e=>e.date===ds);
     const dr=rdvs.filter(r=>r.date===ds);
     const du=unavails.filter(u=>u.from<=ds&&u.to>=ds);
-    const db=bdayByDay[d]||[];
+    const bdArr=bdayByDay[d]||[];
     let cls='cd';
     if(ds===ts)cls+=' tod';
     if(de.length)cls+=' hv';
     if(dr.length)cls+=' hr';
-    if(db.length)cls+=' hb';
+    if(bdArr.length)cls+=' hb';
     const seen=new Set();let dots='';
     de.forEach(e=>(e.emotions||[]).forEach(em=>{const dc=CDMAP[em.cat];if(dc&&!seen.has(dc)){dots+='<div class="dt '+dc+'"></div>';seen.add(dc);}}));
     if(dr.length&&!seen.has('rdv')){dots+='<div class="dt drdv"></div>';seen.add('rdv');}
     if(du.length&&!seen.has('un')){dots+='<div class="dt dun"></div>';}
-    if(db.length){dots+='<div class="dt dbd"></div>';}
+    if(bdArr.length){dots+='<div class="dt dbd"></div>';}
     html+='<div class="'+cls+'" onclick="showDay(\''+ds+'\')"><span>'+d+'</span>'+(dots?'<div class="dts">'+dots+'</div>':'')+'</div>';
   }
   grid.innerHTML=html;
@@ -866,9 +866,9 @@ function showDay(ds){
       }
     }
     const dayNum=parseInt(ds.split('-')[2],10);
-    const db=(getBdaysForMonth(calY,calM)||[]).filter(b=>b.day===dayNum);
-    if(!de.length&&!dr.length&&!du.length&&!db.length){div.innerHTML='<div class="card"><p style="color:#8a6080;text-align:center;padding:8px">Aucune entrée ce jour-là</p></div>';return;}
-    if(db.length){html+='<div class="card">'+db.map(b=>'<div class="bday-row"><div class="cav2" style="background:'+b.col+';width:38px;height:38px;font-size:0.8rem;">'+b.ini+'</div><div><div style="font-weight:700;color:#3d2040;">🎂 '+b.name+'</div><div class="bday-age">'+b.age+' ans aujourd\'hui 🎉</div></div></div>').join('')+'</div>';}
+    const bdArrDay=(getBdaysForMonth(calY,calM)||[]).filter(b=>b.day===dayNum);
+    if(!de.length&&!dr.length&&!du.length&&!bdArrDay.length){div.innerHTML='<div class="card"><p style="color:#8a6080;text-align:center;padding:8px">Aucune entrée ce jour-là</p></div>';return;}
+    if(bdArrDay.length){html+='<div class="card">'+bdArrDay.map(b=>'<div class="bday-row"><div class="cav2" style="background:'+b.col+';width:38px;height:38px;font-size:0.8rem;">'+b.ini+'</div><div><div style="font-weight:700;color:#3d2040;">🎂 '+b.name+'</div><div class="bday-age">'+b.age+' ans aujourd\'hui 🎉</div></div></div>').join('')+'</div>';}
     let html='';
     du.forEach(u=>{html+='<div class="uc"><div style="font-weight:700;color:#c0506a;">🚫 '+u.who+' — Pas disponible</div><div style="font-size:0.74rem;color:#9a3050;margin-top:2px;">Du '+fd(u.from)+' au '+fd(u.to)+(u.reason?' · '+u.reason:'')+'</div><button class="dbtn" onclick="delUnavail(\''+u._k+'\')">🗑️ Supprimer</button></div>';});
     dr.forEach(r=>{html+='<div class="rc"><div style="font-weight:700;color:#7a5000;">📅 '+r.title+'</div><div style="font-size:0.74rem;color:#b09000;">'+fd(r.date)+(r.time?' à '+r.time:'')+'</div><button class="dbtn" onclick="delRdv(\''+r._k+'\')">🗑️ Supprimer</button></div>';});
