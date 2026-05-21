@@ -120,6 +120,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
   </div>
   <textarea class="t-msg" id="tMsg" placeholder="Mon message du jour..."></textarea>
   <button class="send-btn" onclick="sendAll()">💛 Envoyer mes nouvelles à mes enfants</button>
+  <div id="childMsgsTop" style="display:none;margin-top:8px;border-top:1px solid rgba(255,255,255,0.25);padding-top:8px;max-height:160px;overflow-y:auto;"></div>
 </div>
 
 <!-- RACCOURCIS - FOND BLANC -->
@@ -282,11 +283,6 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     <ul id="rdvList"></ul>
   </div>
 
-  <!-- MESSAGES ENFANTS -->
-  <div class="card">
-    <div class="ct">💌 Messages de mes enfants</div>
-    <div id="childMsgs"><p style="color:#c0a0b8;text-align:center;padding:12px;font-size:0.88rem;">Pas encore de messages... 💛</p></div>
-  </div>
 
 </div>
 <div class="toast" id="toast"></div>
@@ -324,11 +320,11 @@ let rH=new Date().getHours(),rM=0;
 // Firebase - courses : chaque action écrit directement dans Firebase, le listener met à jour l'affichage
 db.ref('maman_courses').on('value',snap=>{
   courses=[];
-  if(snap.exists())snap.forEach(c=>courses.push({...c.val(),_k:c.key}));
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))courses.push({...v[k],_k:k});}
   renderCourses();
 });
-db.ref('maman_rdv').on('value',snap=>{rdvItems=[];if(snap.exists())snap.forEach(r=>rdvItems.push({...r.val(),_k:r.key}));rdvItems.sort((a,b)=>new Date(a.date)-new Date(b.date));renderRdv();checkRdv();});
-db.ref('messages_enfants').on('value',snap=>{const msgs=[];if(snap.exists())snap.forEach(m=>msgs.push({...m.val(),_k:m.key}));msgs.sort((a,b)=>new Date(b.ts)-new Date(a.ts));renderChildMsgs(msgs.slice(0,7));});
+db.ref('maman_rdv').on('value',snap=>{rdvItems=[];if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))rdvItems.push({...v[k],_k:k});}rdvItems.sort((a,b)=>new Date(a.date)-new Date(b.date));renderRdv();checkRdv();});
+db.ref('messages_enfants').on('value',snap=>{const msgs=[];if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))msgs.push({...v[k],_k:k});}msgs.sort((a,b)=>new Date(b.ts)-new Date(a.ts));renderChildMsgs(msgs.slice(0,7));});
 
 // Horloge
 function updateClock(){
@@ -405,7 +401,8 @@ function addSug(t){
   db.ref('maman_courses').push({text:t,done:false});
 }
 function togCourse(key,done){
-  db.ref('maman_courses/'+key).update({done:!done});
+  if(done)db.ref('maman_courses/'+key).update({done:false,doneBy:null});
+  else db.ref('maman_courses/'+key).update({done:true,doneBy:'Maman'});
 }
 function delCourse(key){
   db.ref('maman_courses/'+key).remove();
@@ -422,7 +419,7 @@ function renderCourses(){
     return;
   }
   if(btn)btn.style.display='block';
-  ul.innerHTML=courses.map((c)=>'<li class="ci '+(c.done?'done':'')+'"><div style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer;" onclick="togCourse(\''+c._k+'\','+c.done+')"><div class="chk">'+(c.done?'✓':'')+'</div><span>'+c.text+'</span></div><button onclick="delCourse(\''+c._k+'\')" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;padding:4px 7px;">✕</button></li>').join('');
+  ul.innerHTML=courses.map((c)=>'<li class="ci '+(c.done?'done':'')+'"><div style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer;" onclick="togCourse(\''+c._k+'\','+c.done+')"><div class="chk">'+(c.done?'✓':'')+'</div><div><span>'+c.text+'</span>'+(c.done&&c.doneBy?'<div style="font-size:0.7rem;color:#89b5a0;font-weight:700;">par '+c.doneBy+'</div>':'')+'</div></div><button onclick="delCourse(\''+c._k+'\')" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;padding:4px 7px;">✕</button></li>').join('');
   const cnt=document.getElementById('coursesCount');
   const pendingCount=courses.filter(c=>!c.done).length;
   if(cnt){if(pendingCount>0){cnt.textContent=pendingCount+' article'+(pendingCount>1?'s':'');cnt.style.display='inline';}else{cnt.style.display='none';}}
@@ -468,9 +465,17 @@ function renderRdv(){
 
 // Messages enfants
 function renderChildMsgs(msgs){
-  const div=document.getElementById('childMsgs');
-  if(!msgs.length){div.innerHTML='<p style="color:#c0a0b8;text-align:center;padding:12px;font-size:0.88rem;">Pas encore de messages... 💛</p>';return;}
-  div.innerHTML=msgs.map(m=>'<div class="cm"><button class="cm-del" onclick="db.ref(\'messages_enfants/'+m._k+'\').remove()">✕ Effacer</button><div class="cm-who">💌 '+m.who+'</div><div style="font-size:0.92rem;color:#3d2040;line-height:1.5;margin-top:3px;">'+m.text+'</div><div style="font-size:0.71rem;color:#b07898;margin-top:4px;">'+ft(m.ts)+'</div></div>').join('');
+  const top=document.getElementById('childMsgsTop');
+  if(!top)return;
+  if(!msgs.length){top.style.display='none';return;}
+  top.style.display='block';
+  top.innerHTML='<div style="font-size:0.68rem;font-weight:700;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">💌 Messages de mes enfants</div>'
+    +msgs.map(m=>'<div style="background:rgba(255,255,255,0.16);border-radius:10px;padding:8px 10px;margin-bottom:5px;position:relative;">'
+      +'<button onclick="db.ref(\'messages_enfants/\'+ \''+m._k+'\').remove()" style="position:absolute;top:5px;right:6px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.7rem;color:#fff8ee;font-weight:700;">✕</button>'
+      +'<div style="font-size:0.82rem;font-weight:700;color:#fff8ee;padding-right:32px;">'+m.who+'</div>'
+      +'<div style="font-size:0.88rem;color:#fff8ee;line-height:1.4;margin-top:2px;">'+m.text+'</div>'
+      +'<div style="font-size:0.65rem;color:rgba(255,255,255,0.6);margin-top:3px;">'+ft(m.ts)+'</div>'
+      +'</div>').join('');
 }
 
 // ENVOYER
@@ -490,6 +495,8 @@ async function sendAll(){
     document.getElementById('sentBanner').scrollIntoView({behavior:'smooth',block:'start'});
     startCountdown(300);
     document.getElementById('tMsg').value='';
+    toast('✅ Message envoyé à tes enfants ! 💛');
+    document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));selMoodV='';
   }catch(e){alert('Erreur de connexion.');}
   btn.disabled=false;btn.textContent='💛 Envoyer mes nouvelles à mes enfants';
 }

@@ -417,7 +417,7 @@ db.ref('maman_rdv').on('value',snap=>{
 let mamanStatuses=[];
 db.ref('maman_status').on('value',snap=>{
   mamanStatuses=[];
-  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))mamanStatuses.push(v[k]);}
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))mamanStatuses.push({...v[k],_k:k});}
   mamanStatuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
   renderMamanStatus(mamanStatuses[0]||null);
   renderMamanHist(mamanStatuses.slice(0,7));
@@ -646,7 +646,8 @@ function renderMamanHist(all){
     +(s.message?'<div style="font-size:0.8rem;color:#8a6080;font-style:italic;">"'+s.message+'"</div>':'')
     +'<div style="font-size:0.69rem;color:#c0a0b8;margin-top:2px;">'+ft(s.ts)+'</div>'
     +'</div>'
-    +'<div style="width:9px;height:9px;border-radius:50%;background:'+(mc[s.mood]||'#ccc')+';flex-shrink:0;"></div>'
+    +'<div style="width:9px;height:9px;border-radius:50%;background:'+(mc[s.mood]||'#ccc')+';flex-shrink:0;margin-right:4px;"></div>'
+    +(s._k?'<button onclick="db.ref(\'maman_status/'+s._k+'\').remove()" style="background:none;border:1px solid #edd9e8;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:0.72rem;color:#e08fa0;font-weight:700;flex-shrink:0;">🗑️</button>':'')
     +'</div>'
   ).join('');
 }
