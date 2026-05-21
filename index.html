@@ -153,6 +153,7 @@ textarea{resize:vertical;min-height:70px;}
 .cactions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
 .cphone-disp{font-size:0.82rem;color:#7d4e6b;font-weight:700;}
 .ccall-btn{background:linear-gradient(135deg,#89b5a0,#5a9a80);color:#fff;border:none;border-radius:9px;padding:5px 11px;cursor:pointer;font-size:0.78rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:3px;}
+.csms-btn{background:linear-gradient(135deg,#42a5f5,#1976d2);color:#fff;border:none;border-radius:9px;padding:5px 11px;cursor:pointer;font-size:0.78rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:3px;}
 .cedit-btn{background:#faedf3;border:1.5px solid #edd9e8;border-radius:9px;padding:5px 10px;cursor:pointer;font-size:0.78rem;font-weight:700;color:#7d4e6b;}
 .cedit-btn:hover{background:#c4789a;color:#fff;border-color:#c4789a;}
 .csect{font-size:0.7rem;font-weight:700;color:#8a6080;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 4px;padding-bottom:4px;border-bottom:2px solid #faedf3;}
@@ -1073,7 +1074,7 @@ function mkContactCard(c){
   h+='<div class="cinfo"><div class="cname2">'+c.name+'</div>';
   if(bd)h+='<div class="cbd">🎂 '+bd+'</div>';
   h+='<div class="cactions">';
-  if(c.phone){h+='<span class="cphone-disp">📞 '+c.phone+'</span> ';h+='<a class="ccall-btn" href="tel:'+c.phone+'">Appeler</a> ';}
+  if(c.phone){h+='<span class="cphone-disp">📞 '+c.phone+'</span> ';h+='<a class="ccall-btn" href="tel:'+c.phone+'">📞 Appeler</a> ';h+='<a class="csms-btn" href="sms:'+c.phone+'">💬 SMS</a> ';}
   h+='<button class="cedit-btn" onclick="editContactPhone(\''+c.id+'\',\''+c.name+'\','+c.custom+')">✏️ '+(c.phone?'Modifier':'Ajouter n°')+'</button> ';
   h+='<button class="cedit-btn" style="border-color:#e08fa0;color:#e08fa0;" onclick="deleteContact(\''+c.id+'\',\''+c.name+'\','+c.custom+')">🗑️</button>';
   h+='</div></div></div>';
