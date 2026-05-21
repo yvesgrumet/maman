@@ -323,6 +323,21 @@ db.ref('maman_courses').on('value',snap=>{
   if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))courses.push({...v[k],_k:k});}
   renderCourses();
 });
+// Suppression explicite d'un item par la famille → mise à jour immédiate
+db.ref('maman_courses').on('child_removed',snap=>{
+  courses=courses.filter(c=>c._k!==snap.key);
+  renderCourses();
+});
+// Resynchronisation quand la tablette revient en premier plan (PWA en veille)
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){
+    db.ref('maman_courses').once('value',snap=>{
+      courses=[];
+      if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))courses.push({...v[k],_k:k});}
+      renderCourses();
+    });
+  }
+});
 db.ref('maman_rdv').on('value',snap=>{rdvItems=[];if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))rdvItems.push({...v[k],_k:k});}rdvItems.sort((a,b)=>new Date(a.date)-new Date(b.date));renderRdv();checkRdv();});
 db.ref('messages_enfants').on('value',snap=>{const msgs=[];if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))msgs.push({...v[k],_k:k});}msgs.sort((a,b)=>new Date(b.ts)-new Date(a.ts));renderChildMsgs(msgs.slice(0,7));});
 
