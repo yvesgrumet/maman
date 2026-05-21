@@ -388,6 +388,16 @@ textarea{resize:vertical;min-height:70px;}
     <div class="ct">📋 Répertoire de la famille</div>
     <div id="contactsDiv"><p style="text-align:center;color:#b07898;padding:12px;">Chargement...</p></div>
   </div>
+  <div class="card" id="addContactCard" style="display:none;">
+    <div class="ct" style="font-size:1rem;margin-bottom:10px;">➕ Nouveau contact</div>
+    <input type="text" id="ncName" class="ri" placeholder="Prénom et nom *" style="margin-bottom:7px;">
+    <input type="tel" id="ncPhone" class="ri" placeholder="📞 Téléphone (optionnel)" style="margin-bottom:7px;">
+    <input type="date" id="ncBd" class="ri" placeholder="Date de naissance" style="margin-bottom:12px;">
+    <div style="display:flex;gap:8px;">
+      <button onclick="saveNewContact()" style="flex:1;background:linear-gradient(135deg,#89b5a0,#5a9a80);color:#fff;border:none;border-radius:12px;padding:11px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;">✅ Enregistrer</button>
+      <button onclick="document.getElementById('addContactCard').style.display='none'" style="background:#faedf3;color:#7d4e6b;border:1.5px solid #edd9e8;border-radius:12px;padding:11px 16px;cursor:pointer;font-size:0.9rem;font-family:'Lato',sans-serif;">Annuler</button>
+    </div>
+  </div>
 </div>
 
 </div>
@@ -483,10 +493,15 @@ db.ref('entries').limitToLast(1).on('child_added',snap=>{
 });
 
 // Contacts
-let contactPhones={};
+let contactPhones={},hiddenContacts=new Set(),customContacts={};
 db.ref('contacts').on('value',snap=>{
-  contactPhones={};
-  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))contactPhones[k]=v[k].phone||'';}
+  contactPhones={};hiddenContacts=new Set();
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v)){if(v[k].phone)contactPhones[k]=v[k].phone;if(v[k].hidden)hiddenContacts.add(k);}}
+  if(document.getElementById('tab-contacts').classList.contains('on'))renderContacts();
+});
+db.ref('contacts_custom').on('value',snap=>{
+  customContacts={};
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))customContacts[k]=v[k];}
   if(document.getElementById('tab-contacts').classList.contains('on'))renderContacts();
 });
 
@@ -934,14 +949,12 @@ renderCal();
 
 // ── Répertoire contacts ─────────────────────────────────
 const CONTACTS=[
-  // Enfants
   {id:'francoise',name:'Françoise',ini:'Fr',col:'#e040fb',rel:'enfant',bd:'1957-03-02'},
   {id:'martine',  name:'Martine',  ini:'Ma',col:'#f06292',rel:'enfant',bd:'1958-02-14'},
   {id:'nicole',   name:'Nicole',   ini:'Ni',col:'#ba68c8',rel:'enfant',bd:'1960-08-01'},
   {id:'pascale',  name:'Pascale',  ini:'Pa',col:'#ff7043',rel:'enfant',bd:'1964-04-25'},
   {id:'isabelle', name:'Isabelle', ini:'Is',col:'#26c6da',rel:'enfant',bd:'1969-09-20'},
   {id:'yves',     name:'Yves',     ini:'Yv',col:'#0084ff',rel:'enfant',bd:'1977-08-06'},
-  // Petits-enfants
   {id:'stephanie',name:'Stéphanie',ini:'St',col:'#ec407a',rel:'petit',bd:'1982-05-15'},
   {id:'simon',    name:'Simon',    ini:'Si',col:'#42a5f5',rel:'petit',bd:'1990-08-06'},
   {id:'lise',     name:'Lise',     ini:'Li',col:'#ab47bc',rel:'petit',bd:'1981-07-01'},
@@ -954,12 +967,13 @@ const CONTACTS=[
   {id:'xavier',   name:'Xavier',   ini:'Xa',col:'#8d6e63',rel:'petit',bd:'1988-12-30'},
   {id:'remi',     name:'Rémi',     ini:'Ré',col:'#29b6f6',rel:'petit',bd:'1992-12-03'},
   {id:'manon',    name:'Manon',    ini:'Mn',col:'#f06292',rel:'petit',bd:'2004-03-03'},
-  // Arrière-petits-enfants
   {id:'timothe',  name:'Timothé',  ini:'Ti',col:'#ff8f00',rel:'arriere',bd:'2007-03-07'},
-  {id:'leo',      name:'Léo',      ini:'Lé',col:'#9e9e9e',rel:'arriere',bd:null},
-  {id:'nathanael',name:'Nathanaël',ini:'Na',col:'#9e9e9e',rel:'arriere',bd:null},
+  {id:'leo',      name:'Léo',      ini:'Lé',col:'#8d6e63',rel:'arriere',bd:'2012-11-04'},
+  {id:'nathanael',name:'Nathanaël',ini:'Na',col:'#26a69a',rel:'arriere',bd:'2015-06-05'},
 ];
-const RELS={enfant:'👨‍👩‍👧 Enfants',petit:'👶 Petits-enfants',arriere:'🌟 Arrière-petits-enfants'};
+const RELS={enfant:'👨‍👩‍👧 Enfants',petit:'👶 Petits-enfants',arriere:'🌟 Arrière-petits-enfants',autre:'➕ Autres contacts'};
+const PALCOLS=['#e040fb','#f06292','#ba68c8','#ff7043','#26c6da','#0084ff','#ec407a','#42a5f5','#ab47bc','#26a69a','#66bb6a','#ffa726','#8d6e63','#29b6f6'];
+let contactFilter='';
 
 function fmtBd(bd){
   if(!bd)return'';
@@ -969,43 +983,95 @@ function fmtBd(bd){
   const age=now.getFullYear()-y-(now.getMonth()+1<m||(now.getMonth()+1===m&&now.getDate()<d)?1:0);
   return d+' '+mo[m-1]+' · '+age+' ans';
 }
+function iniFor(n){const p=n.trim().split(' ');return(p[0][0]+(p[1]?p[1][0]:'')).toUpperCase();}
+function colFor(n){let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))&0xffff;return PALCOLS[h%PALCOLS.length];}
+function setContactFilter(l){contactFilter=l;renderContacts();}
 
 function renderContacts(){
-  const div=document.getElementById('contactsDiv');
-  if(!div)return;
-  const groups={enfant:[],petit:[],arriere:[]};
-  CONTACTS.forEach(c=>groups[c.rel].push(c));
-  let html='';
-  for(const[rel,items]of Object.entries(groups)){
-    if(!items.length)continue;
-    html+='<div class="csect">'+RELS[rel]+'</div>';
-    items.forEach(c=>{
-      const phone=contactPhones[c.id]||'';
-      const bd=fmtBd(c.bd);
-      html+='<div class="ccard">';
-      html+='<div class="cav2" style="background:'+c.col+'">'+c.ini+'</div>';
-      html+='<div class="cinfo">';
-      html+='<div class="cname2">'+c.name+'</div>';
-      if(bd)html+='<div class="cbd">🎂 '+bd+'</div>';
-      html+='<div class="cactions">';
-      if(phone){
-        html+='<span class="cphone-disp">📞 '+phone+'</span>';
-        html+='<a class="ccall-btn" href="tel:'+phone+'">Appeler</a>';
-      }
-      html+='<button class="cedit-btn" onclick="editPhone(\''+c.id+'\',\''+c.name+'\')">✏️ '+(phone?'Modifier':'Ajouter n°')+'</button>';
-      html+='</div></div></div>';
-    });
+  const div=document.getElementById('contactsDiv');if(!div)return;
+  // Construire la liste complète
+  const all=[];
+  CONTACTS.forEach(c=>{
+    if(hiddenContacts.has(c.id))return;
+    all.push({...c,phone:contactPhones[c.id]||'',custom:false});
+  });
+  Object.entries(customContacts).forEach(([k,c])=>{
+    all.push({id:k,name:c.name,ini:iniFor(c.name),col:c.col||colFor(c.name),rel:'autre',bd:c.birthday||null,phone:c.phone||'',custom:true});
+  });
+  all.sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+  const filtered=contactFilter?all.filter(c=>c.name.toUpperCase().startsWith(contactFilter)):all;
+  // Barre alphabet
+  const has={};all.forEach(c=>{has[c.name[0].toUpperCase()]=true;});
+  const btnS=(on,dis)=>'border:1.5px solid #edd9e8;border-radius:7px;padding:3px 6px;font-size:0.7rem;font-weight:700;cursor:'+(dis?'default':'pointer')+';background:'+(on?'#7d4e6b':dis?'#f5f0f5':'#faedf3')+';color:'+(on?'#fff':dis?'#ccc':'#7d4e6b')+';';
+  let html='<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px;justify-content:center;">';
+  html+='<button onclick="setContactFilter(\'\')" style="'+btnS(contactFilter==='',false)+'">Tous</button>';
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l=>{html+='<button '+(has[l]?'onclick="setContactFilter(\''+l+'\')"':'')+' style="'+btnS(contactFilter===l,!has[l])+'">'+l+'</button>';});
+  html+='</div>';
+  // Cartes contacts
+  if(!filtered.length){html+='<p style="text-align:center;color:#b07898;padding:12px;">Aucun contact pour la lettre '+contactFilter+'</p>';}
+  else if(contactFilter){
+    filtered.forEach(c=>{html+=mkContactCard(c);});
+  }else{
+    const grp={enfant:[],petit:[],arriere:[],autre:[]};
+    filtered.forEach(c=>grp[c.rel].push(c));
+    for(const[rel,items]of Object.entries(grp)){
+      if(!items.length)continue;
+      html+='<div class="csect">'+RELS[rel]+'</div>';
+      items.forEach(c=>{html+=mkContactCard(c);});
+    }
   }
+  html+='<button onclick="showAddContact()" style="width:100%;margin-top:12px;background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:12px;padding:11px;font-family:\'Playfair Display\',serif;font-size:0.9rem;cursor:pointer;">➕ Ajouter un contact</button>';
   div.innerHTML=html;
 }
 
-function editPhone(id,name){
-  const cur=contactPhones[id]||'';
-  const val=window.prompt('Numéro de téléphone de '+name+' :', cur);
+function mkContactCard(c){
+  const bd=fmtBd(c.bd);
+  let h='<div class="ccard">';
+  h+='<div class="cav2" style="background:'+c.col+'">'+c.ini+'</div>';
+  h+='<div class="cinfo"><div class="cname2">'+c.name+'</div>';
+  if(bd)h+='<div class="cbd">🎂 '+bd+'</div>';
+  h+='<div class="cactions">';
+  if(c.phone){h+='<span class="cphone-disp">📞 '+c.phone+'</span> ';h+='<a class="ccall-btn" href="tel:'+c.phone+'">Appeler</a> ';}
+  h+='<button class="cedit-btn" onclick="editContactPhone(\''+c.id+'\',\''+c.name+'\','+c.custom+')">✏️ '+(c.phone?'Modifier':'Ajouter n°')+'</button> ';
+  h+='<button class="cedit-btn" style="border-color:#e08fa0;color:#e08fa0;" onclick="deleteContact(\''+c.id+'\',\''+c.name+'\','+c.custom+')">🗑️</button>';
+  h+='</div></div></div>';
+  return h;
+}
+
+function editContactPhone(id,name,isCustom){
+  const cur=isCustom?(customContacts[id]?.phone||''):(contactPhones[id]||'');
+  const val=window.prompt('Numéro de téléphone de '+name+' :',cur);
   if(val===null)return;
   const clean=val.trim();
-  if(clean)db.ref('contacts/'+id).set({phone:clean});
-  else db.ref('contacts/'+id).remove();
+  if(isCustom)db.ref('contacts_custom/'+id).update({phone:clean||null});
+  else{if(clean)db.ref('contacts/'+id).update({phone:clean});else db.ref('contacts/'+id+'/phone').remove();}
+}
+
+async function deleteContact(id,name,isCustom){
+  if(!window.confirm('Supprimer '+name+' du répertoire ?'))return;
+  if(isCustom){await db.ref('contacts_custom/'+id).remove();}
+  else{await db.ref('contacts/'+id+'/hidden').set(true);hiddenContacts.add(id);renderContacts();}
+  toast('🗑️ '+name+' supprimé');
+}
+
+function showAddContact(){
+  const c=document.getElementById('addContactCard');
+  if(c){c.style.display='block';c.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+
+async function saveNewContact(){
+  const name=document.getElementById('ncName').value.trim();
+  const phone=document.getElementById('ncPhone').value.trim();
+  const bd=document.getElementById('ncBd').value;
+  if(!name){toast('⚠️ Indique un prénom !');return;}
+  try{
+    await db.ref('contacts_custom').push({name,phone:phone||null,birthday:bd||null,col:colFor(name)});
+    document.getElementById('ncName').value='';
+    document.getElementById('ncPhone').value='';
+    document.getElementById('ncBd').value='';
+    document.getElementById('addContactCard').style.display='none';
+    toast('✅ '+name+' ajouté au répertoire !');
+  }catch(e){toast('❌ Erreur : '+e.message);}
 }
 </script>
 </body>
