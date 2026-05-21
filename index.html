@@ -133,6 +133,12 @@ textarea{resize:vertical;min-height:70px;}
 .hfete{font-size:0.78rem;color:#ffeef7;font-style:italic;margin-top:1px;}
 .cours-chip{background:#faedf3;border:1.5px solid #e0a0bf;border-radius:14px;padding:4px 10px;cursor:pointer;font-size:0.72rem;font-weight:700;color:#7d4e6b;font-family:'Lato',sans-serif;transition:all 0.2s;}
 .cours-chip:active,.cours-chip:hover{background:#7d4e6b;color:#fff;border-color:#7d4e6b;}
+.cchk{width:34px;height:34px;border-radius:8px;border:2.5px solid #c4789a;background:#fff;cursor:pointer;flex-shrink:0;font-size:1.3rem;display:flex;align-items:center;justify-content:center;transition:all 0.18s;color:transparent;box-shadow:0 1px 4px rgba(196,120,154,0.15);}
+.cchk:hover{background:#eef7f2;border-color:#89b5a0;box-shadow:0 2px 8px rgba(137,181,160,0.3);}
+.cchk:hover::after{content:'✓';color:#89b5a0;font-size:1.1rem;font-weight:700;}
+.cchk.checking{background:#89b5a0 !important;border-color:#89b5a0 !important;color:#fff !important;box-shadow:0 2px 8px rgba(137,181,160,0.4);}
+.cchk.nok{border-color:#e08fa0 !important;animation:shake 0.4s;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 </style>
 </head>
 <body>
@@ -666,7 +672,7 @@ function renderMamanCoursesList(div){
       const isLast=idx===pending.length-1;
       html+='<div style="padding:8px 0;border-bottom:1px solid #faedf3;">';
       html+='<div style="display:flex;align-items:center;gap:8px;">';
-      html+='<button onclick="markCourseByWho(\''+c._k+'\')" style="width:30px;height:30px;border-radius:50%;border:2px solid #c4789a;background:#fff;cursor:pointer;font-size:0.85rem;color:#c4789a;flex-shrink:0;">☐</button>';
+      html+='<button class="cchk" data-ck="'+c._k+'" onclick="markCourseByWho(\''+c._k+'\')"></button>';
       html+='<span style="font-size:0.88rem;color:#3d2040;font-weight:700;">'+c.text+'</span>';
       html+='</div>';
       if(isLast){
@@ -691,7 +697,13 @@ function renderMamanCoursesList(div){
   div.innerHTML=html;
 }
 function markCourseByWho(k){
-  if(!selWho){toast('⚠️ Dis-nous qui tu es (onglet Ajouter) !');return;}
+  const btn=document.querySelector('.cchk[data-ck="'+k+'"]');
+  if(!selWho){
+    if(btn){btn.classList.add('nok');setTimeout(()=>btn.classList.remove('nok'),500);}
+    toast('⚠️ Dis-nous qui tu es (onglet Ajouter) !');
+    return;
+  }
+  if(btn){btn.classList.add('checking');btn.textContent='✓';}
   markCourseDone(k,selWho);
 }
 async function markCourseDone(k,by){
