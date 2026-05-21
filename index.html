@@ -382,6 +382,7 @@ let selWho='',selWho2='',selUWho='';
 let selPers=[],selEmos=[],selActs=[],selPhoto=null;
 let calY,calM,filt='all',lastDay=null;
 let eH=0,eM=0,rH=0,rM=0;
+let pendingCalNav=false;
 const today=new Date();
 calY=today.getFullYear();calM=today.getMonth();
 
@@ -398,6 +399,11 @@ db.ref('entries').on('value',snap=>{
   document.getElementById('syncBar').textContent='🟢 Synchronisé · '+entries.length+' visite'+(entries.length>1?'s':'');
   document.getElementById('syncBar').className='sync ok';
   updateBadge();refreshView();
+  if(pendingCalNav){
+    pendingCalNav=false;
+    const btnCal=document.getElementById('tab-cal-btn');
+    if(btnCal)goTab('cal',btnCal);
+  }
 },()=>{
   document.getElementById('syncBar').textContent='🔴 Erreur de connexion';
   document.getElementById('syncBar').className='sync err';
@@ -563,8 +569,7 @@ async function saveEntry(){
     selWho='';selPers=[];selEmos=[];selActs=[];
     document.getElementById('eNote').value='';rmPhoto();initForm();
     toast('✅ Visite enregistrée ! 💛');
-    const btnCal=document.getElementById('tab-cal-btn');
-    if(btnCal)setTimeout(()=>goTab('cal',btnCal),100);
+    pendingCalNav=true;
   }catch(e){toast('❌ Erreur : '+e.message);}
   btn.disabled=false;btn.textContent='💛 Enregistrer cette visite';
 }
