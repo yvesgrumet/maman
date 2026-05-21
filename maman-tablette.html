@@ -87,15 +87,18 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .sent.show{display:block;}
 .countdown{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#2e6b50;}
 
-/* MOLETTE */
-.ww{display:flex;align-items:center;justify-content:center;gap:4px;margin:7px 0;}
-.wb{position:relative;width:60px;height:120px;overflow:hidden;border-radius:12px;background:#fdf6f9;border:1.5px solid #edd9e8;}
-.wft{position:absolute;top:0;left:0;right:0;height:38px;background:linear-gradient(to bottom,#fdf6f9,transparent);z-index:2;pointer-events:none;}
-.wfb{position:absolute;bottom:0;left:0;right:0;height:38px;background:linear-gradient(to top,#fdf6f9,transparent);z-index:2;pointer-events:none;}
-.wsl{position:absolute;top:50%;left:0;right:0;height:36px;transform:translateY(-50%);border-top:2px solid #c4789a;border-bottom:2px solid #c4789a;z-index:1;pointer-events:none;background:rgba(196,120,154,0.06);}
-.wd{position:absolute;top:0;left:0;right:0;cursor:grab;touch-action:none;}
-.wi{height:36px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#d0b0c0;user-select:none;}
-.wsep{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#7d4e6b;padding:0 3px;}
+/* PANNEAU OUVERT */
+.panel-open-label{font-size:0.72rem;color:#b07898;text-align:center;font-style:italic;margin-top:6px;}
+
+/* LAYOUT TABLETTE */
+.left-panel{display:contents;}
+@media(min-width:768px){
+  body{display:flex;flex-direction:row;height:100vh;overflow:hidden;}
+  .left-panel{display:flex;flex-direction:column;width:300px;min-width:260px;flex-shrink:0;overflow-y:auto;height:100vh;border-right:2px solid rgba(125,78,107,0.15);}
+  .top{position:static;}
+  .sc-bar{flex:1;overflow-y:auto;border-bottom:none;box-shadow:none;}
+  .main{flex:1;overflow-y:auto;height:100vh;padding:14px 14px 40px;}
+}
 
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:#7d4e6b;color:#fff8ee;padding:10px 20px;border-radius:26px;font-size:0.86rem;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:999;transition:transform 0.3s ease;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);}
@@ -106,6 +109,8 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 </head>
 <body>
 
+<!-- COLONNE GAUCHE (tablette) -->
+<div class="left-panel">
 <!-- BARRE FIXE -->
 <div class="top" id="topBar">
   <div class="t-date" id="tDate">...</div>
@@ -163,6 +168,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     <button class="sc-btn fb" onclick="openPanel('facebook',this)"><span class="badge" id="b-facebook"></span><div class="av" style="background:#1877f2">f</div><span class="sl">Facebook</span></button>
   </div>
 </div>
+</div><!-- fin left-panel -->
 
 <!-- CONTENU -->
 <div class="main" id="mainContent">
@@ -175,63 +181,6 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     <div style="background:rgba(137,181,160,0.15);border-radius:9px;padding:7px 12px;display:flex;align-items:center;gap:7px;">
       <span style="font-size:0.75rem;color:#5a8a70;font-weight:700;">⏳ Visible pendant encore</span>
       <span class="countdown" id="countdown">5:00</span>
-    </div>
-  </div>
-
-  <!-- PANNEAU MESSENGER -->
-  <div class="panel" id="panelMsg">
-    <div class="ph" id="panelMsgHdr" style="background:linear-gradient(135deg,#0084ff,#0066cc)">
-      <div class="pt"><span id="panelIcon">💬</span><span id="panelName">Messenger</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a id="msgLink" href="#" class="open-btn" style="background:linear-gradient(135deg,#0084ff,#0066cc);" onclick="return openExt(this.href)">💬 Ouvrir Messenger</a>
-      <p class="sim-note">Appuie pour ouvrir directement la conversation</p>
-    </div>
-  </div>
-
-  <!-- PANNEAU MAMAN & CIE -->
-  <div class="panel" id="panelMamancie">
-    <div class="ph" style="background:linear-gradient(135deg,#7d4e6b,#a060a0)">
-      <div class="pt"><span>🏡</span><span>Maman & Compagnie</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a href="fb-messenger://" class="open-btn" style="background:linear-gradient(135deg,#7d4e6b,#a060a0);" onclick="return openExt('fb-messenger://')">💬 Ouvrir Messenger</a>
-      <p class="sim-note">Cherche le groupe "Maman & Compagnie"</p>
-    </div>
-  </div>
-
-  <!-- PANNEAU BANQUE -->
-  <div class="panel" id="panelBanque">
-    <div class="ph" style="background:linear-gradient(135deg,#003399,#0055cc)">
-      <div class="pt"><span>📮</span><span>La Banque Postale</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a href="https://www.labanquepostale.fr/particuliers.html" class="open-btn" style="background:linear-gradient(135deg,#003399,#0055cc);" onclick="return openExt('https://www.labanquepostale.fr/particuliers.html')">📮 Ouvrir La Banque Postale</a>
-    </div>
-  </div>
-
-  <!-- PANNEAU GOOGLE -->
-  <div class="panel" id="panelGoogle">
-    <div class="ph" style="background:linear-gradient(135deg,#4285f4,#34a853)">
-      <div class="pt"><span>🔍</span><span>Google</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a href="https://www.google.fr" class="open-btn" style="background:linear-gradient(135deg,#4285f4,#34a853);" onclick="return openExt('https://www.google.fr')">🔍 Ouvrir Google</a>
-    </div>
-  </div>
-
-  <!-- PANNEAU FACEBOOK -->
-  <div class="panel" id="panelFacebook">
-    <div class="ph" style="background:linear-gradient(135deg,#1877f2,#0d5fc4)">
-      <div class="pt"><span>📘</span><span>Facebook</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a href="fb://feed" class="open-btn" style="background:linear-gradient(135deg,#1877f2,#0d5fc4);" onclick="return openExt('fb://feed')">📘 Ouvrir Facebook</a>
     </div>
   </div>
 
@@ -273,16 +222,63 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
     <input class="ri" type="text" id="rdvT" placeholder="Ex : Soins, Coiffeur..." style="margin-bottom:7px;">
     <input class="ri" type="date" id="rdvD" style="margin-bottom:7px;">
-    <div class="ww">
-      <div class="wb"><div class="wft"></div><div class="wfb"></div><div class="wsl"></div><div class="wd" id="wRH"></div></div>
-      <div class="wsep">:</div>
-      <div class="wb"><div class="wft"></div><div class="wfb"></div><div class="wsl"></div><div class="wd" id="wRM"></div></div>
-    </div>
-    <input type="hidden" id="rdvTime">
+    <input class="ri" type="time" id="rdvTime" style="margin-bottom:7px;font-size:1.2rem;text-align:center;">
     <button onclick="addRdv()" style="width:100%;background:#c4789a;color:#fff;border:none;border-radius:11px;padding:10px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;margin-top:8px;margin-bottom:10px;">＋ Ajouter ce rendez-vous</button>
     <ul id="rdvList"></ul>
   </div>
 
+  <!-- PANNEAUX APPS — s'ouvrent juste sous les rendez-vous -->
+  <div class="panel" id="panelMsg">
+    <div class="ph" id="panelMsgHdr" style="background:linear-gradient(135deg,#0084ff,#0066cc)">
+      <div class="pt"><span id="panelIcon">💬</span><span id="panelName">Messenger</span></div>
+      <button class="px" onclick="closePanel()">✕</button>
+    </div>
+    <div class="pb">
+      <a id="msgLink" href="#" class="open-btn" style="background:linear-gradient(135deg,#0084ff,#0066cc);" onclick="return openExt(this.href)">💬 Ouvrir Messenger</a>
+      <p class="sim-note">Appuie pour ouvrir directement la conversation</p>
+    </div>
+  </div>
+
+  <div class="panel" id="panelMamancie">
+    <div class="ph" style="background:linear-gradient(135deg,#7d4e6b,#a060a0)">
+      <div class="pt"><span>🏡</span><span>Maman & Compagnie</span></div>
+      <button class="px" onclick="closePanel()">✕</button>
+    </div>
+    <div class="pb">
+      <a href="fb-messenger://" class="open-btn" style="background:linear-gradient(135deg,#7d4e6b,#a060a0);" onclick="return openExt('fb-messenger://')">💬 Ouvrir Messenger</a>
+      <p class="sim-note">Cherche le groupe "Maman & Compagnie"</p>
+    </div>
+  </div>
+
+  <div class="panel" id="panelBanque">
+    <div class="ph" style="background:linear-gradient(135deg,#003399,#0055cc)">
+      <div class="pt"><span>📮</span><span>La Banque Postale</span></div>
+      <button class="px" onclick="closePanel()">✕</button>
+    </div>
+    <div class="pb">
+      <a href="https://www.labanquepostale.fr/particuliers.html" class="open-btn" style="background:linear-gradient(135deg,#003399,#0055cc);" onclick="return openExt('https://www.labanquepostale.fr/particuliers.html')">📮 Ouvrir La Banque Postale</a>
+    </div>
+  </div>
+
+  <div class="panel" id="panelGoogle">
+    <div class="ph" style="background:linear-gradient(135deg,#4285f4,#34a853)">
+      <div class="pt"><span>🔍</span><span>Google</span></div>
+      <button class="px" onclick="closePanel()">✕</button>
+    </div>
+    <div class="pb">
+      <a href="https://www.google.fr" class="open-btn" style="background:linear-gradient(135deg,#4285f4,#34a853);" onclick="return openExt('https://www.google.fr')">🔍 Ouvrir Google</a>
+    </div>
+  </div>
+
+  <div class="panel" id="panelFacebook">
+    <div class="ph" style="background:linear-gradient(135deg,#1877f2,#0d5fc4)">
+      <div class="pt"><span>📘</span><span>Facebook</span></div>
+      <button class="px" onclick="closePanel()">✕</button>
+    </div>
+    <div class="pb">
+      <a href="fb://feed" class="open-btn" style="background:linear-gradient(135deg,#1877f2,#0d5fc4);" onclick="return openExt('fb://feed')">📘 Ouvrir Facebook</a>
+    </div>
+  </div>
 
 </div>
 <div class="toast" id="toast"></div>
@@ -315,7 +311,6 @@ const NOMS={francoise:'Françoise',martine:'Martine',nicole:'Nicole',pascale:'Pa
 const COLS={francoise:'#e040fb',martine:'#f06292',nicole:'#ba68c8',pascale:'#ff7043',isabelle:'#26c6da',yves:'#0084ff',stephanie:'#ec407a',simon:'#42a5f5',lise:'#ab47bc',anaele:'#ef5350',florent:'#26a69a',elisa:'#ff7043',paul:'#5c6bc0',clement:'#66bb6a',bastien:'#ffa726',xavier:'#8d6e63',remi:'#29b6f6',manon:'#f06292',timothe:'#ff8f00'};
 
 let selMoodV='',courses=[],rdvItems=[],sentKey=null,cntInt=null;
-let rH=new Date().getHours(),rM=0;
 
 // Firebase - courses : chaque action écrit directement dans Firebase, le listener met à jour l'affichage
 db.ref('maman_courses').on('value',snap=>{
@@ -554,39 +549,6 @@ function closeAllPanels(){document.querySelectorAll('.panel').forEach(p=>p.class
 function closePanel(){closeAllPanels();document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));}
 function openExt(url){window.open(url,'_blank');return false;}
 
-// MOLETTE
-function mkWheel(id,type,initV){
-  const el=document.getElementById(id);if(!el)return;
-  const isMin=type==='m';
-  const count=isMin?12:24;const IH=36;
-  let html='<div style="height:42px;"></div>';
-  for(let i=0;i<count;i++){const v=isMin?i*5:i;html+='<div class="wi">'+String(v).padStart(2,'0')+'</div>';}
-  html+='<div style="height:42px;"></div>';
-  el.innerHTML=html;
-  wDrag(el,type,IH,count,isMin?Math.round(initV/5):initV);
-}
-function wDrag(wheel,type,IH,count,initIdx){
-  let co=initIdx*IH,s0=0,o0=0,drag=false,vel=0,ly=0,lt=0,raf=null;
-  function gmax(){return(count-1)*IH;}
-  function snap(o){return Math.round(o/IH)*IH;}
-  function clamp(v){return Math.max(0,Math.min(gmax(),v));}
-  function setO(o,anim){co=clamp(o);wheel.style.transition=anim?'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)':'none';wheel.style.transform='translateY('+(42-co)+'px)';upSel();}
-  function upSel(){
-    const idx=Math.round(co/IH),val=type==='m'?idx*5:idx;
-    if(type==='h')rH=val;else rM=val;
-    document.getElementById('rdvTime').value=String(rH).padStart(2,'0')+':'+String(rM).padStart(2,'0');
-    wheel.querySelectorAll('.wi').forEach((el,i)=>{const d=Math.abs(i-idx);el.style.color=d===0?'#7d4e6b':d===1?'#c4789a':'#d0b0c0';el.style.fontSize=d===0?'1.6rem':d===1?'1.2rem':'1rem';});
-  }
-  function fling(){let v=vel;function st(){if(Math.abs(v)<0.5){setO(snap(co),true);return;}co=clamp(co+v);wheel.style.transform='translateY('+(42-co)+'px)';upSel();v*=0.92;raf=requestAnimationFrame(st);}raf=requestAnimationFrame(st);}
-  wheel.addEventListener('touchstart',e=>{if(raf)cancelAnimationFrame(raf);drag=true;vel=0;s0=e.touches[0].clientY;o0=co;ly=s0;lt=Date.now();wheel.style.transition='none';},{passive:true});
-  wheel.addEventListener('touchmove',e=>{if(!drag)return;const y=e.touches[0].clientY;const n=Date.now();vel=(ly-y)/(n-lt+1)*14;ly=y;lt=n;setO(o0+(s0-y));},{passive:true});
-  wheel.addEventListener('touchend',()=>{drag=false;fling();});
-  wheel.addEventListener('mousedown',e=>{if(raf)cancelAnimationFrame(raf);drag=true;vel=0;s0=e.clientY;o0=co;ly=s0;lt=Date.now();wheel.style.cursor='grabbing';wheel.style.transition='none';e.preventDefault();});
-  document.addEventListener('mousemove',e=>{if(!drag)return;const n=Date.now();vel=(ly-e.clientY)/(n-lt+1)*14;ly=e.clientY;lt=n;setO(o0+(s0-e.clientY));});
-  document.addEventListener('mouseup',()=>{if(!drag)return;drag=false;wheel.style.cursor='grab';fling();});
-  wheel.parentElement.addEventListener('wheel',e=>{e.preventDefault();setO(co+e.deltaY*0.4);clearTimeout(wheel._st);wheel._st=setTimeout(()=>setO(snap(co),true),150);},{passive:false});
-  setTimeout(()=>setO(initIdx*IH),70);
-}
 
 // Helpers
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
@@ -596,8 +558,6 @@ function fd(d){if(!d)return'';const[y,m,day]=d.split('-');const mo=['jan','fév'
 // Init
 const now=new Date();
 document.getElementById('rdvD').value=now.toISOString().slice(0,10);
-mkWheel('wRH','h',now.getHours());
-mkWheel('wRM','m',0);
 </script>
 </body>
 </html>
