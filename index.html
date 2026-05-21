@@ -394,7 +394,7 @@ const CLBLS={'cat-joie':'🤗 Positive','cat-perte':'😔 Deuil','cat-peur':'�
 // Firebase listeners
 db.ref('entries').on('value',snap=>{
   entries=[];
-  if(snap.exists())snap.forEach(c=>entries.push({...c.val(),_k:c.key}));
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))entries.push({...v[k],_k:k});}
   entries.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
   document.getElementById('syncBar').textContent='🟢 Synchronisé · '+entries.length+' visite'+(entries.length>1?'s':'');
   document.getElementById('syncBar').className='sync ok';
@@ -410,14 +410,14 @@ db.ref('entries').on('value',snap=>{
 });
 db.ref('maman_rdv').on('value',snap=>{
   rdvs=[];
-  if(snap.exists())snap.forEach(r=>rdvs.push({...r.val(),_k:r.key}));
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))rdvs.push({...v[k],_k:k});}
   rdvs.sort((a,b)=>new Date(a.date)-new Date(b.date));
   renderRdvList();refreshView();
 });
 let mamanStatuses=[];
 db.ref('maman_status').on('value',snap=>{
   mamanStatuses=[];
-  if(snap.exists())snap.forEach(c=>mamanStatuses.push(c.val()));
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))mamanStatuses.push(v[k]);}
   mamanStatuses.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
   renderMamanStatus(mamanStatuses[0]||null);
   renderMamanHist(mamanStatuses.slice(0,7));
@@ -433,14 +433,14 @@ db.ref('maman_status').on('value',snap=>{
 });
 db.ref('unavailabilities').on('value',snap=>{
   unavails=[];
-  if(snap.exists())snap.forEach(u=>unavails.push({...u.val(),_k:u.key}));
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))unavails.push({...v[k],_k:k});}
   refreshView();
 });
 // Écouter la liste de courses de Maman en temps réel
 let mamanCourses=[];
 db.ref('maman_courses').on('value',snap=>{
   mamanCourses=[];
-  if(snap.exists())snap.forEach(c=>mamanCourses.push({...c.val(),_k:c.key}));
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))mamanCourses.push({...v[k],_k:k});}
   // Mettre à jour l'affichage si l'onglet Maman est visible
   const div=document.getElementById('mamanCoursesList');
   if(div)renderMamanCoursesList(div);
@@ -810,9 +810,9 @@ function mkWheel(id,type,initV){
   const isMin=type==='m'||type==='rm';
   const count=isMin?12:24;
   const IH=40;
-  let html='<div style="height:50px;"></div>';
+  let html='<div style="height:26px;"></div>';
   for(let i=0;i<count;i++){const v=isMin?i*5:i;html+='<div class="wi">'+String(v).padStart(2,'0')+'</div>';}
-  html+='<div style="height:50px;"></div>';
+  html+='<div style="height:26px;"></div>';
   el.innerHTML=html;
   wDrag(el,type,IH,count,isMin?Math.round(initV/5):initV);
 }
@@ -824,7 +824,7 @@ function wDrag(wheel,type,IH,count,initIdx){
   function setO(o,anim){
     co=clamp(o);
     wheel.style.transition=anim?'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
-    wheel.style.transform='translateY('+(50-co)+'px)';
+    wheel.style.transform='translateY('+(26-co)+'px)';
     upSel();
   }
   function upSel(){
@@ -836,7 +836,7 @@ function wDrag(wheel,type,IH,count,initIdx){
     else{rM=val;document.getElementById('rdvTime').value=String(rH).padStart(2,'0')+':'+String(rM).padStart(2,'0');}
     wheel.querySelectorAll('.wi').forEach((el,i)=>{const dist=Math.abs(i-idx);el.style.color=dist===0?'#7d4e6b':dist===1?'#c4789a':'#d0b0c0';el.style.fontSize=dist===0?'1.65rem':dist===1?'1.25rem':'1rem';});
   }
-  function fling(){let v=vel;function st(){if(Math.abs(v)<0.5){setO(snap(co),true);return;}co=clamp(co+v);wheel.style.transform='translateY('+(50-co)+'px)';upSel();v*=0.92;raf=requestAnimationFrame(st);}raf=requestAnimationFrame(st);}
+  function fling(){let v=vel;function st(){if(Math.abs(v)<0.5){setO(snap(co),true);return;}co=clamp(co+v);wheel.style.transform='translateY('+(26-co)+'px)';upSel();v*=0.92;raf=requestAnimationFrame(st);}raf=requestAnimationFrame(st);}
   wheel.addEventListener('touchstart',e=>{if(raf)cancelAnimationFrame(raf);drag=true;vel=0;s0=e.touches[0].clientY;o0=co;ly=s0;lt=Date.now();wheel.style.transition='none';},{passive:true});
   wheel.addEventListener('touchmove',e=>{if(!drag)return;const y=e.touches[0].clientY;const n=Date.now();vel=(ly-y)/(n-lt+1)*16;ly=y;lt=n;setO(o0+(s0-y));},{passive:true});
   wheel.addEventListener('touchend',()=>{drag=false;fling();});
@@ -850,7 +850,7 @@ function wDrag(wheel,type,IH,count,initIdx){
 // Init
 function initForm(){
   const now=new Date();
-  document.getElementById('eDate').value=now.toISOString().slice(0,10);
+  document.getElementById('eDate').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   eH=now.getHours();eM=Math.round(now.getMinutes()/5)*5;if(eM>=60)eM=55;
   mkWheel('wH','h',eH);mkWheel('wM','m',eM);
   rH=now.getHours();rM=0;
