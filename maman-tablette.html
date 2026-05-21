@@ -365,19 +365,43 @@ async function loadWeather(){
 }
 loadWeather();setInterval(loadWeather,30*60*1000);
 
-// Anniversaires
-const ANNIVS=[{name:"Papa",d:22,m:12,y:1932},{name:"Maman",d:29,m:5,y:1935},{name:"Françoise",d:2,m:3,y:1957},{name:"Bernard",d:12,m:11,y:1963},{name:"Stéphanie",d:15,m:5,y:1982},{name:"Simon",d:6,m:8,y:1990},{name:"Martine",d:14,m:2,y:1958},{name:"Lise",d:1,m:7,y:1981},{name:"Anaele",d:9,m:9,y:1984},{name:"Florent",d:10,m:11,y:1989},{name:"Nicole",d:1,m:8,y:1960},{name:"Elisa",d:8,m:12,y:1992},{name:"Paul",d:31,m:7,y:1999},{name:"Pascale",d:25,m:4,y:1964},{name:"Fefe",d:17,m:10,y:1964},{name:"Clément",d:14,m:5,y:1992},{name:"Bastien",d:21,m:4,y:1996},{name:"Isabelle",d:20,m:9,y:1969},{name:"Xavier",d:30,m:12,y:1988},{name:"Rémi",d:3,m:12,y:1992},{name:"Yves",d:6,m:8,y:1977},{name:"Manon",d:3,m:3,y:2004},{name:"Timothé",d:7,m:3,y:2007}];
-const FETES={"Françoise":[9,3],"Martine":[30,1],"Nicole":[6,12],"Pascale":[17,4],"Isabelle":[22,2],"Yves":[19,5],"Stéphanie":[26,12],"Simon":[28,10],"Lise":[4,9],"Florent":[4,5],"Elisa":[5,6],"Paul":[29,6],"Clément":[23,11],"Bastien":[20,1],"Xavier":[3,12],"Rémi":[15,1],"Manon":[8,8],"Timothé":[26,1],"Anaele":[1,8],"Bernard":[20,8]};
+// Contacts (même liste que Suivi Maman)
+const CONTACTS=[
+  {name:'Françoise',bd:'1957-03-02'},{name:'Martine',  bd:'1958-02-14'},
+  {name:'Nicole',   bd:'1960-08-01'},{name:'Pascale',  bd:'1964-04-25'},
+  {name:'Isabelle', bd:'1969-09-20'},{name:'Yves',     bd:'1977-08-06'},
+  {name:'Stéphanie',bd:'1982-05-15'},{name:'Simon',    bd:'1990-08-06'},
+  {name:'Lise',     bd:'1981-07-01'},{name:'Anaele',   bd:'1984-09-09'},
+  {name:'Florent',  bd:'1989-11-10'},{name:'Elisa',    bd:'1992-12-08'},
+  {name:'Paul',     bd:'1999-07-31'},{name:'Clément',  bd:'1992-05-14'},
+  {name:'Bastien',  bd:'1996-04-21'},{name:'Xavier',   bd:'1988-12-30'},
+  {name:'Rémi',     bd:'1992-12-03'},{name:'Manon',    bd:'2004-03-03'},
+  {name:'Timothé',  bd:'2007-03-07'},{name:'Léo',      bd:'2012-11-04'},
+  {name:'Nathanaël',bd:'2015-06-05'},
+];
+let mamanCustomContacts={};
+db.ref('contacts_custom').on('value',snap=>{
+  mamanCustomContacts={};
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))mamanCustomContacts[k]=v[k];}
+  showAnnivs();
+});
+const FETES={"Françoise":[9,3],"Martine":[30,1],"Nicole":[6,12],"Pascale":[17,4],"Isabelle":[22,2],"Yves":[19,5],"Stéphanie":[26,12],"Simon":[28,10],"Lise":[4,9],"Florent":[4,5],"Elisa":[5,6],"Paul":[29,6],"Clément":[23,11],"Bastien":[20,1],"Xavier":[3,12],"Rémi":[15,1],"Manon":[8,8],"Timothé":[26,1],"Anaele":[1,8]};
 function showAnnivs(){
   const now=new Date(),d=now.getDate(),m=now.getMonth()+1,y=now.getFullYear();
+  const tom=new Date(now);tom.setDate(d+1);const dt=tom.getDate(),mt=tom.getMonth()+1,yt=tom.getFullYear();
+  const allC=[...CONTACTS,...Object.values(mamanCustomContacts).map(c=>({name:c.name,bd:c.birthday||c.bd||null}))];
   const parts=[];
-  // Fêtes du jour
   Object.entries(FETES).forEach(([n,[fd,fm]])=>{if(fd===d&&fm===m)parts.push('<span class="ta-fete">🌸 Bonne fête '+n+' !</span>');});
-  // Anniversaires du jour
-  ANNIVS.forEach(a=>{if(a.d===d&&a.m===m)parts.push('<span class="ta-anniv">🎂 Anniversaire de '+a.name+' — '+(y-a.y)+' ans !</span>');});
-  // Anniversaires demain
-  const tom=new Date(now);tom.setDate(d+1);const dt=tom.getDate(),mt=tom.getMonth()+1;
-  ANNIVS.forEach(a=>{if(a.d===dt&&a.m===mt)parts.push('<span class="ta-demain">🎁 Demain : anniversaire de '+a.name+' ('+(y-a.y+1)+' ans)</span>');});
+  allC.forEach(c=>{
+    if(!c.bd)return;
+    const[cy,cm,cd]=c.bd.split('-').map(Number);
+    if(cd===d&&cm===m)parts.push('<span class="ta-anniv">🎂 Anniversaire de '+c.name+' — '+(y-cy)+' ans !</span>');
+  });
+  allC.forEach(c=>{
+    if(!c.bd)return;
+    const[cy,cm,cd]=c.bd.split('-').map(Number);
+    if(cd===dt&&cm===mt)parts.push('<span class="ta-demain">🎁 Demain : anniversaire de '+c.name+' ('+(yt-cy)+' ans)</span>');
+  });
   document.getElementById('tAnniv').innerHTML=parts.join('');
 }
 showAnnivs();
