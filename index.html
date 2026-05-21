@@ -786,6 +786,7 @@ async function delCourseGroup(btn){
 // Calendar
 function getBdaysForMonth(y,m){
   const mm=String(m+1).padStart(2,'0');
+  if(typeof CONTACTS==='undefined')return[];
   const all=[...CONTACTS,...Object.values(customContacts)];
   const res=[];
   for(const c of all){
