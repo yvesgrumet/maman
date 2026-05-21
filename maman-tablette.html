@@ -20,7 +20,11 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .top{position:sticky;top:0;z-index:200;width:100%;background:linear-gradient(135deg,#7d4e6b 0%,#c47898 60%,#e0a0bf 100%);padding:10px 14px 8px;text-align:center;box-shadow:0 4px 20px rgba(125,78,107,0.4);}
 .t-date{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff8ee;}
 .t-time{font-size:3rem;font-weight:700;color:#fff;letter-spacing:2px;line-height:1.1;}
-.t-anniv span{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.22);border-radius:10px;padding:2px 10px;margin:2px;font-size:0.74rem;color:#fff8ee;font-weight:700;}
+.t-anniv{display:flex;flex-direction:column;gap:4px;margin:5px 0 2px;}
+.ta-fete,.ta-anniv,.ta-demain{display:inline-flex;align-items:center;border-radius:10px;padding:4px 12px;font-size:0.82rem;font-weight:700;}
+.ta-fete{background:rgba(255,220,100,0.28);color:#fff8cc;}
+.ta-anniv{background:rgba(255,100,150,0.28);color:#ffe0ea;}
+.ta-demain{background:rgba(255,255,255,0.15);color:rgba(255,248,238,0.85);font-size:0.76rem;}
 .t-weather{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.2);border-radius:12px;padding:3px 12px;color:#fff8ee;font-size:0.82rem;font-weight:700;margin-top:4px;}
 .t-rdv{display:none;background:rgba(255,240,150,0.25);border:1.5px solid rgba(255,220,80,0.5);border-radius:10px;padding:5px 12px;margin-top:6px;animation:blink 2s infinite;}
 .t-rdv.show{display:inline-flex;align-items:center;gap:7px;}
@@ -114,8 +118,8 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 <!-- BARRE FIXE -->
 <div class="top" id="topBar">
   <div class="t-date" id="tDate">...</div>
-  <div class="t-time" id="tTime">00:00</div>
   <div class="t-anniv" id="tAnniv"></div>
+  <div class="t-time" id="tTime">00:00</div>
   <div class="t-weather"><span id="twIco">🌡️</span><span id="twTxt">Météo...</span></div>
   <div class="t-rdv" id="tRdv"><span>📅</span><span id="tRdvTxt"></span></div>
   <div class="mood-row">
@@ -366,12 +370,15 @@ const ANNIVS=[{name:"Papa",d:22,m:12,y:1932},{name:"Maman",d:29,m:5,y:1935},{nam
 const FETES={"Françoise":[9,3],"Martine":[30,1],"Nicole":[6,12],"Pascale":[17,4],"Isabelle":[22,2],"Yves":[19,5],"Stéphanie":[26,12],"Simon":[28,10],"Lise":[4,9],"Florent":[4,5],"Elisa":[5,6],"Paul":[29,6],"Clément":[23,11],"Bastien":[20,1],"Xavier":[3,12],"Rémi":[15,1],"Manon":[8,8],"Timothé":[26,1],"Anaele":[1,8],"Bernard":[20,8]};
 function showAnnivs(){
   const now=new Date(),d=now.getDate(),m=now.getMonth()+1,y=now.getFullYear();
-  const msgs=[];
-  ANNIVS.forEach(a=>{if(a.d===d&&a.m===m)msgs.push('🎂 Anniversaire de '+a.name+' — '+(y-a.y)+' ans !');});
-  Object.entries(FETES).forEach(([n,[fd,fm]])=>{if(fd===d&&fm===m)msgs.push('🌸 Bonne fête '+n+' !');});
+  const parts=[];
+  // Fêtes du jour
+  Object.entries(FETES).forEach(([n,[fd,fm]])=>{if(fd===d&&fm===m)parts.push('<span class="ta-fete">🌸 Bonne fête '+n+' !</span>');});
+  // Anniversaires du jour
+  ANNIVS.forEach(a=>{if(a.d===d&&a.m===m)parts.push('<span class="ta-anniv">🎂 Anniversaire de '+a.name+' — '+(y-a.y)+' ans !</span>');});
+  // Anniversaires demain
   const tom=new Date(now);tom.setDate(d+1);const dt=tom.getDate(),mt=tom.getMonth()+1;
-  ANNIVS.forEach(a=>{if(a.d===dt&&a.m===mt)msgs.push('🎁 Demain : anniversaire de '+a.name+' ('+(y-a.y+1)+' ans)');});
-  document.getElementById('tAnniv').innerHTML=msgs.map(msg=>'<span>'+msg+'</span>').join('');
+  ANNIVS.forEach(a=>{if(a.d===dt&&a.m===mt)parts.push('<span class="ta-demain">🎁 Demain : anniversaire de '+a.name+' ('+(y-a.y+1)+' ans)</span>');});
+  document.getElementById('tAnniv').innerHTML=parts.join('');
 }
 showAnnivs();
 
