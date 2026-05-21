@@ -33,7 +33,7 @@ body{font-family:'Lato',sans-serif;background:#fdf6f9;color:#3d2040;min-height:1
 .card{background:#fff;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(180,120,160,0.12);border:1px solid rgba(196,120,154,0.1);}
 .ct{font-family:'Playfair Display',serif;font-size:0.97rem;color:#7d4e6b;margin-bottom:11px;display:flex;align-items:center;gap:6px;}
 .lbl{display:block;font-size:0.72rem;font-weight:700;color:#8a6080;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
-input[type=text],input[type=date],textarea{width:100%;padding:8px 11px;border:1.5px solid #edd9e8;border-radius:9px;font-family:'Lato',sans-serif;font-size:0.86rem;background:#fdf6f9;color:#3d2040;outline:none;transition:border-color 0.2s;}
+input[type=text],input[type=date],input[type=tel],textarea{width:100%;padding:8px 11px;border:1.5px solid #edd9e8;border-radius:9px;font-family:'Lato',sans-serif;font-size:0.86rem;background:#fdf6f9;color:#3d2040;outline:none;transition:border-color 0.2s;}
 input:focus,textarea:focus{border-color:#c4789a;background:#fff;}
 textarea{resize:vertical;min-height:70px;}
 .chips{display:flex;gap:5px;flex-wrap:wrap;}
@@ -397,7 +397,7 @@ textarea{resize:vertical;min-height:70px;}
     <div class="ct" style="font-size:1rem;margin-bottom:10px;">➕ Nouveau contact</div>
     <input type="text" id="ncName" class="ri" placeholder="Prénom et nom *" style="margin-bottom:7px;">
     <input type="tel" id="ncPhone" class="ri" placeholder="📞 Téléphone (optionnel)" style="margin-bottom:7px;">
-    <input type="date" id="ncBd" class="ri" placeholder="Date de naissance" style="margin-bottom:12px;">
+    <input type="text" id="ncBd" class="ri" placeholder="🎂 Date de naissance ex: 06/08/1977" style="margin-bottom:12px;">
     <div style="display:flex;gap:8px;">
       <button onclick="saveNewContact()" style="flex:1;background:linear-gradient(135deg,#89b5a0,#5a9a80);color:#fff;border:none;border-radius:12px;padding:11px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;">✅ Enregistrer</button>
       <button onclick="document.getElementById('addContactCard').style.display='none'" style="background:#faedf3;color:#7d4e6b;border:1.5px solid #edd9e8;border-radius:12px;padding:11px 16px;cursor:pointer;font-size:0.9rem;font-family:'Lato',sans-serif;">Annuler</button>
@@ -1104,8 +1104,14 @@ function showAddContact(){
 async function saveNewContact(){
   const name=document.getElementById('ncName').value.trim();
   const phone=document.getElementById('ncPhone').value.trim();
-  const bd=document.getElementById('ncBd').value;
+  const bdRaw=document.getElementById('ncBd').value.trim();
   if(!name){toast('⚠️ Indique un prénom !');return;}
+  let bd=null;
+  if(bdRaw){
+    const p=bdRaw.split('/');
+    if(p.length===3&&p[2].length===4){bd=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}
+    else{toast('⚠️ Format date invalide, ex : 06/08/1977');return;}
+  }
   try{
     await db.ref('contacts_custom').push({name,phone:phone||null,birthday:bd||null,col:colFor(name)});
     document.getElementById('ncName').value='';
