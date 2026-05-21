@@ -86,12 +86,7 @@ textarea{resize:vertical;min-height:70px;}
 .dt{width:5px;height:5px;border-radius:50%;}
 .dj{background:#89b5a0}.dl{background:#9b7ec8}.df{background:#90afd0}
 .ds{background:#a0a0c0}.da{background:#d08060}.dm{background:#c4c478}
-.drdv{background:#f0a030}.dun{background:#c0506a}.dbd{background:#e040fb}
-.cd.hb{box-shadow:inset 0 0 0 2px #e040fb;}
-.bday-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #faedf3;}
-.bday-row:last-child{border-bottom:none;}
-.bday-age{font-size:0.72rem;color:#b07898;margin-top:1px;}
-.bday-today{background:#fdf0ff;border-radius:9px;padding:4px 8px;}
+.drdv{background:#f0a030}.dun{background:#c0506a}
 .leg{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
 .li{display:flex;align-items:center;gap:3px;font-size:0.71rem;color:#8a6080;}
 .ld{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
@@ -364,10 +359,8 @@ textarea{resize:vertical;min-height:70px;}
       <div class="li"><div class="ld" style="background:#d4edda"></div> Visite</div>
       <div class="li"><div class="ld drdv"></div> RDV</div>
       <div class="li"><div class="ld dun"></div> Indispo</div>
-      <div class="li"><div class="ld dbd"></div> Anniversaire</div>
     </div>
   </div>
-  <div id="bdayList"></div>
   <div id="dayDetail"></div>
 </div>
 
@@ -784,30 +777,10 @@ async function delCourseGroup(btn){
 }
 
 // Calendar
-function getBdaysForMonth(y,m){
-  const mm=String(m+1).padStart(2,'0');
-  if(typeof CONTACTS==='undefined')return[];
-  const all=[...CONTACTS,...Object.values(customContacts)];
-  const res=[];
-  for(const c of all){
-    if(!c.bd)continue;
-    const parts=c.bd.split('-');
-    if(parts[1]===mm){
-      const day=parseInt(parts[2],10);
-      const age=y-parseInt(parts[0],10);
-      res.push({name:c.name,ini:c.ini||iniFor(c.name),col:c.col||colFor(c.name),day,age,bd:c.bd});
-    }
-  }
-  res.sort((a,b)=>a.day-b.day);
-  return res;
-}
 function renderCal(){
   const months=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   document.getElementById('calTitle').textContent=months[calM]+' '+calY;
   const grid=document.getElementById('calGrid');
-  const bdays=getBdaysForMonth(calY,calM);
-  const bdayByDay={};
-  bdays.forEach(b=>{if(!bdayByDay[b.day])bdayByDay[b.day]=[];bdayByDay[b.day].push(b);});
   let html=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d=>'<div class="cdh">'+d+'</div>').join('');
   const first=new Date(calY,calM,1);
   let sd=first.getDay();sd=sd===0?6:sd-1;
@@ -819,35 +792,17 @@ function renderCal(){
     const de=entries.filter(e=>e.date===ds);
     const dr=rdvs.filter(r=>r.date===ds);
     const du=unavails.filter(u=>u.from<=ds&&u.to>=ds);
-    const bdArr=bdayByDay[d]||[];
     let cls='cd';
     if(ds===ts)cls+=' tod';
     if(de.length)cls+=' hv';
     if(dr.length)cls+=' hr';
-    if(bdArr.length)cls+=' hb';
     const seen=new Set();let dots='';
     de.forEach(e=>(e.emotions||[]).forEach(em=>{const dc=CDMAP[em.cat];if(dc&&!seen.has(dc)){dots+='<div class="dt '+dc+'"></div>';seen.add(dc);}}));
     if(dr.length&&!seen.has('rdv')){dots+='<div class="dt drdv"></div>';seen.add('rdv');}
     if(du.length&&!seen.has('un')){dots+='<div class="dt dun"></div>';}
-    if(bdArr.length){dots+='<div class="dt dbd"></div>';}
     html+='<div class="'+cls+'" onclick="showDay(\''+ds+'\')"><span>'+d+'</span>'+(dots?'<div class="dts">'+dots+'</div>':'')+'</div>';
   }
   grid.innerHTML=html;
-  // Anniversaires du mois
-  const bdiv=document.getElementById('bdayList');
-  if(bdays.length){
-    const todayMM=String(today.getMonth()+1).padStart(2,'0');
-    const todayDD=String(today.getDate()).padStart(2,'0');
-    let bhtml='<div class="card"><div class="ct">🎂 Anniversaires — '+months[calM]+'</div>';
-    bdays.forEach(b=>{
-      const isToday=(String(calM+1).padStart(2,'0')===todayMM && String(b.day).padStart(2,'0')===todayDD && calY===today.getFullYear());
-      bhtml+='<div class="bday-row'+(isToday?' bday-today':'')+'"><div class="cav2" style="background:'+b.col+';width:38px;height:38px;font-size:0.8rem;">'+b.ini+'</div><div><div style="font-weight:700;color:#3d2040;font-size:0.9rem;">'+(isToday?'🎉 ':'')+b.name+'</div><div class="bday-age">'+String(b.day).padStart(2,'0')+' '+months[calM]+' · '+b.age+' ans</div></div></div>';
-    });
-    bhtml+='</div>';
-    bdiv.innerHTML=bhtml;
-  } else {
-    bdiv.innerHTML='';
-  }
   if(lastDay)showDay(lastDay);else document.getElementById('dayDetail').innerHTML='';
 }
 function chgM(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}lastDay=null;renderCal();}
@@ -865,10 +820,7 @@ function showDay(ds){
         if(val[k].date===ds)de.push({...val[k],_k:k});
       }
     }
-    const dayNum=parseInt(ds.split('-')[2],10);
-    const bdArrDay=(getBdaysForMonth(calY,calM)||[]).filter(b=>b.day===dayNum);
-    if(!de.length&&!dr.length&&!du.length&&!bdArrDay.length){div.innerHTML='<div class="card"><p style="color:#8a6080;text-align:center;padding:8px">Aucune entrée ce jour-là</p></div>';return;}
-    if(bdArrDay.length){html+='<div class="card">'+bdArrDay.map(b=>'<div class="bday-row"><div class="cav2" style="background:'+b.col+';width:38px;height:38px;font-size:0.8rem;">'+b.ini+'</div><div><div style="font-weight:700;color:#3d2040;">🎂 '+b.name+'</div><div class="bday-age">'+b.age+' ans aujourd\'hui 🎉</div></div></div>').join('')+'</div>';}
+    if(!de.length&&!dr.length&&!du.length){div.innerHTML='<div class="card"><p style="color:#8a6080;text-align:center;padding:8px">Aucune entrée ce jour-là</p></div>';return;}
     let html='';
     du.forEach(u=>{html+='<div class="uc"><div style="font-weight:700;color:#c0506a;">🚫 '+u.who+' — Pas disponible</div><div style="font-size:0.74rem;color:#9a3050;margin-top:2px;">Du '+fd(u.from)+' au '+fd(u.to)+(u.reason?' · '+u.reason:'')+'</div><button class="dbtn" onclick="delUnavail(\''+u._k+'\')">🗑️ Supprimer</button></div>';});
     dr.forEach(r=>{html+='<div class="rc"><div style="font-weight:700;color:#7a5000;">📅 '+r.title+'</div><div style="font-size:0.74rem;color:#b09000;">'+fd(r.date)+(r.time?' à '+r.time:'')+'</div><button class="dbtn" onclick="delRdv(\''+r._k+'\')">🗑️ Supprimer</button></div>';});
