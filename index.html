@@ -78,9 +78,9 @@ textarea{resize:vertical;min-height:70px;}
 .cdh{text-align:center;font-size:0.67rem;font-weight:700;color:#8a6080;padding:3px 0;text-transform:uppercase;}
 .cd{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
 .cd:not(.emp):hover{background:#faedf3;}
-.cd.tod{background:#e8d0f0;font-weight:700;color:#7d4e6b;} .cd.hv{background:#d4edda !important;} .cd.hv.tod{background:#b8dfc8 !important;}
-.cd.hv{background:#d4edda;}
-.cd.hv.tod{background:#b8dfc8;}
+.cd.tod{background:#e8d0f0;font-weight:700;color:#7d4e6b;}
+.cd.hv{background:#89b5a0 !important;color:#fff !important;font-weight:700;}
+.cd.hv.tod{background:#3a8a6a !important;color:#fff !important;font-weight:700;}
 .cd.hr{background:#fff8e0;}
 .dts{display:flex;gap:2px;margin-top:2px;}
 .dt{width:5px;height:5px;border-radius:50%;}
@@ -533,7 +533,7 @@ function goTab(name,btn){
     const div=document.getElementById('mamanCoursesList');
     if(div)renderMamanCoursesList(div);
   }
-  if(name==='cal')renderCal();
+  if(name==='cal'){renderCal();if(lastDay)setTimeout(()=>{const dd=document.getElementById('dayDetail');if(dd&&dd.children.length)dd.scrollIntoView({behavior:'smooth',block:'start'});},150);}
   if(name==='journal')renderJournal();
   if(name==='stats')renderStats();
 }
