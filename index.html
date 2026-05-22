@@ -1018,6 +1018,8 @@ renderCal();
 
 // ── Répertoire contacts ─────────────────────────────────
 const CONTACTS=[
+  {id:'papa',     name:'Papa',     ini:'Pap',col:'#607d8b',rel:'parent',bd:'1932-12-22',nuage:'2018-02-18'},
+  {id:'maman-grd',name:'Maman',    ini:'Mam',col:'#e91e63',rel:'parent',bd:'1935-05-29'},
   {id:'francoise',name:'Françoise',ini:'Fr',col:'#e040fb',rel:'enfant',bd:'1957-03-02'},
   {id:'martine',  name:'Martine',  ini:'Ma',col:'#f06292',rel:'enfant',bd:'1958-02-14'},
   {id:'nicole',   name:'Nicole',   ini:'Ni',col:'#ba68c8',rel:'enfant',bd:'1960-08-01'},
@@ -1044,7 +1046,7 @@ const CONTACTS=[
   {id:'livy',     name:'Livy',     ini:'Lv',col:'#80deea',rel:'arriere',bd:'2022-07-06'},
   {id:'benoit',   name:'Benoît',   ini:'Bé',col:'#a5d6a7',rel:'arriere',bd:'1990-12-31',nuage:'1991-01-11'},
 ];
-const RELS={enfant:'👨‍👩‍👧 Enfants',petit:'👶 Petits-enfants',arriere:'🌟 Arrière-petits-enfants',autre:'➕ Autres contacts'};
+const RELS={parent:'❤️ Parents',enfant:'👨‍👩‍👧 Enfants',petit:'👶 Petits-enfants',arriere:'🌟 Arrière-petits-enfants',autre:'➕ Autres contacts'};
 const PALCOLS=['#e040fb','#f06292','#ba68c8','#ff7043','#26c6da','#0084ff','#ec407a','#42a5f5','#ab47bc','#26a69a','#66bb6a','#ffa726','#8d6e63','#29b6f6'];
 let contactFilter='';
 
@@ -1085,7 +1087,7 @@ function renderContacts(){
   else if(contactFilter){
     filtered.forEach(c=>{html+=mkContactCard(c);});
   }else{
-    const grp={enfant:[],petit:[],arriere:[],autre:[]};
+    const grp={parent:[],enfant:[],petit:[],arriere:[],autre:[]};
     filtered.forEach(c=>grp[c.rel].push(c));
     for(const[rel,items]of Object.entries(grp)){
       if(!items.length)continue;
