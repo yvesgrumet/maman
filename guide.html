@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide — Applications Maman 💛</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Lato',sans-serif;background:#fdf6f9;color:#3d2040;line-height:1.6;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#7d4e6b 0%,#c47898 60%,#e0a0bf 100%);padding:40px 20px 36px;text-align:center;}
+.hero h1{font-family:'Playfair Display',serif;font-size:2rem;color:#fff;margin-bottom:8px;}
+.hero p{color:rgba(255,255,255,0.9);font-size:1rem;max-width:480px;margin:0 auto;}
+
+/* NAV */
+.nav{display:flex;gap:0;border-bottom:2px solid #edd9e8;background:#fff;position:sticky;top:0;z-index:100;}
+.nav a{flex:1;text-align:center;padding:14px 6px;font-size:0.82rem;font-weight:700;color:#b07898;text-decoration:none;border-bottom:3px solid transparent;}
+.nav a.active,.nav a:hover{color:#7d4e6b;border-bottom-color:#c4789a;}
+
+/* SECTIONS */
+section{display:none;max-width:600px;margin:0 auto;padding:24px 18px 60px;}
+section.show{display:block;}
+
+/* CARD */
+.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 2px 12px rgba(180,120,160,0.12);border:1.5px solid #edd9e8;}
+.card-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:#7d4e6b;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+
+/* BADGE APP */
+.app-badge{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:8px 16px;font-weight:700;font-size:0.88rem;margin-bottom:16px;}
+.badge-enfants{background:#f0f7ff;border:2px solid #90caf9;color:#1565c0;}
+.badge-maman{background:#fdf0f6;border:2px solid #e8a0c0;color:#8d1e5e;}
+
+/* STEPS */
+.step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+.step-num{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;font-weight:700;font-size:0.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-txt{flex:1;}
+.step-txt strong{display:block;color:#7d4e6b;font-size:0.95rem;margin-bottom:2px;}
+.step-txt span{font-size:0.88rem;color:#6a4a60;}
+
+/* FEATURE LIST */
+.feat{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f5eaf3;}
+.feat:last-child{border-bottom:none;}
+.feat-ico{font-size:1.5rem;flex-shrink:0;width:36px;text-align:center;}
+.feat-txt strong{display:block;font-size:0.9rem;color:#3d2040;}
+.feat-txt span{font-size:0.82rem;color:#8a6080;}
+
+/* PHONE MOCKUP */
+.mockup{background:#2a1a30;border-radius:20px;padding:10px;margin:16px auto;max-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.25);}
+.mockup-screen{background:#fdf6f9;border-radius:12px;padding:14px;font-size:0.75rem;}
+.mockup-bar{background:linear-gradient(135deg,#7d4e6b,#c47898);border-radius:10px 10px 0 0;padding:8px 10px;color:#fff;font-size:0.7rem;font-weight:700;}
+.mockup-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #f0e4f0;font-size:0.72rem;color:#5a3050;}
+.mockup-row:last-child{border-bottom:none;}
+.mockup-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* INSTALL STEPS */
+.os-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.os-tab{flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:2px solid #edd9e8;font-size:0.82rem;font-weight:700;cursor:pointer;color:#b07898;background:#fff;}
+.os-tab.on{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border-color:transparent;}
+
+.os-panel{display:none;}
+.os-panel.show{display:block;}
+
+/* LINK BOX */
+.link-box{background:#f0f7ff;border:2px solid #90caf9;border-radius:12px;padding:14px 16px;text-align:center;margin:14px 0;}
+.link-box p{font-size:0.78rem;color:#5a7a90;margin-bottom:6px;}
+.link-url{font-size:0.88rem;font-weight:700;color:#1565c0;word-break:break-all;}
+
+/* TIP */
+.tip{background:#fffbe8;border-left:3px solid #e8c870;border-radius:0 10px 10px 0;padding:10px 14px;margin:12px 0;font-size:0.84rem;color:#7a6000;}
+
+/* BOTTOM NAV BUTTONS */
+.nav-btns{display:flex;gap:10px;margin-top:20px;}
+.nav-btn{flex:1;text-align:center;background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:12px;padding:14px 10px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>💛 Guide des Applications</h1>
+  <p>Tout ce qu'il faut savoir pour utiliser les deux applications de la famille</p>
+</div>
+
+<nav class="nav">
+  <a href="#" class="active" onclick="showTab('enfants',this);return false;">👨‍👩‍👧 Enfants</a>
+  <a href="#" onclick="showTab('maman',this);return false;">👵 Maman</a>
+  <a href="#" onclick="showTab('install',this);return false;">📲 Installer</a>
+</nav>
+
+<!-- ===== SECTION ENFANTS ===== -->
+<section id="sec-enfants" class="show">
+
+  <div style="margin-top:4px;"></div>
+  <span class="app-badge badge-enfants">📱 Application pour les enfants</span>
+
+  <div class="card">
+    <div class="card-title">🌸 Suivi Maman — c'est quoi ?</div>
+    <p style="font-size:0.9rem;color:#6a4a60;margin-bottom:12px;">
+      Un carnet partagé entre vous 6 pour <strong>suivre le quotidien de Maman</strong>. Vous voyez en temps réel comment elle va, ses rendez-vous, sa liste de courses, et vous pouvez lui laisser des messages.
+    </p>
+    <div class="mockup">
+      <div class="mockup-screen">
+        <div class="mockup-bar">😊 Je vais bien · 21 mai</div>
+        <div class="mockup-row"><div class="mockup-dot" style="background:#89b5a0"></div>Rendez-vous : Coiffeur demain</div>
+        <div class="mockup-row"><div class="mockup-dot" style="background:#e8c870"></div>Courses : Biscottes, Fromage…</div>
+        <div class="mockup-row"><div class="mockup-dot" style="background:#c4789a"></div>"Bonne journée à tous 💛"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✨ Ce que vous pouvez faire</div>
+    <div class="feat"><div class="feat-ico">😊</div><div class="feat-txt"><strong>Voir son humeur du jour</strong><span>Maman envoie chaque matin comment elle va (bien, moyen, mal) avec un message</span></div></div>
+    <div class="feat"><div class="feat-ico">📅</div><div class="feat-txt"><strong>Consulter ses rendez-vous</strong><span>Soins, coiffeur, médecin… planifiés à l'avance</span></div></div>
+    <div class="feat"><div class="feat-ico">🛒</div><div class="feat-txt"><strong>Gérer la liste de courses</strong><span>Ajoutez des articles, cochez ce que vous avez acheté</span></div></div>
+    <div class="feat"><div class="feat-ico">💌</div><div class="feat-txt"><strong>Lui envoyer un message</strong><span>Elle le voit directement sur sa tablette</span></div></div>
+    <div class="feat"><div class="feat-ico">📞</div><div class="feat-txt"><strong>Appeler ou envoyer un SMS</strong><span>Depuis la fiche contact de Maman</span></div></div>
+    <div class="feat"><div class="feat-ico">📆</div><div class="feat-txt"><strong>Calendrier des anniversaires</strong><span>Tous les anniversaires du mois en un coup d'œil</span></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔗 Lien de l'application</div>
+    <div class="link-box">
+      <p>Ouvrez ce lien dans votre navigateur (Chrome ou Safari)</p>
+      <div class="link-url">yvesgrumet.github.io/maman/</div>
+    </div>
+    <div class="tip">💡 Vous pouvez aussi l'installer sur votre écran d'accueil — voir l'onglet <strong>Installer</strong></div>
+  </div>
+
+  <div class="nav-btns">
+    <a href="#" class="nav-btn" onclick="showTab('install',document.querySelectorAll('.nav a')[2]);return false;">📲 Comment installer →</a>
+  </div>
+
+</section>
+
+<!-- ===== SECTION MAMAN ===== -->
+<section id="sec-maman">
+
+  <div style="margin-top:4px;"></div>
+  <span class="app-badge badge-maman">📱 Application pour Maman (tablette)</span>
+
+  <div class="card">
+    <div class="card-title">💛 Bonjour Maman — c'est quoi ?</div>
+    <p style="font-size:0.9rem;color:#6a4a60;margin-bottom:12px;">
+      L'application de Maman, installée sur <strong>sa tablette</strong>. Elle lui permet d'envoyer ses nouvelles chaque matin à ses enfants en quelques touches.
+    </p>
+    <div class="mockup">
+      <div class="mockup-screen">
+        <div class="mockup-bar">Jeudi 22 mai · 🌸 Fête de Rita · 14:30</div>
+        <div class="mockup-row"><div class="mockup-dot" style="background:#e040fb"></div>😊 Je vais bien</div>
+        <div class="mockup-row"><div class="mockup-dot" style="background:#89b5a0"></div>📝 Mon message du jour…</div>
+        <div class="mockup-row"><div class="mockup-dot" style="background:#c4789a"></div>💛 Envoyer à mes enfants</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✨ Ce que Maman peut faire</div>
+    <div class="feat"><div class="feat-ico">😊</div><div class="feat-txt"><strong>Dire comment elle va</strong><span>Un bouton : Je vais bien / Je vais moyen / Je vais mal</span></div></div>
+    <div class="feat"><div class="feat-ico">💬</div><div class="feat-txt"><strong>Écrire un message</strong><span>Un petit mot pour ses enfants, envoyé en un clic</span></div></div>
+    <div class="feat"><div class="feat-ico">🛒</div><div class="feat-txt"><strong>Gérer sa liste de courses</strong><span>Elle ajoute ce dont elle a besoin, les enfants la voient</span></div></div>
+    <div class="feat"><div class="feat-ico">📅</div><div class="feat-txt"><strong>Ajouter ses rendez-vous</strong><span>Coiffeur, soins… visible dans le planning familial</span></div></div>
+    <div class="feat"><div class="feat-ico">👨‍👩‍👧</div><div class="feat-txt"><strong>Écrire à ses enfants</strong><span>Raccourcis Messenger pour contacter chaque enfant</span></div></div>
+    <div class="feat"><div class="feat-ico">🌸</div><div class="feat-txt"><strong>Fêtes et anniversaires</strong><span>Le saint du jour et les anniversaires s'affichent automatiquement</span></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📐 Format tablette</div>
+    <p style="font-size:0.88rem;color:#6a4a60;">
+      L'application s'affiche en <strong>deux colonnes</strong> sur la tablette : à gauche les informations et raccourcis, à droite les courses et rendez-vous. Maman n'a pas besoin de chercher — tout est visible d'un coup d'œil.
+    </p>
+    <div class="tip">🔒 Cette application est <strong>réservée à Maman</strong>. Les enfants utilisent l'autre application (Suivi Maman).</div>
+  </div>
+
+</section>
+
+<!-- ===== SECTION INSTALLER ===== -->
+<section id="sec-install">
+
+  <div style="margin-top:4px;"></div>
+  <div class="card">
+    <div class="card-title">📲 Installer l'appli sur son téléphone</div>
+    <p style="font-size:0.88rem;color:#6a4a60;margin-bottom:16px;">
+      L'application fonctionne comme une vraie appli (elle s'ouvre plein écran, sans barre de navigateur). Voici comment l'ajouter sur l'écran d'accueil :
+    </p>
+
+    <div class="os-tabs">
+      <div class="os-tab on" onclick="showOs('android',this)">🤖 Android</div>
+      <div class="os-tab" onclick="showOs('ios',this)">🍎 iPhone</div>
+    </div>
+
+    <!-- ANDROID -->
+    <div class="os-panel show" id="os-android">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-txt">
+          <strong>Ouvrez le lien dans Chrome</strong>
+          <span>Appuyez sur le lien dans Messenger → il s'ouvre dans Chrome</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-txt">
+          <strong>Appuyez sur les 3 points ⋮</strong>
+          <span>En haut à droite de Chrome</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-txt">
+          <strong>Choisissez "Ajouter à l'écran d'accueil"</strong>
+          <span>Ou "Installer l'application" si Chrome le propose directement</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-txt">
+          <strong>Confirmez en appuyant "Ajouter"</strong>
+          <span>L'icône apparaît sur votre écran d'accueil 🎉</span>
+        </div>
+      </div>
+      <div class="tip">💡 Si Messenger ouvre dans son propre navigateur intégré, appuyez sur les 3 points et choisissez <strong>"Ouvrir dans Chrome"</strong> d'abord.</div>
+    </div>
+
+    <!-- iOS -->
+    <div class="os-panel" id="os-ios">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-txt">
+          <strong>Ouvrez le lien dans Safari</strong>
+          <span>Appuyez sur le lien → si Messenger l'ouvre dans son navigateur, appuyez sur <strong>⋯</strong> puis "Ouvrir dans Safari"</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-txt">
+          <strong>Appuyez sur le bouton Partager</strong>
+          <span>Le bouton 📤 en bas au centre de Safari</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-txt">
+          <strong>Choisissez "Sur l'écran d'accueil"</strong>
+          <span>Faites défiler la liste vers le bas si vous ne le voyez pas</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-txt">
+          <strong>Appuyez "Ajouter" en haut à droite</strong>
+          <span>L'icône apparaît sur votre écran d'accueil 🎉</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔗 Le lien à ouvrir</div>
+    <div class="link-box">
+      <p>👨‍👩‍👧 Pour les enfants — Suivi Maman</p>
+      <div class="link-url">yvesgrumet.github.io/maman/</div>
+    </div>
+    <div class="tip">📌 Copiez ce lien et envoyez-le dans la conversation Messenger de la famille pour que tout le monde puisse l'installer facilement.</div>
+  </div>
+
+  <div class="card" style="border-color:#e8c870;background:#fffbe8;">
+    <div class="card-title" style="color:#7a6000;">❓ Questions fréquentes</div>
+    <div class="feat"><div class="feat-ico">🔄</div><div class="feat-txt"><strong>Est-ce que ça se met à jour automatiquement ?</strong><span>Oui — l'application est toujours à jour, il n'y a rien à faire.</span></div></div>
+    <div class="feat"><div class="feat-ico">📶</div><div class="feat-txt"><strong>Faut-il une connexion internet ?</strong><span>Oui, pour voir les mises à jour de Maman en temps réel.</span></div></div>
+    <div class="feat"><div class="feat-ico">🔔</div><div class="feat-txt"><strong>Y a-t-il des notifications ?</strong><span>Pas pour l'instant — ouvrez l'application pour voir si Maman a envoyé ses nouvelles.</span></div></div>
+    <div class="feat"><div class="feat-ico">💾</div><div class="feat-txt"><strong>Est-ce que ça prend de la place ?</strong><span>Non — c'est une application web légère, pas une vraie appli à télécharger.</span></div></div>
+  </div>
+
+</section>
+
+<script>
+function showTab(id, el){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('show'));
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('show');
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showOs(id, el){
+  document.querySelectorAll('.os-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.os-panel').forEach(p=>p.classList.remove('show'));
+  el.classList.add('on');
+  document.getElementById('os-'+id).classList.add('show');
+}
+</script>
+</body>
+</html>
