@@ -835,8 +835,8 @@ function renderBdayList(){
   let html='<div class="card"><div class="ct">🎂 Anniversaires — '+months[calM]+'</div>';
   for(const b of bdays){
     const isToday=(calM===today.getMonth()&&calY===today.getFullYear()&&b.day===today.getDate());
-    const ico=b.nuage?'🌠':(isToday?'🎉 ':'');
-    const ageTxt=b.nuage?'<span style="font-size:0.72rem;color:#9090b0;font-style:italic;">Sur un nuage 🌠</span>':b.age+' ans';
+    const ico=b.nuage?'☁️':(isToday?'🎉 ':'');
+    const ageTxt=b.nuage?'<span style="font-size:0.72rem;color:#9090b0;font-style:italic;">☁️ Sur un nuage</span>':b.age+' ans';
     const nameCol=b.nuage?'#8080a0':'#3d2040';
     html+='<div class="bday-row'+(isToday&&!b.nuage?' bday-hi':'')+'"><div class="cav2" style="background:'+b.col+';width:38px;height:38px;font-size:0.8rem;'+(b.nuage?'opacity:0.7':'')+'">'+b.ini+'</div><div><div style="font-weight:700;color:'+nameCol+';font-size:0.9rem;">'+ico+' '+b.name+'</div><div class="bday-age">'+String(b.day).padStart(2,'0')+' '+months[calM]+' · '+ageTxt+'</div></div></div>';
   }
@@ -863,8 +863,8 @@ function showDay(ds){
     if(births.length){
       cards+='<div class="card">'+births.map(c=>{
         const isNuage=!!c.nuage;
-        const ico=isNuage?'🌠':'🎂';
-        const ageTxt=isNuage?'<span style="font-size:0.72rem;color:#9090b0;font-style:italic;">Sur un nuage 🌠</span>':(yr-parseInt(c.bd.slice(0,4),10))+' ans aujourd\'hui 🎉';
+        const ico=isNuage?'☁️':'🎂';
+        const ageTxt=isNuage?'<span style="font-size:0.72rem;color:#9090b0;font-style:italic;">☁️ Sur un nuage</span>':(yr-parseInt(c.bd.slice(0,4),10))+' ans aujourd\'hui 🎉';
         const nameCol=isNuage?'#8080a0':'#3d2040';
         return'<div class="bday-row"><div class="cav2" style="background:'+(c.col||colFor(c.name))+';width:38px;height:38px;font-size:0.8rem;'+(isNuage?'opacity:0.7':'')+'">'+(c.ini||iniFor(c.name))+'</div><div><div style="font-weight:700;color:'+nameCol+';">'+ico+' '+c.name+'</div><div class="bday-age">'+ageTxt+'</div></div></div>';
       }).join('')+'</div>';
