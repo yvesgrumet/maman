@@ -145,6 +145,7 @@ textarea{resize:vertical;min-height:70px;}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 /* Répertoire contacts */
 .ccard{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #faedf3;}
+.ccard-nuage{background:linear-gradient(135deg,rgba(240,240,255,0.6),rgba(230,230,250,0.4));border-radius:10px;padding:10px 10px;border:1px dashed #c8c0d8;margin-bottom:4px;border-bottom:none;}
 .ccard:last-child{border-bottom:none;}
 .cav2{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.88rem;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
 .cinfo{flex:1;min-width:0;}
@@ -822,7 +823,7 @@ function renderBdayList(){
   for(const c of allC){
     if(!c.bd)continue;
     if(c.bd.slice(5,7)===mm){
-      bdays.push({name:c.name,ini:c.ini||iniFor(c.name),col:c.col||colFor(c.name),day:parseInt(c.bd.slice(8,10),10),age:calY-parseInt(c.bd.slice(0,4),10)});
+      bdays.push({name:c.name,ini:c.ini||iniFor(c.name),col:c.col||colFor(c.name),day:parseInt(c.bd.slice(8,10),10),age:calY-parseInt(c.bd.slice(0,4),10),nuage:c.nuage||null});
     }
   }
   bdays.sort((a,b)=>a.day-b.day);
@@ -830,7 +831,10 @@ function renderBdayList(){
   let html='<div class="card"><div class="ct">🎂 Anniversaires — '+months[calM]+'</div>';
   for(const b of bdays){
     const isToday=(calM===today.getMonth()&&calY===today.getFullYear()&&b.day===today.getDate());
-    html+='<div class="bday-row'+(isToday?' bday-hi':'')+'"><div class="cav2" style="background:'+b.col+';width:38px;height:38px;font-size:0.8rem;">'+b.ini+'</div><div><div style="font-weight:700;color:#3d2040;font-size:0.9rem;">'+(isToday?'🎉 ':'')+b.name+'</div><div class="bday-age">'+String(b.day).padStart(2,'0')+' '+months[calM]+' · '+b.age+' ans</div></div></div>';
+    const ico=b.nuage?'🕊️':(isToday?'🎉 ':'');
+    const ageTxt=b.nuage?'<span style="font-size:0.72rem;color:#9090b0;font-style:italic;">Dans un nuage ☁️</span>':b.age+' ans';
+    const nameCol=b.nuage?'#8080a0':'#3d2040';
+    html+='<div class="bday-row'+(isToday&&!b.nuage?' bday-hi':'')+'"><div class="cav2" style="background:'+b.col+';width:38px;height:38px;font-size:0.8rem;'+(b.nuage?'opacity:0.7':'')+'">'+b.ini+'</div><div><div style="font-weight:700;color:'+nameCol+';font-size:0.9rem;">'+ico+b.name+'</div><div class="bday-age">'+String(b.day).padStart(2,'0')+' '+months[calM]+' · '+ageTxt+'</div></div></div>';
   }
   html+='</div>';
   bdiv.innerHTML=html;
@@ -847,7 +851,13 @@ function showDay(ds){
     const allC=[...CONTACTS,...Object.values(customContacts).map(c=>({...c,bd:c.birthday||c.bd||null}))];
     const births=allC.filter(c=>c.bd&&c.bd.slice(5,7)===mm&&c.bd.slice(8,10)===dd);
     if(births.length){
-      bdHtml='<div class="card">'+births.map(c=>'<div class="bday-row"><div class="cav2" style="background:'+(c.col||colFor(c.name))+';width:38px;height:38px;font-size:0.8rem;">'+(c.ini||iniFor(c.name))+'</div><div><div style="font-weight:700;color:#3d2040;">🎂 '+c.name+'</div><div class="bday-age">'+(yr-parseInt(c.bd.slice(0,4),10))+' ans aujourd\'hui 🎉</div></div></div>').join('')+'</div>';
+      bdHtml='<div class="card">'+births.map(c=>{
+        const isNuage=!!c.nuage;
+        const ico=isNuage?'🕊️':'🎂';
+        const ageTxt=isNuage?'<span style="font-size:0.72rem;color:#9090b0;font-style:italic;">Dans un nuage ☁️</span>':(yr-parseInt(c.bd.slice(0,4),10))+' ans aujourd\'hui 🎉';
+        const nameCol=isNuage?'#8080a0':'#3d2040';
+        return'<div class="bday-row"><div class="cav2" style="background:'+(c.col||colFor(c.name))+';width:38px;height:38px;font-size:0.8rem;'+(isNuage?'opacity:0.7':'')+'">'+(c.ini||iniFor(c.name))+'</div><div><div style="font-weight:700;color:'+nameCol+';">'+ico+' '+c.name+'</div><div class="bday-age">'+ageTxt+'</div></div></div>';
+      }).join('')+'</div>';
     }
   }catch(e){}
   div.innerHTML=bdHtml+'<div class="card"><p style="color:#8a6080;text-align:center;padding:8px">⏳ Chargement...</p></div>';
@@ -1013,6 +1023,10 @@ const CONTACTS=[
   {id:'timothe',  name:'Timothé',  ini:'Ti',col:'#ff8f00',rel:'arriere',bd:'2007-03-07'},
   {id:'leo',      name:'Léo',      ini:'Lé',col:'#8d6e63',rel:'arriere',bd:'2012-11-04'},
   {id:'nathanael',name:'Nathanaël',ini:'Na',col:'#26a69a',rel:'arriere',bd:'2015-06-05'},
+  {id:'alba',     name:'Alba',     ini:'Al',col:'#f48fb1',rel:'arriere',bd:'2019-03-23',nuage:'2020-05-29'},
+  {id:'amelys',   name:'Amelys',   ini:'Ay',col:'#ce93d8',rel:'arriere',bd:'2022-04-24'},
+  {id:'livy',     name:'Livy',     ini:'Lv',col:'#80deea',rel:'arriere',bd:'2022-07-06'},
+  {id:'benoit',   name:'Benoît',   ini:'Bé',col:'#a5d6a7',rel:'arriere',bd:'1990-12-31',nuage:'1991-01-11'},
 ];
 const RELS={enfant:'👨‍👩‍👧 Enfants',petit:'👶 Petits-enfants',arriere:'🌟 Arrière-petits-enfants',autre:'➕ Autres contacts'};
 const PALCOLS=['#e040fb','#f06292','#ba68c8','#ff7043','#26c6da','#0084ff','#ec407a','#42a5f5','#ab47bc','#26a69a','#66bb6a','#ffa726','#8d6e63','#29b6f6'];
@@ -1067,17 +1081,26 @@ function renderContacts(){
   div.innerHTML=html;
 }
 
+function fmtDateSimple(d){
+  if(!d)return'';
+  const[y,m,day]=d.split('-').map(Number);
+  const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  return day+' '+mo[m-1]+' '+y;
+}
 function mkContactCard(c){
-  const bd=fmtBd(c.bd);
-  let h='<div class="ccard">';
-  h+='<div class="cav2" style="background:'+c.col+'">'+c.ini+'</div>';
-  h+='<div class="cinfo"><div class="cname2">'+c.name+'</div>';
-  if(bd)h+='<div class="cbd">🎂 '+bd+'</div>';
-  h+='<div class="cactions">';
-  if(c.phone){h+='<span class="cphone-disp">📞 '+c.phone+'</span> ';h+='<a class="ccall-btn" href="tel:'+c.phone+'">📞 Appeler</a> ';h+='<a class="csms-btn" href="sms:'+c.phone+'">💬 SMS</a> ';}
-  h+='<button class="cedit-btn" onclick="editContactPhone(\''+c.id+'\',\''+c.name+'\','+c.custom+')">✏️ '+(c.phone?'Modifier':'Ajouter n°')+'</button> ';
-  h+='<button class="cedit-btn" style="border-color:#e08fa0;color:#e08fa0;" onclick="deleteContact(\''+c.id+'\',\''+c.name+'\','+c.custom+')">🗑️</button>';
-  h+='</div></div></div>';
+  let h='<div class="ccard'+(c.nuage?' ccard-nuage':'')+(c.custom?'':'')+'">';
+  h+='<div class="cav2" style="background:'+c.col+';'+(c.nuage?'opacity:0.75':'')+'">'+c.ini+'</div>';
+  h+='<div class="cinfo"><div class="cname2">'+c.name+(c.nuage?' ☁️':'')+'</div>';
+  if(c.bd&&!c.nuage){const bd=fmtBd(c.bd);if(bd)h+='<div class="cbd">🎂 '+bd+'</div>';}
+  if(c.bd&&c.nuage){h+='<div class="cbd" style="color:#b07898;">🕊️ Né(e) le '+fmtDateSimple(c.bd)+'</div>';h+='<div class="cbd" style="color:#b07898;">☁️ Dans un nuage le '+fmtDateSimple(c.nuage)+'</div>';}
+  if(!c.nuage){
+    h+='<div class="cactions">';
+    if(c.phone){h+='<span class="cphone-disp">📞 '+c.phone+'</span> ';h+='<a class="ccall-btn" href="tel:'+c.phone+'">📞 Appeler</a> ';h+='<a class="csms-btn" href="sms:'+c.phone+'">💬 SMS</a> ';}
+    h+='<button class="cedit-btn" onclick="editContactPhone(\''+c.id+'\',\''+c.name+'\','+c.custom+')">✏️ '+(c.phone?'Modifier':'Ajouter n°')+'</button> ';
+    h+='<button class="cedit-btn" style="border-color:#e08fa0;color:#e08fa0;" onclick="deleteContact(\''+c.id+'\',\''+c.name+'\','+c.custom+')">🗑️</button>';
+    h+='</div>';
+  }
+  h+='</div></div>';
   return h;
 }
 
