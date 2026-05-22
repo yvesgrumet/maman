@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visite guidée — Applications Maman 💛</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Lato',sans-serif;background:#1a0e20;color:#fff;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,#7d4e6b,#c47898);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hdr-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:#fff;}
+.hdr-sub{font-size:0.72rem;color:rgba(255,255,255,0.8);}
+.chapter-pills{display:flex;gap:6px;}
+.cpill{padding:5px 12px;border-radius:20px;font-size:0.72rem;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);transition:all 0.2s;}
+.cpill.on{background:#fff;color:#7d4e6b;border-color:#fff;}
+
+/* ── STAGE ── */
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 12px 8px;position:relative;overflow:hidden;}
+
+/* ── PHONE FRAME ── */
+.phone{width:min(260px,72vw);background:#1c1028;border-radius:30px;box-shadow:0 16px 48px rgba(0,0,0,0.6),0 0 0 2px #3a2a48;position:relative;flex-shrink:0;}
+.phone-notch{width:80px;height:20px;background:#1c1028;border-radius:0 0 12px 12px;margin:0 auto;position:relative;z-index:2;}
+.phone-screen{background:#fdf6f9;border-radius:0 0 24px 24px;overflow:hidden;position:relative;}
+
+/* ── SCENE TEXT ── */
+.scene-info{text-align:center;max-width:340px;padding:14px 10px 6px;}
+.scene-num{font-size:0.68rem;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.scene-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:#fff;margin-bottom:4px;}
+.scene-desc{font-size:0.82rem;color:rgba(255,255,255,0.7);line-height:1.5;}
+
+/* ── PROGRESS ── */
+.progress-area{width:100%;padding:8px 16px 4px;flex-shrink:0;}
+.progress-bar{height:3px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#c47898,#e0a0bf);border-radius:2px;transition:width 0.1s linear;}
+
+/* ── CONTROLS ── */
+.controls{display:flex;align-items:center;justify-content:center;gap:16px;padding:6px 16px 16px;flex-shrink:0;}
+.ctrl-btn{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:50%;width:44px;height:44px;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.ctrl-btn:hover,.ctrl-btn:active{background:rgba(255,255,255,0.2);}
+.ctrl-play{width:56px;height:56px;font-size:1.4rem;background:linear-gradient(135deg,#c47898,#7d4e6b);border-color:transparent;box-shadow:0 4px 16px rgba(196,120,152,0.4);}
+.ctrl-dots{display:flex;gap:5px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.25);cursor:pointer;transition:all 0.2s;}
+.dot.on{background:#e0a0bf;width:18px;border-radius:3px;}
+
+/* ═══════════════════════════════════
+   SCREEN COMPONENTS
+═══════════════════════════════════ */
+
+/* Top bar */
+.s-bar{background:linear-gradient(135deg,#7d4e6b,#c47898);padding:10px 12px 8px;text-align:center;}
+.s-date{font-size:0.7rem;color:rgba(255,255,255,0.85);font-family:'Playfair Display',serif;}
+.s-time{font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:1px;line-height:1.1;}
+.s-mood-row{display:flex;gap:4px;justify-content:center;margin-top:6px;}
+.s-mb{flex:1;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px;padding:8px 4px;text-align:center;font-size:1.1rem;}
+.s-mb.on{background:#eef8f3;border-color:#89b5a0;}
+.s-mb-l{font-size:0.55rem;color:#fff8ee;font-weight:700;display:block;margin-top:2px;}
+.s-mb.on .s-mb-l{color:#2e6b50;}
+
+/* Cards */
+.s-card{background:#fff;border-radius:12px;margin:6px 8px;padding:10px 12px;box-shadow:0 2px 8px rgba(180,120,160,0.1);}
+.s-ct{font-family:'Playfair Display',serif;font-size:0.85rem;color:#7d4e6b;margin-bottom:8px;}
+.s-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5eaf3;font-size:0.72rem;color:#5a3050;}
+.s-row:last-child{border-bottom:none;}
+.s-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.s-chip{display:inline-flex;align-items:center;gap:4px;background:#faedf3;border:1.5px solid #edd9e8;border-radius:12px;padding:3px 9px;font-size:0.65rem;font-weight:700;color:#7d4e6b;margin:2px;}
+.s-chip.on{background:#89b5a0;border-color:#89b5a0;color:#fff;}
+
+/* Input */
+.s-inp{border:1.5px solid #edd9e8;border-radius:8px;padding:7px 10px;font-size:0.72rem;color:#5a3050;background:#fdf6f9;width:100%;margin-bottom:5px;}
+.s-inp.focus{border-color:#c4789a;background:#fff;}
+
+/* Status card */
+.s-status{background:linear-gradient(135deg,#eef8f3,#f0f7f4);border-radius:12px;margin:6px 8px;padding:10px 12px;border:2px solid #89b5a0;}
+.s-status-mood{font-size:1.2rem;}
+.s-status-lbl{font-size:0.75rem;font-weight:700;color:#2e6b50;margin-left:4px;}
+.s-status-msg{font-size:0.68rem;color:#3d5a40;margin-top:4px;font-style:italic;}
+
+/* Contacts */
+.s-contact{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5eaf3;}
+.s-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:#fff;flex-shrink:0;}
+.s-cname{font-size:0.75rem;font-weight:700;color:#3d2040;}
+.s-crel{font-size:0.62rem;color:#b07898;}
+.s-cbtns{display:flex;gap:4px;margin-left:auto;}
+.s-cbtn{background:#89b5a0;color:#fff;border:none;border-radius:6px;padding:3px 7px;font-size:0.58rem;font-weight:700;cursor:pointer;}
+.s-cbtn.sms{background:#42a5f5;}
+
+/* Calendar */
+.s-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:4px;}
+.s-cal-h{text-align:center;font-size:0.52rem;color:#b07898;font-weight:700;padding:2px 0;}
+.s-cal-d{text-align:center;font-size:0.62rem;padding:3px 1px;border-radius:5px;color:#5a3050;cursor:default;}
+.s-cal-d.today{background:#c4789a;color:#fff;font-weight:700;}
+.s-cal-d.bday{background:#fff0f7;color:#c4789a;font-weight:700;}
+
+/* RDV */
+.s-rdv{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:#fffbe8;border-radius:8px;border-left:3px solid #e8c870;margin-bottom:5px;}
+.s-rdv-t{font-size:0.72rem;font-weight:700;color:#7d4e6b;}
+.s-rdv-d{font-size:0.6rem;color:#b07898;}
+.s-rdv-badge{background:#e8c870;color:#7a5000;border-radius:5px;padding:2px 6px;font-size:0.55rem;font-weight:700;}
+
+/* Message */
+.s-msg{background:linear-gradient(135deg,#faedf3,#f0f7ff);border-radius:10px;padding:9px 10px;border-left:3px solid #c4789a;margin-bottom:6px;}
+.s-msg-who{font-size:0.7rem;font-weight:700;color:#7d4e6b;}
+.s-msg-txt{font-size:0.72rem;color:#3d2040;margin-top:2px;}
+
+/* Send btn */
+.s-send{display:block;width:calc(100% - 16px);margin:6px 8px;background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:10px;padding:9px;font-family:'Playfair Display',serif;font-size:0.78rem;text-align:center;}
+
+/* Anniv banner */
+.s-anniv{background:rgba(255,220,100,0.28);border-radius:8px;padding:4px 8px;text-align:center;font-size:0.65rem;color:#fff8cc;font-weight:700;margin:3px 8px;}
+
+/* Shortcuts (maman) */
+.s-scgrid{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;padding:6px 4px;}
+.s-scbtn{display:flex;flex-direction:column;align-items:center;gap:2px;background:#faedf3;border:1.5px solid #edd9e8;border-radius:12px;padding:6px 5px;min-width:50px;}
+.s-scbtn .s-av{width:28px;height:28px;font-size:0.55rem;}
+.s-scbtn-l{font-size:0.55rem;color:#3d2040;font-weight:700;}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes checkmark{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes typing{from{width:0}to{width:100%}}
+
+.anim-in{animation:fadeIn 0.4s ease forwards;}
+.anim-slide{animation:slideUp 0.35s ease forwards;}
+.delay1{animation-delay:0.3s;opacity:0;}
+.delay2{animation-delay:0.6s;opacity:0;}
+.delay3{animation-delay:0.9s;opacity:0;}
+.delay4{animation-delay:1.2s;opacity:0;}
+.delay5{animation-delay:1.5s;opacity:0;}
+
+/* Tag app */
+.app-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.65rem;font-weight:700;margin-bottom:4px;}
+.tag-famille{background:rgba(66,165,245,0.2);color:#90caf9;border:1px solid rgba(66,165,245,0.3);}
+.tag-maman{background:rgba(196,120,152,0.2);color:#e0a0bf;border:1px solid rgba(196,120,152,0.3);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title">💛 Visite guidée</div>
+    <div class="hdr-sub" id="hdrSub">Applications de la famille</div>
+  </div>
+  <div class="chapter-pills">
+    <div class="cpill on" id="pill0" onclick="goChapter(0)">Suivi Maman</div>
+    <div class="cpill" id="pill1" onclick="goChapter(1)">Bonjour Maman</div>
+  </div>
+</div>
+
+<!-- STAGE -->
+<div class="stage">
+  <div class="scene-info">
+    <div class="scene-num" id="sceneNum">Scène 1 / 7</div>
+    <div class="scene-title" id="sceneTitle">Chargement…</div>
+    <div class="scene-desc" id="sceneDesc"></div>
+  </div>
+  <div class="phone" id="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen" id="phoneScreen" style="min-height:320px;"></div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-area">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="ctrl-dots" id="dots" style="justify-content:center;"></div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="ctrl-btn" onclick="prev()" title="Précédent">◀</button>
+  <button class="ctrl-btn ctrl-play" id="playBtn" onclick="togglePlay()">▶</button>
+  <button class="ctrl-btn" onclick="next()" title="Suivant">▶▶</button>
+</div>
+
+<script>
+/* ════════════════════════════
+   SCENES DATA
+════════════════════════════ */
+const SCENES = [
+
+/* ── CHAPITRE 0 : SUIVI MAMAN ── */
+{
+  chapter:0,
+  title:"Suivi Maman",
+  tag:'famille',
+  desc:"L'application des 6 enfants pour suivre le quotidien de Maman en temps réel.",
+  screen:()=>`
+    <div class="s-bar">
+      <div class="s-date anim-in">💛 Suivi Maman — Application familiale</div>
+      <div class="s-time anim-in delay1">Bienvenue !</div>
+      <div class="s-anniv anim-in delay2">👨‍👩‍👧 Partagé entre les 6 enfants</div>
+    </div>
+    <div class="s-status anim-in delay3">
+      <span class="s-status-mood">😊</span><span class="s-status-lbl">Maman va bien !</span>
+      <div class="s-status-msg">"Bonjour à tous, belle journée 💛"</div>
+    </div>
+    <div style="text-align:center;padding:10px 8px 8px;font-size:0.7rem;color:#b07898;" class="anim-in delay4">
+      Tout se met à jour automatiquement
+    </div>`
+},
+{
+  chapter:0,
+  title:"L'humeur du jour",
+  tag:'famille',
+  desc:"Chaque matin, Maman envoie comment elle va. Vous le voyez instantanément.",
+  screen:()=>`
+    <div class="s-bar">
+      <div class="s-date">Vendredi 22 mai 2026</div>
+      <div style="margin-top:4px;display:flex;gap:4px;justify-content:center;">
+        <span style="background:rgba(255,255,255,0.2);border-radius:8px;padding:2px 8px;font-size:0.62rem;color:#fff8ee;">😊 Je vais bien</span>
+      </div>
+    </div>
+    <div class="s-status anim-in">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:1.5rem;">😊</span>
+        <div>
+          <div style="font-size:0.78rem;font-weight:700;color:#2e6b50;">Je vais bien</div>
+          <div style="font-size:0.62rem;color:#5a8a70;">Envoyé à 8h42</div>
+        </div>
+      </div>
+      <div class="s-status-msg anim-in delay1">"Bonne journée à tous mes enfants 💛"</div>
+    </div>
+    <div class="s-card anim-in delay2">
+      <div class="s-ct">💌 Lui répondre</div>
+      <div class="s-inp focus">Je pense à toi Maman ❤️</div>
+      <div class="s-send anim-in delay3">📤 Envoyer à Maman</div>
+    </div>`
+},
+{
+  chapter:0,
+  title:"La liste de courses",
+  tag:'famille',
+  desc:"Maman ajoute ce dont elle a besoin. Vous cochez ce que vous avez acheté.",
+  screen:()=>`
+    <div class="s-bar" style="padding:8px 12px;">
+      <div class="s-date">🛒 Liste de courses de Maman</div>
+    </div>
+    <div class="s-card" style="margin-top:6px;">
+      <div class="s-ct">🛒 En attente</div>
+      <div class="s-row anim-in"><div class="s-dot" style="background:#c4789a"></div>🍪 Biscottes</div>
+      <div class="s-row anim-in delay1"><div class="s-dot" style="background:#c4789a"></div>🧀 Fromage</div>
+      <div class="s-row anim-in delay2"><div class="s-dot" style="background:#c4789a"></div>🍌 Fruits</div>
+      <div class="s-row anim-in delay3"><div class="s-dot" style="background:#c4789a"></div>☕ Café</div>
+    </div>
+    <div class="s-card anim-in delay4" style="background:#eef8f3;border-color:#89b5a0;">
+      <div class="s-row" style="color:#2e6b50;text-decoration:line-through;"><div class="s-dot" style="background:#89b5a0"></div>✓ Yaourt <span style="font-size:0.58rem;margin-left:auto;color:#89b5a0;">acheté par Yves</span></div>
+    </div>`
+},
+{
+  chapter:0,
+  title:"Les rendez-vous",
+  tag:'famille',
+  desc:"Voyez à l'avance les rendez-vous de Maman : coiffeur, médecin, soins…",
+  screen:()=>`
+    <div class="s-bar" style="padding:8px 12px;">
+      <div class="s-date">📅 Rendez-vous à venir</div>
+    </div>
+    <div style="padding:6px 8px;">
+      <div class="s-rdv anim-in">
+        <div><div class="s-rdv-t">✂️ Coiffeur</div><div class="s-rdv-d">Lundi 25 mai à 14h00</div></div>
+        <div class="s-rdv-badge">Dans 3 jours</div>
+      </div>
+      <div class="s-rdv anim-in delay2" style="background:#fff0f3;border-left-color:#e08fa0;">
+        <div><div class="s-rdv-t">💆 Soins infirmière</div><div class="s-rdv-d">Mardi 26 mai à 9h00</div></div>
+      </div>
+      <div class="s-rdv anim-in delay3">
+        <div><div class="s-rdv-t">🏥 Médecin</div><div class="s-rdv-d">Jeudi 4 juin à 10h30</div></div>
+      </div>
+    </div>
+    <div class="s-card anim-in delay4">
+      <div style="font-size:0.62rem;color:#b07898;text-align:center;">📆 Qui s'en occupe ? Coordonnez-vous en famille</div>
+    </div>`
+},
+{
+  chapter:0,
+  title:"Les contacts",
+  tag:'famille',
+  desc:"Les coordonnées de Maman et de ses proches, avec bouton Appeler et SMS.",
+  screen:()=>`
+    <div class="s-bar" style="padding:8px 12px;">
+      <div class="s-date">📞 Contacts</div>
+    </div>
+    <div class="s-card" style="margin-top:6px;">
+      <div class="s-contact anim-in">
+        <div class="s-av" style="background:#7d4e6b;">Ma</div>
+        <div><div class="s-cname">Maman</div><div class="s-crel">📞 04 74 76 XX XX</div></div>
+        <div class="s-cbtns"><span class="s-cbtn">📞 Appeler</span><span class="s-cbtn sms">💬 SMS</span></div>
+      </div>
+      <div class="s-contact anim-in delay1">
+        <div class="s-av" style="background:#e040fb;">Fr</div>
+        <div><div class="s-cname">Françoise</div><div class="s-crel">Enfant</div></div>
+        <div class="s-cbtns"><span class="s-cbtn">📞</span><span class="s-cbtn sms">💬</span></div>
+      </div>
+      <div class="s-contact anim-in delay2">
+        <div class="s-av" style="background:#0084ff;">Yv</div>
+        <div><div class="s-cname">Yves</div><div class="s-crel">Enfant</div></div>
+        <div class="s-cbtns"><span class="s-cbtn">📞</span><span class="s-cbtn sms">💬</span></div>
+      </div>
+    </div>
+    <div class="s-card anim-in delay3">
+      <div style="font-size:0.65rem;color:#b07898;">✏️ Ajoutez d'autres contacts (médecin, pharmacie…)</div>
+    </div>`
+},
+{
+  chapter:0,
+  title:"Le calendrier",
+  tag:'famille',
+  desc:"Un calendrier mensuel avec les anniversaires de toute la famille mis en évidence.",
+  screen:()=>`
+    <div class="s-bar" style="padding:8px 12px;">
+      <div class="s-date">📆 Mai 2026</div>
+    </div>
+    <div class="s-card" style="margin-top:6px;">
+      <div class="s-cal">
+        ${['L','M','M','J','V','S','D'].map(d=>`<div class="s-cal-h">${d}</div>`).join('')}
+        ${[...Array(4)].map(()=>`<div class="s-cal-d"></div>`).join('')}
+        ${[...Array(31)].map((_,i)=>{
+          const d=i+1;
+          const cls=d===22?'today':([15,6,8].includes(d)?'bday':'');
+          const emoji=[15,6,8].includes(d)?'🎂':'';
+          return`<div class="s-cal-d ${cls} anim-in">${emoji||d}</div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;font-size:0.6rem;color:#b07898;">
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#c4789a;display:inline-block;"></span>Aujourd'hui</span>
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#fff0f7;border:1px solid #e8b0c8;display:inline-block;"></span>🎂 Anniversaire</span>
+      </div>
+    </div>`
+},
+{
+  chapter:0,
+  title:"Le journal d'activités",
+  tag:'famille',
+  desc:"Enregistrez vos visites, appels, sorties… pour garder une trace de la prise en charge.",
+  screen:()=>`
+    <div class="s-bar" style="padding:8px 12px;">
+      <div class="s-date">📓 Journal — Mai 2026</div>
+    </div>
+    <div style="padding:6px 8px;">
+      <div class="s-msg anim-in">
+        <div class="s-msg-who">🏠 Yves · Visite · 21 mai</div>
+        <div class="s-msg-txt">Déjeuner ensemble, Maman en forme 😊</div>
+      </div>
+      <div class="s-msg anim-in delay1" style="border-left-color:#42a5f5;">
+        <div class="s-msg-who">📞 Françoise · Appel · 20 mai</div>
+        <div class="s-msg-txt">Appel de 20 minutes, bonne humeur</div>
+      </div>
+      <div class="s-msg anim-in delay2" style="border-left-color:#89b5a0;">
+        <div class="s-msg-who">🛒 Martine · Courses · 19 mai</div>
+        <div class="s-msg-txt">Biscottes, fromage, café — tout livré</div>
+      </div>
+    </div>
+    <div class="s-card anim-in delay3">
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <span class="s-chip">🏠 Visite</span>
+        <span class="s-chip">📞 Appel</span>
+        <span class="s-chip">🛒 Courses</span>
+        <span class="s-chip">🏥 Médecin</span>
+      </div>
+    </div>`
+},
+
+/* ── CHAPITRE 1 : BONJOUR MAMAN ── */
+{
+  chapter:1,
+  title:"Bonjour Maman",
+  tag:'maman',
+  desc:"L'application de Maman, sur sa tablette. Simple, lisible, et tout en gros boutons.",
+  screen:()=>`
+    <div class="s-bar">
+      <div class="s-date anim-in" style="font-family:'Playfair Display',serif;font-size:0.82rem;">Vendredi 22 mai 2026</div>
+      <div class="s-anniv anim-in delay1">🌸 Fête de Rita</div>
+      <div class="s-time anim-in delay2">09:15</div>
+      <div class="anim-in delay3" style="font-size:0.65rem;color:rgba(255,255,255,0.8);margin-top:4px;">☀️ Ensoleillé · 18°C · Izernore</div>
+    </div>
+    <div style="text-align:center;padding:12px 8px 6px;font-size:0.75rem;color:#b07898;" class="anim-in delay4">
+      Réservé à Maman sur sa tablette
+    </div>
+    <div class="s-card anim-in delay5">
+      <div style="font-size:0.68rem;color:#b07898;text-align:center;">Maman envoie ses nouvelles chaque matin<br>Les enfants les reçoivent instantanément</div>
+    </div>`
+},
+{
+  chapter:1,
+  title:"Choisir son humeur",
+  tag:'maman',
+  desc:"Maman appuie sur un bouton pour dire comment elle va. Simple et rapide.",
+  screen:()=>`
+    <div class="s-bar">
+      <div class="s-date">Vendredi 22 mai · 09:15</div>
+      <div class="s-mood-row anim-in delay1">
+        <div class="s-mb on">😊<span class="s-mb-l">Bien</span></div>
+        <div class="s-mb anim-in delay2">😐<span class="s-mb-l">Moyen</span></div>
+        <div class="s-mb anim-in delay3">😔<span class="s-mb-l">Mal</span></div>
+      </div>
+    </div>
+    <div class="s-card anim-in delay3" style="margin-top:6px;">
+      <div class="s-ct">💬 Son message du jour</div>
+      <div class="s-inp focus anim-in delay4">Bonne journée à tous 💛</div>
+    </div>
+    <div class="s-send anim-in delay5">💛 Envoyer mes nouvelles à mes enfants</div>`
+},
+{
+  chapter:1,
+  title:"La liste de courses",
+  tag:'maman',
+  desc:"Maman ajoute ce dont elle a besoin. Ses enfants voient la liste se mettre à jour.",
+  screen:()=>`
+    <div class="s-bar" style="padding:7px 10px 6px;">
+      <div class="s-date">🛒 Ma liste de courses</div>
+    </div>
+    <div class="s-card" style="margin-top:6px;">
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
+        <div class="s-inp focus" style="flex:1;">Biscottes…</div>
+        <div style="background:#c4789a;color:#fff;border-radius:6px;padding:5px 9px;font-size:0.8rem;">＋</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px;">
+        <span class="s-chip on">🍪 Biscottes</span>
+        <span class="s-chip">🧀 Fromage</span>
+        <span class="s-chip">☕ Café</span>
+        <span class="s-chip">🍌 Fruits</span>
+      </div>
+      <div class="s-row anim-in"><div class="s-dot" style="background:#c4789a;"></div>🍪 Biscottes</div>
+      <div class="s-row anim-in delay1"><div class="s-dot" style="background:#c4789a;"></div>🧀 Fromage</div>
+      <div class="s-row anim-in delay2"><div class="s-dot" style="background:#c4789a;"></div>☕ Café</div>
+    </div>`
+},
+{
+  chapter:1,
+  title:"Ses rendez-vous",
+  tag:'maman',
+  desc:"Maman ajoute ses rendez-vous. Ils apparaissent chez ses enfants automatiquement.",
+  screen:()=>`
+    <div class="s-bar" style="padding:7px 10px 6px;">
+      <div class="s-date">📅 Mes rendez-vous</div>
+    </div>
+    <div class="s-card" style="margin-top:6px;">
+      <div class="s-inp anim-in" style="margin-bottom:4px;">✂️ Coiffeur</div>
+      <div class="s-inp anim-in delay1" style="margin-bottom:4px;color:#b07898;">📅 25/05/2026</div>
+      <div class="s-inp anim-in delay2" style="margin-bottom:6px;color:#b07898;">⏰ 14:00</div>
+      <div class="s-send anim-in delay3" style="margin:0;border-radius:8px;padding:7px;font-size:0.72rem;">＋ Ajouter ce rendez-vous</div>
+    </div>
+    <div style="padding:0 8px 6px;">
+      <div class="s-rdv anim-in delay4">
+        <div><div class="s-rdv-t">✂️ Coiffeur</div><div class="s-rdv-d">Lundi 25 mai à 14h00</div></div>
+        <div class="s-rdv-badge">Lundi</div>
+      </div>
+    </div>`
+},
+{
+  chapter:1,
+  title:"Contacter ses enfants",
+  tag:'maman',
+  desc:"Des raccourcis pour ouvrir Messenger avec chaque enfant, Facebook ou Google.",
+  screen:()=>`
+    <div class="s-bar" style="padding:7px 10px 6px;">
+      <div class="s-date">👨‍👩‍👧 Mes enfants</div>
+    </div>
+    <div class="s-scgrid anim-in">
+      <div class="s-scbtn"><div class="s-av" style="background:#e040fb;">Fr</div><div class="s-scbtn-l">Françoise</div></div>
+      <div class="s-scbtn anim-in delay1"><div class="s-av" style="background:#f06292;">Ma</div><div class="s-scbtn-l">Martine</div></div>
+      <div class="s-scbtn anim-in delay2"><div class="s-av" style="background:#ba68c8;">Ni</div><div class="s-scbtn-l">Nicole</div></div>
+      <div class="s-scbtn anim-in delay3"><div class="s-av" style="background:#ff7043;">Pa</div><div class="s-scbtn-l">Pascale</div></div>
+      <div class="s-scbtn anim-in delay4"><div class="s-av" style="background:#26c6da;">Is</div><div class="s-scbtn-l">Isabelle</div></div>
+      <div class="s-scbtn anim-in delay5"><div class="s-av" style="background:#0084ff;">Yv</div><div class="s-scbtn-l">Yves</div></div>
+    </div>
+    <div class="s-card anim-in delay4" style="margin-top:4px;">
+      <div style="display:flex;gap:5px;justify-content:center;">
+        <div class="s-scbtn"><div class="s-av" style="background:#003399;">📮</div><div class="s-scbtn-l">Banque</div></div>
+        <div class="s-scbtn"><div class="s-av" style="background:#4285f4;">G</div><div class="s-scbtn-l">Google</div></div>
+        <div class="s-scbtn"><div class="s-av" style="background:#1877f2;">f</div><div class="s-scbtn-l">Facebook</div></div>
+      </div>
+    </div>`
+},
+{
+  chapter:1,
+  title:"Fêtes & anniversaires",
+  tag:'maman',
+  desc:"Le saint du jour et les anniversaires de la famille s'affichent automatiquement sous la date.",
+  screen:()=>`
+    <div class="s-bar">
+      <div class="s-date" style="font-family:'Playfair Display',serif;font-size:0.82rem;">Vendredi 22 mai 2026</div>
+      <div class="s-anniv anim-in delay1">🌸 Fête de Rita</div>
+      <div class="anim-in delay2" style="background:rgba(255,100,150,0.28);border-radius:8px;padding:4px 8px;text-align:center;font-size:0.65rem;color:#ffe0ea;font-weight:700;margin:3px 0;">🎂 Anniversaire de Stéphanie — 44 ans !</div>
+      <div class="anim-in delay3" style="background:rgba(255,255,255,0.15);border-radius:8px;padding:4px 8px;text-align:center;font-size:0.6rem;color:rgba(255,248,238,0.85);margin:3px 0;">🎁 Demain : anniversaire de Clément (34 ans)</div>
+      <div class="s-time anim-in delay4">09:15</div>
+    </div>
+    <div class="s-card anim-in delay4" style="margin-top:6px;">
+      <div style="font-size:0.65rem;color:#b07898;text-align:center;">365 fêtes + tous les anniversaires de la famille<br>mis à jour automatiquement chaque jour</div>
+    </div>`
+}
+];
+
+/* ════════════════════════════
+   ENGINE
+════════════════════════════ */
+let curIdx = 0;
+let playing = false;
+let timer = null;
+let progTimer = null;
+let progStart = 0;
+const SCENE_DUR = 5000; // ms per scene
+
+function render(){
+  const s = SCENES[curIdx];
+  document.getElementById('sceneNum').textContent = `Scène ${curIdx+1} / ${SCENES.length}`;
+  document.getElementById('sceneTitle').textContent = s.title;
+  document.getElementById('sceneDesc').textContent = s.desc;
+  document.getElementById('hdrSub').textContent = s.chapter===0 ? '📱 Application des enfants' : '📱 Application de Maman';
+
+  // chapter pills
+  document.getElementById('pill0').classList.toggle('on', s.chapter===0);
+  document.getElementById('pill1').classList.toggle('on', s.chapter===1);
+
+  // screen
+  document.getElementById('phoneScreen').innerHTML = s.screen();
+
+  // dots
+  const dc = document.getElementById('dots');
+  dc.innerHTML = SCENES.map((_,i)=>`<div class="dot${i===curIdx?' on':''}" onclick="goScene(${i})"></div>`).join('');
+
+  // progress reset
+  stopProg();
+  if(playing) startProg();
+}
+
+function goScene(i){
+  curIdx = Math.max(0, Math.min(SCENES.length-1, i));
+  render();
+}
+function goChapter(ch){
+  const idx = SCENES.findIndex(s=>s.chapter===ch);
+  if(idx>=0) goScene(idx);
+}
+function next(){
+  if(curIdx < SCENES.length-1){ curIdx++; render(); }
+  else if(playing){ stopPlay(); }
+}
+function prev(){
+  if(curIdx > 0){ curIdx--; render(); }
+}
+
+/* PLAY / PAUSE */
+function togglePlay(){
+  playing ? stopPlay() : startPlay();
+}
+function startPlay(){
+  playing = true;
+  document.getElementById('playBtn').textContent = '⏸';
+  startProg();
+}
+function stopPlay(){
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶';
+  stopProg();
+}
+
+/* PROGRESS BAR */
+function startProg(){
+  stopProg();
+  progStart = Date.now();
+  function tick(){
+    const elapsed = Date.now() - progStart;
+    const pct = Math.min(100, (elapsed / SCENE_DUR) * 100);
+    document.getElementById('progFill').style.width = pct + '%';
+    if(elapsed >= SCENE_DUR){
+      if(curIdx < SCENES.length-1){ curIdx++; render(); }
+      else { stopPlay(); document.getElementById('progFill').style.width = '100%'; }
+    } else {
+      progTimer = requestAnimationFrame(tick);
+    }
+  }
+  progTimer = requestAnimationFrame(tick);
+}
+function stopProg(){
+  if(progTimer){ cancelAnimationFrame(progTimer); progTimer=null; }
+  document.getElementById('progFill').style.width = '0%';
+}
+
+render();
+</script>
+</body>
+</html>
