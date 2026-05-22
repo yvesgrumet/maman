@@ -1110,7 +1110,7 @@ function mkContactCard(c){
   h+='<div class="cav2" style="background:'+c.col+';'+(c.nuage?'opacity:0.75':'')+'">'+c.ini+'</div>';
   h+='<div class="cinfo"><div class="cname2">'+c.name+(c.nuage?' 🌠':'')+'</div>';
   if(c.bd&&!c.nuage){const bd=fmtBd(c.bd);if(bd)h+='<div class="cbd">🎂 '+bd+'</div>';}
-  if(c.bd&&c.nuage){h+='<div class="cbd" style="color:#b07898;">🌠 Né(e) le '+fmtDateSimple(c.bd)+'</div>';h+='<div class="cbd" style="color:#9090b0;font-style:italic;">🌠 Sur un nuage le '+fmtDateSimple(c.nuage)+'</div>';}
+  if(c.bd&&c.nuage){h+='<div class="cbd" style="color:#b07898;">☁️ Né(e) le '+fmtDateSimple(c.bd)+'</div>';h+='<div class="cbd" style="color:#9090b0;font-style:italic;">🌠 Sur un nuage le '+fmtDateSimple(c.nuage)+'</div>';}
   if(!c.nuage){
     h+='<div class="cactions">';
     if(c.phone){h+='<span class="cphone-disp">📞 '+c.phone+'</span> ';h+='<a class="ccall-btn" href="tel:'+c.phone+'">📞 Appeler</a> ';h+='<a class="csms-btn" href="sms:'+c.phone+'">💬 SMS</a> ';}
