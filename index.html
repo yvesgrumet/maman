@@ -67,14 +67,12 @@ textarea{resize:vertical;min-height:70px;}
 .dbtn{display:inline-flex;align-items:center;gap:3px;background:#fff0f3;border:1.5px solid #f0c0c8;color:#c0506a;border-radius:8px;padding:3px 9px;cursor:pointer;font-size:0.72rem;font-weight:700;font-family:'Lato',sans-serif;margin-top:7px;}
 /* RÉACTIONS */
 .react-row{display:flex;align-items:center;gap:7px;margin-top:8px;padding-top:6px;border-top:1px solid #faedf3;flex-wrap:wrap;}
-.react-btn{background:#faedf3;border:1.5px solid #edd9e8;border-radius:20px;padding:4px 12px;font-size:0.82rem;cursor:pointer;color:#7d4e6b;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:all 0.15s;font-family:'Lato',sans-serif;}
-.react-btn.on{background:#c4789a;border-color:#c4789a;color:#fff;}
-.react-btn:active{transform:scale(0.95);}
-.react-avs{display:inline-flex;align-items:center;cursor:pointer;position:relative;}
+.react-btn{background:#f0f2f5;border:1.5px solid #dde0e4;border-radius:20px;padding:5px 13px;font-size:0.85rem;cursor:pointer;color:#65676b;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:all 0.15s;font-family:'Lato',sans-serif;}
+.react-like.on{background:#e7f3ff;border-color:#1877f2;color:#1877f2;}
+.react-heart.on{background:#fce8ec;border-color:#f03054;color:#f03054;}
+.react-btn:active{transform:scale(0.92);}
 .react-av{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;color:#fff;border:2px solid #fff;margin-left:-6px;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
 .react-av:first-child{margin-left:0;}
-.react-tooltip{display:none;position:absolute;bottom:30px;left:0;background:#3d2040;color:#fff;font-size:0.72rem;border-radius:8px;padding:5px 10px;white-space:nowrap;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-.react-avs:hover .react-tooltip{display:block;}
 /* USER PICKER */
 .upicker-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;}
 .upicker-box{background:#fff;border-radius:20px;padding:22px 18px;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
@@ -960,30 +958,32 @@ function renderJournal(){
 // ── RÉACTIONS ───────────────────────────────────────────
 let familyUser=localStorage.getItem('familyUser')||null;
 let pendingReactKey=null;
+let pendingReactType=null;
 
-function openUserPicker(entryKey){
+function openUserPicker(entryKey,type){
   pendingReactKey=entryKey;
+  pendingReactType=type||'like';
   const grid=document.getElementById('uPickerGrid');
   const pickable=CONTACTS.filter(c=>!c.nuage&&(c.rel==='enfant'||c.rel==='petit'));
   grid.innerHTML=pickable.map(c=>`<div class="upicker-btn" onclick="selectUser('${c.id}')"><div class="av" style="background:${c.col};width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;">${c.ini}</div><div class="upicker-name">${c.name.split(' ')[0]}</div></div>`).join('');
   document.getElementById('userPickerModal').style.display='flex';
 }
-function closeUserPicker(){document.getElementById('userPickerModal').style.display='none';pendingReactKey=null;}
+function closeUserPicker(){document.getElementById('userPickerModal').style.display='none';pendingReactKey=null;pendingReactType=null;}
 function selectUser(uid){
   familyUser=uid;localStorage.setItem('familyUser',uid);
   document.getElementById('userPickerModal').style.display='none';
-  if(pendingReactKey){toggleReaction(pendingReactKey);pendingReactKey=null;}
+  if(pendingReactKey){toggleReaction(pendingReactKey,pendingReactType);pendingReactKey=null;pendingReactType=null;}
 }
-function toggleReaction(entryKey){
+function toggleReaction(entryKey,type){
   if(!entryKey||entryKey==='undefined'){toast('⚠️ Erreur : entrée introuvable');return;}
-  if(!familyUser){openUserPicker(entryKey);return;}
+  if(!type)type='like';
+  if(!familyUser){openUserPicker(entryKey,type);return;}
   const reactRef=db.ref('entries/'+entryKey+'/reactions/'+familyUser);
   reactRef.once('value',function(snap){
-    if(snap.exists()){
+    if(snap.exists()&&snap.val()===type){
       reactRef.remove();
     }else{
-      const nom=NOMS[familyUser]||familyUser;
-      reactRef.set(nom);
+      reactRef.set(type);
     }
     refreshReactRow(entryKey);
   });
@@ -997,16 +997,28 @@ function refreshReactRow(entryKey){
 }
 function buildReactRow(entryKey,r){
   r=r||{};
-  const reactors=Object.keys(r).filter(function(k){return r[k];});
-  const myOn=familyUser&&r[familyUser];
-  const avs=reactors.slice(0,6).map(function(uid){
-    const c=CONTACTS.find(function(c){return c.id===uid;});
-    return'<div class="react-av" style="background:'+(c?c.col:'#999')+';">'+(c?c.ini:uid.slice(0,2).toUpperCase())+'</div>';
-  }).join('');
-  const names=reactors.map(function(uid){const c=CONTACTS.find(function(c){return c.id===uid;});return c?c.name.split(' ')[0]:(NOMS[uid]||uid);}).join(', ');
-  const namesHtml=names?'<span style="font-size:0.75rem;color:#8a6080;font-weight:700;">'+names+'</span>':'';
-  const avsHtml=reactors.length?'<div style="display:inline-flex;align-items:center;gap:5px;margin-left:4px;">'+avs+namesHtml+'</div>':'';
-  return'<div class="react-row"><button type="button" class="react-btn'+(myOn?' on':'')+'" onclick="toggleReaction(\''+entryKey+'\')">👍'+(reactors.length?' '+reactors.length:'')+'</button>'+avsHtml+'</div>';
+  const likes=Object.keys(r).filter(function(k){return r[k]==='like';});
+  const hearts=Object.keys(r).filter(function(k){return r[k]==='heart';});
+  const myReact=familyUser?r[familyUser]:null;
+  function mkAvs(uids){
+    return uids.slice(0,5).map(function(uid){
+      const c=CONTACTS.find(function(c){return c.id===uid;});
+      return'<div class="react-av" style="background:'+(c?c.col:'#999')+';">'+(c?c.ini:uid.slice(0,2).toUpperCase())+'</div>';
+    }).join('');
+  }
+  function mkNames(uids){
+    return uids.map(function(uid){
+      const c=CONTACTS.find(function(c){return c.id===uid;});
+      return c?c.name.split(' ')[0]:(NOMS[uid]||uid);
+    }).join(', ');
+  }
+  const likeOn=myReact==='like';
+  const heartOn=myReact==='heart';
+  const likeBtn='<button type="button" class="react-btn react-like'+(likeOn?' on':'')+'" onclick="toggleReaction(\''+entryKey+'\',\'like\')">👍'+(likes.length?' '+likes.length:'')+'</button>';
+  const heartBtn='<button type="button" class="react-btn react-heart'+(heartOn?' on':'')+'" onclick="toggleReaction(\''+entryKey+'\',\'heart\')">❤️'+(hearts.length?' '+hearts.length:'')+'</button>';
+  const allU=[...likes,...hearts];
+  const avsHtml=allU.length?'<div style="display:inline-flex;align-items:center;gap:3px;margin-left:4px;">'+mkAvs(allU)+(mkNames(allU)?'<span style="font-size:0.75rem;color:#8a6080;font-weight:700;margin-left:5px;">'+mkNames(allU)+'</span>':'')+'</div>':'';
+  return'<div class="react-row">'+likeBtn+heartBtn+avsHtml+'</div>';
 }
 function mkReactRow(e){
   return buildReactRow(e._k,e.reactions||{});
