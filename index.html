@@ -603,9 +603,18 @@ showAnnivs();
 function askNotif(){Notification.requestPermission().then(p=>{if(p==='granted'){document.getElementById('nbar').style.display='none';toast('🔔 Notifications activées !');}else document.getElementById('nBtn').textContent='🔕 Bloquées';});}
 
 // Badge
-function updateBadge(){try{const last=parseInt(localStorage.getItem('lv')||'0');const n=entries.filter(e=>new Date(e.ts).getTime()>last).length;if('setAppBadge' in navigator){n>0?navigator.setAppBadge(n):navigator.clearAppBadge();}}catch(e){}}
-localStorage.setItem('lv',Date.now());
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){localStorage.setItem('lv',Date.now());try{navigator.clearAppBadge();}catch(e){}}});
+const _lastVisit=parseInt(localStorage.getItem('lv')||'0',10);
+localStorage.setItem('lv',Date.now().toString());
+let _badgeSet=false;
+function updateBadge(){
+  if(_badgeSet)return;
+  _badgeSet=true;
+  try{
+    const n=entries.filter(function(e){return e.ts&&new Date(e.ts).getTime()>_lastVisit;}).length;
+    if('setAppBadge' in navigator){if(n>0)navigator.setAppBadge(n);else navigator.clearAppBadge();}
+  }catch(ex){}
+}
+function clearBadge(){try{if('setAppBadge' in navigator)navigator.clearAppBadge();}catch(ex){}}
 
 // Tabs
 function goTab(name,btn){
@@ -620,7 +629,7 @@ function goTab(name,btn){
     if(div)renderMamanCoursesList(div);
   }
   if(name==='cal'){renderCal();if(lastDay)setTimeout(()=>{const dd=document.getElementById('dayDetail');if(dd&&dd.children.length)dd.scrollIntoView({behavior:'smooth',block:'start'});},150);}
-  if(name==='journal')renderJournal();
+  if(name==='journal'){renderJournal();clearBadge();}
   if(name==='stats')renderStats();
   if(name==='contacts')renderContacts();
 }
