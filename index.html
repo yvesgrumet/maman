@@ -65,6 +65,26 @@ textarea{resize:vertical;min-height:70px;}
 .rbtn{background:#7d4e6b;color:#fff;border:none;border-radius:11px;padding:8px 14px;cursor:pointer;font-size:0.84rem;font-weight:700;font-family:'Lato',sans-serif;white-space:nowrap;}
 .qbtn{background:#faedf3;border:1.5px solid #edd9e8;border-radius:16px;padding:4px 9px;cursor:pointer;font-size:0.72rem;font-weight:700;color:#7d4e6b;font-family:'Lato',sans-serif;}
 .dbtn{display:inline-flex;align-items:center;gap:3px;background:#fff0f3;border:1.5px solid #f0c0c8;color:#c0506a;border-radius:8px;padding:3px 9px;cursor:pointer;font-size:0.72rem;font-weight:700;font-family:'Lato',sans-serif;margin-top:7px;}
+/* RÉACTIONS */
+.react-row{display:flex;align-items:center;gap:7px;margin-top:8px;padding-top:6px;border-top:1px solid #faedf3;flex-wrap:wrap;}
+.react-btn{background:#faedf3;border:1.5px solid #edd9e8;border-radius:20px;padding:4px 12px;font-size:0.82rem;cursor:pointer;color:#7d4e6b;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:all 0.15s;font-family:'Lato',sans-serif;}
+.react-btn.on{background:#c4789a;border-color:#c4789a;color:#fff;}
+.react-btn:active{transform:scale(0.95);}
+.react-avs{display:inline-flex;align-items:center;cursor:pointer;position:relative;}
+.react-av{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;color:#fff;border:2px solid #fff;margin-left:-6px;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+.react-av:first-child{margin-left:0;}
+.react-tooltip{display:none;position:absolute;bottom:30px;left:0;background:#3d2040;color:#fff;font-size:0.72rem;border-radius:8px;padding:5px 10px;white-space:nowrap;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+.react-avs:hover .react-tooltip{display:block;}
+/* USER PICKER */
+.upicker-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;}
+.upicker-box{background:#fff;border-radius:20px;padding:22px 18px;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+.upicker-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:#7d4e6b;margin-bottom:4px;text-align:center;}
+.upicker-sub{font-size:0.78rem;color:#b07898;text-align:center;margin-bottom:16px;}
+.upicker-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;}
+.upicker-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 8px;border:2px solid #edd9e8;border-radius:14px;cursor:pointer;background:#faedf3;min-width:70px;transition:all 0.15s;}
+.upicker-btn:hover,.upicker-btn:active{background:#c4789a;border-color:#c4789a;}
+.upicker-btn:hover .upicker-name,.upicker-btn:active .upicker-name{color:#fff;}
+.upicker-name{font-size:0.72rem;font-weight:700;color:#3d2040;}
 .ubtn{width:100%;background:linear-gradient(135deg,#c0506a,#e08fa0);color:#fff;border:none;border-radius:12px;padding:10px;font-family:'Playfair Display',serif;font-size:0.88rem;cursor:pointer;}
 /* Maman */
 .msc{background:linear-gradient(135deg,#fff0f7,#f0f7ff);border-radius:17px;padding:18px;margin-bottom:12px;box-shadow:0 4px 16px rgba(196,120,154,0.15);border:2px solid rgba(196,120,154,0.2);}
@@ -409,6 +429,16 @@ textarea{resize:vertical;min-height:70px;}
 
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- SÉLECTEUR D'UTILISATEUR -->
+<div id="userPickerModal" class="upicker-overlay" style="display:none;" onclick="closeUserPicker()">
+  <div class="upicker-box" onclick="event.stopPropagation()">
+    <div class="upicker-title">👤 Qui êtes-vous ?</div>
+    <div class="upicker-sub">Votre choix sera mémorisé pour les prochains pouces</div>
+    <div class="upicker-grid" id="uPickerGrid"></div>
+    <button onclick="closeUserPicker()" style="width:100%;background:#faedf3;border:1.5px solid #edd9e8;border-radius:10px;padding:10px;cursor:pointer;color:#b07898;font-size:0.82rem;font-family:'Lato',sans-serif;">Annuler</button>
+  </div>
+</div>
 
 <script>
 firebase.initializeApp({
@@ -927,6 +957,50 @@ function renderJournal(){
   }).join('');
 }
 
+// ── RÉACTIONS ───────────────────────────────────────────
+let familyUser=localStorage.getItem('familyUser')||null;
+let pendingReactKey=null;
+
+function openUserPicker(entryKey){
+  pendingReactKey=entryKey;
+  const grid=document.getElementById('uPickerGrid');
+  const pickable=CONTACTS.filter(c=>!c.nuage&&(c.rel==='enfant'||c.rel==='petit'));
+  grid.innerHTML=pickable.map(c=>`<div class="upicker-btn" onclick="selectUser('${c.id}')"><div class="av" style="background:${c.col};width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;">${c.ini}</div><div class="upicker-name">${c.name.split(' ')[0]}</div></div>`).join('');
+  document.getElementById('userPickerModal').style.display='flex';
+}
+function closeUserPicker(){document.getElementById('userPickerModal').style.display='none';pendingReactKey=null;}
+function selectUser(uid){
+  familyUser=uid;localStorage.setItem('familyUser',uid);
+  document.getElementById('userPickerModal').style.display='none';
+  if(pendingReactKey){toggleReaction(pendingReactKey);pendingReactKey=null;}
+}
+function toggleReaction(entryKey){
+  if(!familyUser){openUserPicker(entryKey);return;}
+  const ref=db.ref('entries/'+entryKey+'/reactions/'+familyUser);
+  ref.once('value',snap=>{
+    if(snap.exists())ref.remove();else ref.set(NOMS[familyUser]||familyUser);
+    db.ref('entries/'+entryKey).once('value',eSnap=>{
+      if(!eSnap.exists())return;
+      const e={...eSnap.val(),_k:entryKey};
+      const card=document.querySelector('[data-ek="'+entryKey+'"]');
+      if(card)card.outerHTML=mkCard(e,true);
+    });
+  });
+}
+function mkReactRow(e){
+  const r=e.reactions||{};
+  const reactors=Object.keys(r).filter(k=>r[k]);
+  const myOn=familyUser&&r[familyUser];
+  const avs=reactors.slice(0,6).map(uid=>{
+    const c=CONTACTS.find(c=>c.id===uid);
+    return'<div class="react-av" style="background:'+(c?c.col:'#999')+';">'+(c?c.ini:uid.slice(0,2).toUpperCase())+'</div>';
+  }).join('');
+  const names=reactors.map(uid=>NOMS[uid]||uid).join(', ');
+  const tooltip=names?'<div class="react-tooltip">'+names+'</div>':'';
+  const avsHtml=reactors.length?'<div class="react-avs">'+avs+tooltip+'</div>':'';
+  return'<div class="react-row"><button class="react-btn'+(myOn?' on':'')+'" onclick="toggleReaction(\''+e._k+'\')">👍'+(reactors.length?' '+reactors.length:'')+'</button>'+avsHtml+'</div>';
+}
+
 function mkCard(e,showDel){
   const dom=domCat(e.emotions);
   const pp=(e.periods||[]).join(' ');
@@ -935,7 +1009,7 @@ function mkCard(e,showDel){
   const nh=e.note?'<div style="font-size:0.82rem;color:#8a6080;line-height:1.5;border-top:1px solid #faedf3;padding-top:6px;margin-top:4px;">'+e.note+'</div>':'';
   const ph=e.photo?'<div style="margin-top:8px;"><img src="'+e.photo+'" style="max-width:100%;max-height:200px;border-radius:11px;display:block;"></div>':'';
   const db2=showDel?'<button class="dbtn" onclick="delEntry(\''+e._k+'\',\''+e.date+'\')">🗑️ Supprimer</button>':'';
-  return'<div class="ec '+dom+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div><div style="font-weight:700;color:#7d4e6b;font-size:0.87rem;">👤 '+e.who+'</div><div style="font-size:0.73rem;color:#8a6080;">'+pp+' '+fd(e.date)+(e.time?' · '+e.time:'')+'</div></div></div>'+eh+ah+nh+ph+db2+'</div>';
+  return'<div class="ec '+dom+'" data-ek="'+e._k+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div><div style="font-weight:700;color:#7d4e6b;font-size:0.87rem;">👤 '+e.who+'</div><div style="font-size:0.73rem;color:#8a6080;">'+pp+' '+fd(e.date)+(e.time?' · '+e.time:'')+'</div></div></div>'+eh+ah+nh+ph+mkReactRow(e)+db2+'</div>';
 }
 function domCat(emos){if(!emos||!emos.length)return'';const c={};emos.forEach(e=>c[e.cat]=(c[e.cat]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]||'';}
 async function delEntry(k,date){if(!confirm('Supprimer cette entrée ?'))return;await db.ref('entries/'+k).remove();lastDay=date;toast('🗑️ Supprimée');}
