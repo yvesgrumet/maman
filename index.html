@@ -975,30 +975,41 @@ function selectUser(uid){
   if(pendingReactKey){toggleReaction(pendingReactKey);pendingReactKey=null;}
 }
 function toggleReaction(entryKey){
+  if(!entryKey||entryKey==='undefined'){toast('⚠️ Erreur : entrée introuvable');return;}
   if(!familyUser){openUserPicker(entryKey);return;}
-  const ref=db.ref('entries/'+entryKey+'/reactions/'+familyUser);
-  ref.once('value',snap=>{
-    if(snap.exists())ref.remove();else ref.set(NOMS[familyUser]||familyUser);
-    db.ref('entries/'+entryKey).once('value',eSnap=>{
-      if(!eSnap.exists())return;
-      const e={...eSnap.val(),_k:entryKey};
-      const card=document.querySelector('[data-ek="'+entryKey+'"]');
-      if(card)card.outerHTML=mkCard(e,true);
-    });
+  const reactRef=db.ref('entries/'+entryKey+'/reactions/'+familyUser);
+  reactRef.once('value',function(snap){
+    if(snap.exists()){
+      reactRef.remove();
+    }else{
+      const nom=NOMS[familyUser]||familyUser;
+      reactRef.set(nom);
+    }
+    refreshReactRow(entryKey);
   });
 }
-function mkReactRow(e){
-  const r=e.reactions||{};
-  const reactors=Object.keys(r).filter(k=>r[k]);
+function refreshReactRow(entryKey){
+  db.ref('entries/'+entryKey+'/reactions').once('value',function(snap){
+    const r=snap.exists()?snap.val():{};
+    const row=document.querySelector('[data-ek="'+entryKey+'"] .react-row');
+    if(row)row.outerHTML=buildReactRow(entryKey,r);
+  });
+}
+function buildReactRow(entryKey,r){
+  r=r||{};
+  const reactors=Object.keys(r).filter(function(k){return r[k];});
   const myOn=familyUser&&r[familyUser];
-  const avs=reactors.slice(0,6).map(uid=>{
-    const c=CONTACTS.find(c=>c.id===uid);
+  const avs=reactors.slice(0,6).map(function(uid){
+    const c=CONTACTS.find(function(c){return c.id===uid;});
     return'<div class="react-av" style="background:'+(c?c.col:'#999')+';">'+(c?c.ini:uid.slice(0,2).toUpperCase())+'</div>';
   }).join('');
-  const names=reactors.map(uid=>{const c=CONTACTS.find(c=>c.id===uid);return c?c.name.split(' ')[0]:(NOMS[uid]||uid);}).join(', ');
+  const names=reactors.map(function(uid){const c=CONTACTS.find(function(c){return c.id===uid;});return c?c.name.split(' ')[0]:(NOMS[uid]||uid);}).join(', ');
   const namesHtml=names?'<span style="font-size:0.75rem;color:#8a6080;font-weight:700;">'+names+'</span>':'';
-  const avsHtml=reactors.length?'<div style="display:flex;align-items:center;gap:5px;">'+avs+namesHtml+'</div>':'';
-  return'<div class="react-row"><button class="react-btn'+(myOn?' on':'')+'" onclick="toggleReaction(\''+e._k+'\')">👍'+(reactors.length?' '+reactors.length:'')+'</button>'+avsHtml+'</div>';
+  const avsHtml=reactors.length?'<div style="display:inline-flex;align-items:center;gap:5px;margin-left:4px;">'+avs+namesHtml+'</div>':'';
+  return'<div class="react-row"><button type="button" class="react-btn'+(myOn?' on':'')+'" onclick="toggleReaction(\''+entryKey+'\')">👍'+(reactors.length?' '+reactors.length:'')+'</button>'+avsHtml+'</div>';
+}
+function mkReactRow(e){
+  return buildReactRow(e._k,e.reactions||{});
 }
 
 function mkCard(e,showDel){
