@@ -995,9 +995,9 @@ function mkReactRow(e){
     const c=CONTACTS.find(c=>c.id===uid);
     return'<div class="react-av" style="background:'+(c?c.col:'#999')+';">'+(c?c.ini:uid.slice(0,2).toUpperCase())+'</div>';
   }).join('');
-  const names=reactors.map(uid=>NOMS[uid]||uid).join(', ');
-  const tooltip=names?'<div class="react-tooltip">'+names+'</div>':'';
-  const avsHtml=reactors.length?'<div class="react-avs">'+avs+tooltip+'</div>':'';
+  const names=reactors.map(uid=>{const c=CONTACTS.find(c=>c.id===uid);return c?c.name.split(' ')[0]:(NOMS[uid]||uid);}).join(', ');
+  const namesHtml=names?'<span style="font-size:0.75rem;color:#8a6080;font-weight:700;">'+names+'</span>':'';
+  const avsHtml=reactors.length?'<div style="display:flex;align-items:center;gap:5px;">'+avs+namesHtml+'</div>':'';
   return'<div class="react-row"><button class="react-btn'+(myOn?' on':'')+'" onclick="toggleReaction(\''+e._k+'\')">👍'+(reactors.length?' '+reactors.length:'')+'</button>'+avsHtml+'</div>';
 }
 
