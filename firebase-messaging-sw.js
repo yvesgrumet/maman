@@ -1,29 +1,19 @@
-importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
-
-firebase.initializeApp({
-  apiKey:"AIzaSyB7Pq9t4T_dqG_xzf8829yKXe-RX4_rMhs",
-  authDomain:"suivi-maman.firebaseapp.com",
-  databaseURL:"https://suivi-maman-default-rtdb.firebaseio.com",
-  projectId:"suivi-maman",
-  storageBucket:"suivi-maman.firebasestorage.app",
-  messagingSenderId:"464641073360",
-  appId:"1:464641073360:web:327a3738757cdfc7fa7ed5"
-});
-
-firebase.messaging().onBackgroundMessage(payload=>{
-  const title=payload.notification?.title||'💛 Suivi Maman';
-  const body=payload.notification?.body||'Nouvelle activité';
+self.addEventListener('push',event=>{
+  const data=event.data?.json()||{};
+  const title=data.title||'💛 Suivi Maman';
+  const body=data.body||'Nouvelle activité';
   try{if('setAppBadge' in self.navigator)self.navigator.setAppBadge(1);}catch(e){}
-  self.registration.showNotification(title,{
-    body,
-    icon:'https://yvesgrumet.github.io/maman/icone-maman.png',
-    badge:'https://yvesgrumet.github.io/maman/icone-maman.png',
-    tag:'suivi-maman',
-    renotify:true,
-    vibrate:[200,100,200],
-    data:{url:'https://yvesgrumet.github.io/maman/'}
-  });
+  event.waitUntil(
+    self.registration.showNotification(title,{
+      body,
+      icon:'https://yvesgrumet.github.io/maman/icone-maman.png',
+      badge:'https://yvesgrumet.github.io/maman/icone-maman.png',
+      tag:'suivi-maman',
+      renotify:true,
+      vibrate:[200,100,200],
+      data:{url:'https://yvesgrumet.github.io/maman/'}
+    })
+  );
 });
 
 self.addEventListener('notificationclick',event=>{

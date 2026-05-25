@@ -12,7 +12,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Lato',sans-serif;background:#fdf6f9;color:#3d2040;min-height:100vh;}
@@ -452,73 +451,46 @@ firebase.initializeApp({
 const db=firebase.database();
 
 // ── PUSH NOTIFICATIONS ───────────────────────────────────────
-// ÉTAPE 1 : Coller ici la clé VAPID (Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → Generate key pair)
-const VAPID_KEY='BAGvv2HmZeEq23ZLlyaLiMoUAAM7C1wbUYYKlJELZOHnWT3bSt99wUp-LXJoWouJ0slICgXomvR-HJ3wtCMMhCE';
-// ÉTAPE 2 : Coller ici l'URL de votre Cloudflare Worker après déploiement
+const VAPID_PUBLIC_KEY='BNfhMRQ0zGIPnj1YVnUuEVN_MIwy0SCeYMCrvEkebEljvNEgBFe3VQvsQVJ5blNzHfWrqPx7CjLa7a7szOqLAAs';
 const CF_WORKER_URL='https://maman-push.yves-grumet.workers.dev/';
-// Mot de passe secret — doit être identique dans le Worker Cloudflare (variable PUSH_SECRET)
 const PUSH_SECRET='famille-maman-2024';
 
-let fcmToken=null;
-async function initFCM(){
-  if(!familyUser){return;}
-  if(!('serviceWorker' in navigator)||!('Notification' in window)){
-    alert('Ton navigateur ne supporte pas les notifications push.');return;
-  }
+function urlB64ToUint8Array(b){
+  const pad='='.repeat((4-b.length%4)%4);
+  return Uint8Array.from(atob((b+pad).replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+}
+async function initPush(){
+  if(!familyUser)return;
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
   try{
-    const perm=await Notification.requestPermission();
-    if(perm==='denied'){alert('Notifications bloquées. Va dans Réglages > Applications > Suivi Maman > Notifications et autorise.');return;}
-    if(perm!=='granted'){alert('Permission non accordée ('+perm+').');return;}
-
-    // Essayer plusieurs chemins pour le service worker
-    let reg=null;
-    const swPaths=[
-      location.origin+'/firebase-messaging-sw.js',
-      location.origin+'/maman/firebase-messaging-sw.js',
-      './firebase-messaging-sw.js'
-    ];
-    for(const swPath of swPaths){
-      try{
-        reg=await navigator.serviceWorker.register(swPath);
-        console.log('SW ok:',swPath);
-        break;
-      }catch(swErr){console.log('SW fail:',swPath,swErr.message);}
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      const perm=await Notification.requestPermission();
+      if(perm!=='granted')return;
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8Array(VAPID_PUBLIC_KEY)});
     }
-    if(!reg){alert('Erreur : impossible d\'enregistrer le service worker. Contacte Yves.');return;}
-
-    await navigator.serviceWorker.ready;
-    const messaging=firebase.messaging();
-    fcmToken=await messaging.getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
-    if(fcmToken){
-      await db.ref('fcm_tokens/'+familyUser).set({token:fcmToken,ts:new Date().toISOString()});
-      toast('🔔 Notifications activées pour '+familyUser+' !');
-    }else{
-      alert('Erreur FCM : token vide. Essaie de recharger la page.');
-    }
-  }catch(e){
-    alert('Erreur notifications : '+e.message);
-    console.error('FCM error:',e);
-  }
+    const s=sub.toJSON();
+    await db.ref('push_subs/'+familyUser).set({endpoint:s.endpoint,p256dh:s.keys.p256dh,auth:s.keys.auth,ts:new Date().toISOString()});
+    toast('🔔 Notifications activées pour '+familyUser+' !');
+    document.getElementById('nbar').style.display='none';
+  }catch(e){toast('Erreur push: '+e.message);console.error('Push error:',e);}
 }
 async function sendPushToFamily(title,notifBody){
   try{
-    const snap=await db.ref('fcm_tokens').once('value');
+    const snap=await db.ref('push_subs').once('value');
     if(!snap.exists())return;
-    const tokens=[];
-    snap.forEach(function(child){
-      const v=child.val();
-      if(v&&v.token)tokens.push(v.token);
-    });
-    if(!tokens.length)return;
+    const subs=[];
+    snap.forEach(function(child){const v=child.val();if(v&&v.endpoint)subs.push(v);});
+    if(!subs.length)return;
     const resp=await fetch(CF_WORKER_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json','X-Push-Secret':PUSH_SECRET},
-      body:JSON.stringify({title,notifBody,icon:'https://yvesgrumet.github.io/maman/icone-maman.png',tokens})
+      body:JSON.stringify({title,body:notifBody,subs})
     });
     const data=await resp.json();
-    console.log('Push envoyé:',data);
     toast('Push: '+data.sent+'/'+data.total+' envoyés');
-  }catch(e){console.error('Push error:',e);toast('Push erreur: '+e.message);}
+  }catch(e){console.error('Push error:',e);}
 }
 
 let entries=[],rdvs=[],unavails=[];
@@ -673,10 +645,7 @@ showAnnivs();
 (function(){if(!('Notification' in window))return;document.getElementById('nbar').classList.add('show');})();
 function askNotif(){
   if(!familyUser){toast('👤 Choisis d\'abord qui tu es (onglet Journal → 👍 sur un événement)');return;}
-  initFCM().then(()=>{
-    if(Notification.permission==='granted')document.getElementById('nbar').style.display='none';
-    else document.getElementById('nBtn').textContent='🔕 Bloquées — autorise dans les réglages';
-  });
+  initPush();
 }
 
 // Badge
@@ -1045,7 +1014,7 @@ let familyUser=localStorage.getItem('familyUser')||null;
 let pendingReactKey=null;
 let pendingReactType=null;
 let pendingReactMode=null;
-if(familyUser)initFCM();
+if(familyUser)initPush();
 
 function openUserPicker(entryKey,type,mode){
   pendingReactKey=entryKey;
@@ -1060,7 +1029,7 @@ function closeUserPicker(){document.getElementById('userPickerModal').style.disp
 function selectUser(uid){
   familyUser=uid;localStorage.setItem('familyUser',uid);
   document.getElementById('userPickerModal').style.display='none';
-  initFCM();
+  initPush();
   if(pendingReactKey){
     if(pendingReactMode==='unavail'){toggleUnavailReaction(pendingReactKey);}
     else{toggleReaction(pendingReactKey,pendingReactType);}
