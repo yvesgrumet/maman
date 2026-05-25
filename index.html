@@ -517,7 +517,8 @@ async function sendPushToFamily(title,notifBody){
     });
     const data=await resp.json();
     console.log('Push envoyé:',data);
-  }catch(e){console.error('Push error:',e);}
+    toast('Push: '+data.sent+'/'+data.total+' envoyés');
+  }catch(e){console.error('Push error:',e);toast('Push erreur: '+e.message);}
 }
 
 let entries=[],rdvs=[],unavails=[];
