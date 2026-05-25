@@ -1,7 +1,10 @@
 self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',e=>e.waitUntil(clients.claim()));
 self.addEventListener('message',e=>{
-  if(e.data==='clearBadge')try{if('clearAppBadge' in self.navigator)self.navigator.clearAppBadge();}catch(e){}
+  if(e.data==='clearBadge'){
+    try{if('clearAppBadge' in self.navigator)self.navigator.clearAppBadge();}catch(e){}
+    self.registration.getNotifications().then(function(notifs){notifs.forEach(function(n){n.close();});});
+  }
 });
 
 self.addEventListener('push',event=>{
