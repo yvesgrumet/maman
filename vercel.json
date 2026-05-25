@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/maman/firebase-messaging-sw.js", "destination": "/firebase-messaging-sw.js" }
+  ]
+}
