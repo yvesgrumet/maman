@@ -1,5 +1,8 @@
 self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',e=>e.waitUntil(clients.claim()));
+self.addEventListener('message',e=>{
+  if(e.data==='clearBadge')try{if('clearAppBadge' in self.navigator)self.navigator.clearAppBadge();}catch(e){}
+});
 
 self.addEventListener('push',event=>{
   const data=event.data?.json()||{};

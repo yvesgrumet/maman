@@ -1014,8 +1014,9 @@ function renderJournal(){
 
 // ── RÉACTIONS ───────────────────────────────────────────
 let familyUser=localStorage.getItem('familyUser')||null;
-try{if('clearAppBadge' in navigator)navigator.clearAppBadge();}catch(e){}
-document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')try{if('clearAppBadge' in navigator)navigator.clearAppBadge();}catch(e){}});
+function clearBadge(){try{if('clearAppBadge' in navigator)navigator.clearAppBadge();}catch(e){}if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage('clearBadge');}
+clearBadge();
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')clearBadge();});
 let pendingReactKey=null;
 let pendingReactType=null;
 let pendingReactMode=null;
