@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Lato',sans-serif;background:#fdf6f9;color:#3d2040;min-height:100vh;}
@@ -450,6 +451,43 @@ firebase.initializeApp({
 });
 const db=firebase.database();
 
+// ── PUSH NOTIFICATIONS ───────────────────────────────────────
+// ÉTAPE 1 : Coller ici la clé VAPID (Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → Generate key pair)
+const VAPID_KEY='VOTRE_CLE_VAPID_ICI';
+// ÉTAPE 2 : Coller ici l'URL de votre Cloudflare Worker après déploiement
+const CF_WORKER_URL='VOTRE_URL_WORKER_ICI';
+// Mot de passe secret — doit être identique dans le Worker Cloudflare (variable PUSH_SECRET)
+const PUSH_SECRET='famille-maman-2024';
+
+let fcmToken=null;
+async function initFCM(){
+  if(!familyUser||!('serviceWorker' in navigator))return;
+  if(VAPID_KEY==='VOTRE_CLE_VAPID_ICI'||CF_WORKER_URL==='VOTRE_URL_WORKER_ICI')return;
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted')return;
+    const reg=await navigator.serviceWorker.register('/maman/firebase-messaging-sw.js');
+    const messaging=firebase.messaging();
+    fcmToken=await messaging.getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
+    if(fcmToken)await db.ref('fcm_tokens/'+familyUser).set({token:fcmToken,ts:new Date().toISOString()});
+  }catch(e){console.log('FCM:',e);}
+}
+async function sendPushToFamily(title,notifBody){
+  if(CF_WORKER_URL==='VOTRE_URL_WORKER_ICI')return;
+  try{
+    const snap=await db.ref('fcm_tokens').once('value');
+    if(!snap.exists())return;
+    const tokens=[];
+    snap.forEach(child=>{if(child.key!==familyUser&&child.val()?.token)tokens.push(child.val().token);});
+    if(!tokens.length)return;
+    fetch(CF_WORKER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Push-Secret':PUSH_SECRET},
+      body:JSON.stringify({title,notifBody,icon:'https://yvesgrumet.github.io/maman/icone-famille.png',tokens})
+    });
+  }catch(e){}
+}
+
 let entries=[],rdvs=[],unavails=[];
 let selWho='',selWho2='',selUWho='';
 let selPers=[],selEmos=[],selActs=[],selPhoto=null;
@@ -597,6 +635,7 @@ function showAnnivs(){
   document.getElementById('hAnniv').innerHTML=msgs.map(msg=>'<span>'+msg+'</span>').join('');
 }
 showAnnivs();
+if(familyUser)initFCM();
 
 // Notifications
 (function(){if(!('Notification' in window))return;if(Notification.permission!=='granted')document.getElementById('nbar').classList.add('show');})();
@@ -660,7 +699,9 @@ async function saveEntry(){
   try{
     const savedDate=document.getElementById('eDate').value;
     if(savedDate){const[sy,sm]=savedDate.split('-').map(Number);calY=sy;calM=sm-1;lastDay=savedDate;}
-    await db.ref('entries').push({who:selWho,date:savedDate,time:document.getElementById('eTime').value,periods:[...selPers],emotions:selEmos.map(e=>({label:e.label,cat:e.cat})),actions:[...selActs],note:document.getElementById('eNote').value.trim(),photo:selPhoto||null,ts:new Date().toISOString()});
+    const note=document.getElementById('eNote').value.trim();
+    await db.ref('entries').push({who:selWho,date:savedDate,time:document.getElementById('eTime').value,periods:[...selPers],emotions:selEmos.map(e=>({label:e.label,cat:e.cat})),actions:[...selActs],note,photo:selPhoto||null,ts:new Date().toISOString()});
+    sendPushToFamily('💛 Nouvelle visite de Maman',selWho+' vient d\'enregistrer une visite'+(note?' · '+note.slice(0,60):''));
     document.querySelectorAll('.chip.on,.per.on,.eb.on,.ab.on').forEach(el=>el.classList.remove('on'));
     selWho='';selPers=[];selEmos=[];selActs=[];
     document.getElementById('eNote').value='';rmPhoto();initForm();
@@ -983,6 +1024,7 @@ function closeUserPicker(){document.getElementById('userPickerModal').style.disp
 function selectUser(uid){
   familyUser=uid;localStorage.setItem('familyUser',uid);
   document.getElementById('userPickerModal').style.display='none';
+  initFCM();
   if(pendingReactKey){
     if(pendingReactMode==='unavail'){toggleUnavailReaction(pendingReactKey);}
     else{toggleReaction(pendingReactKey,pendingReactType);}
