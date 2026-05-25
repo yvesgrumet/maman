@@ -21,6 +21,7 @@ self.addEventListener('push',event=>{
 
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
+  try{if('clearAppBadge' in self.navigator)self.navigator.clearAppBadge();}catch(e){}
   event.waitUntil(
     clients.matchAll({type:'window'}).then(list=>{
       for(const c of list){if(c.url.includes('/maman/')&&'focus' in c)return c.focus();}

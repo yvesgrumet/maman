@@ -1014,6 +1014,8 @@ function renderJournal(){
 
 // ── RÉACTIONS ───────────────────────────────────────────
 let familyUser=localStorage.getItem('familyUser')||null;
+try{if('clearAppBadge' in navigator)navigator.clearAppBadge();}catch(e){}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')try{if('clearAppBadge' in navigator)navigator.clearAppBadge();}catch(e){}});
 let pendingReactKey=null;
 let pendingReactType=null;
 let pendingReactMode=null;
