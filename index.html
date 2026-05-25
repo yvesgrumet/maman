@@ -461,21 +461,44 @@ const PUSH_SECRET='famille-maman-2024';
 
 let fcmToken=null;
 async function initFCM(){
-  if(!familyUser||!('serviceWorker' in navigator)){toast('🔔 Navigateur non compatible');return;}
+  if(!familyUser){return;}
+  if(!('serviceWorker' in navigator)||!('Notification' in window)){
+    alert('Ton navigateur ne supporte pas les notifications push.');return;
+  }
   try{
     const perm=await Notification.requestPermission();
-    if(perm!=='granted'){toast('🔕 Notifications refusées — active-les dans les réglages');return;}
-    const reg=await navigator.serviceWorker.register('/maman/firebase-messaging-sw.js');
+    if(perm==='denied'){alert('Notifications bloquées. Va dans Réglages > Applications > Suivi Maman > Notifications et autorise.');return;}
+    if(perm!=='granted'){alert('Permission non accordée ('+perm+').');return;}
+
+    // Essayer plusieurs chemins pour le service worker
+    let reg=null;
+    const swPaths=[
+      location.origin+'/firebase-messaging-sw.js',
+      location.origin+'/maman/firebase-messaging-sw.js',
+      './firebase-messaging-sw.js'
+    ];
+    for(const swPath of swPaths){
+      try{
+        reg=await navigator.serviceWorker.register(swPath);
+        console.log('SW ok:',swPath);
+        break;
+      }catch(swErr){console.log('SW fail:',swPath,swErr.message);}
+    }
+    if(!reg){alert('Erreur : impossible d\'enregistrer le service worker. Contacte Yves.');return;}
+
     await navigator.serviceWorker.ready;
     const messaging=firebase.messaging();
     fcmToken=await messaging.getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
     if(fcmToken){
       await db.ref('fcm_tokens/'+familyUser).set({token:fcmToken,ts:new Date().toISOString()});
-      toast('🔔 Notifications activées !');
+      toast('🔔 Notifications activées pour '+familyUser+' !');
     }else{
-      toast('⚠️ Token FCM vide — réessaie');
+      alert('Erreur FCM : token vide. Essaie de recharger la page.');
     }
-  }catch(e){toast('⚠️ Erreur notif : '+e.message);console.error('FCM:',e);}
+  }catch(e){
+    alert('Erreur notifications : '+e.message);
+    console.error('FCM error:',e);
+  }
 }
 async function sendPushToFamily(title,notifBody){
   try{
@@ -646,7 +669,7 @@ function showAnnivs(){
 showAnnivs();
 
 // Notifications
-(function(){if(!('Notification' in window))return;if(Notification.permission!=='granted')document.getElementById('nbar').classList.add('show');})();
+(function(){if(!('Notification' in window))return;document.getElementById('nbar').classList.add('show');})();
 function askNotif(){
   if(!familyUser){toast('👤 Choisis d\'abord qui tu es (onglet Journal → 👍 sur un événement)');return;}
   initFCM().then(()=>{
