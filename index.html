@@ -635,7 +635,6 @@ function showAnnivs(){
   document.getElementById('hAnniv').innerHTML=msgs.map(msg=>'<span>'+msg+'</span>').join('');
 }
 showAnnivs();
-if(familyUser)initFCM();
 
 // Notifications
 (function(){if(!('Notification' in window))return;if(Notification.permission!=='granted')document.getElementById('nbar').classList.add('show');})();
@@ -1010,6 +1009,7 @@ let familyUser=localStorage.getItem('familyUser')||null;
 let pendingReactKey=null;
 let pendingReactType=null;
 let pendingReactMode=null;
+if(familyUser)initFCM();
 
 function openUserPicker(entryKey,type,mode){
   pendingReactKey=entryKey;
