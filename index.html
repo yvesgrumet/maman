@@ -1064,6 +1064,7 @@ function buildReactRow(entryKey,r){
   r=r||{};
   const likes=Object.keys(r).filter(function(k){return r[k]==='like';});
   const hearts=Object.keys(r).filter(function(k){return r[k]==='heart';});
+  const sads=Object.keys(r).filter(function(k){return r[k]==='sad';});
   const myReact=familyUser?r[familyUser]:null;
   function mkAvs(uids){
     return uids.slice(0,5).map(function(uid){
@@ -1079,11 +1080,13 @@ function buildReactRow(entryKey,r){
   }
   const likeOn=myReact==='like';
   const heartOn=myReact==='heart';
+  const sadOn=myReact==='sad';
   const likeBtn='<button type="button" class="react-btn react-like'+(likeOn?' on':'')+'" onclick="toggleReaction(\''+entryKey+'\',\'like\')">👍'+(likes.length?' '+likes.length:'')+'</button>';
   const heartBtn='<button type="button" class="react-btn react-heart'+(heartOn?' on':'')+'" onclick="toggleReaction(\''+entryKey+'\',\'heart\')">❤️'+(hearts.length?' '+hearts.length:'')+'</button>';
-  const allU=[...likes,...hearts];
+  const sadBtn='<button type="button" class="react-btn react-sad'+(sadOn?' on':'')+'" onclick="toggleReaction(\''+entryKey+'\',\'sad\')">😢'+(sads.length?' '+sads.length:'')+'</button>';
+  const allU=[...likes,...hearts,...sads];
   const avsHtml=allU.length?'<div style="display:inline-flex;align-items:center;gap:3px;margin-left:4px;">'+mkAvs(allU)+(mkNames(allU)?'<span style="font-size:0.75rem;color:#8a6080;font-weight:700;margin-left:5px;">'+mkNames(allU)+'</span>':'')+'</div>':'';
-  return'<div class="react-row">'+likeBtn+heartBtn+avsHtml+'</div>';
+  return'<div class="react-row">'+likeBtn+heartBtn+sadBtn+avsHtml+'</div>';
 }
 function mkReactRow(e){
   return buildReactRow(e._k,e.reactions||{});
