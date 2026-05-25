@@ -21,7 +21,9 @@ export default {
       subs.map(sub=>sendWebPush(sub,{title,body:notifBody},env))
     );
     const sent=results.filter(r=>r.status==='fulfilled').length;
-    return Response.json({sent,total:subs.length},{headers:cors()});
+    const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason?.message||'?');
+    const stale=results.map((r,i)=>r.status==='rejected'&&/40[13]/.test(r.reason?.message||'')?subs[i].endpoint:null).filter(Boolean);
+    return Response.json({sent,total:subs.length,errors,stale},{headers:cors()});
   }
 };
 
@@ -62,10 +64,13 @@ async function vapidJwt(endpoint,pubB64u,privB64u){
   const pay={aud,exp:Math.floor(Date.now()/1000)+43200,sub:'mailto:suivi-maman@grumet.fr'};
   const enc=o=>btoa(JSON.stringify(o)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
   const msg=`${enc(hdr)}.${enc(pay)}`;
-  const privKey=await crypto.subtle.importKey(
-    'pkcs8',fromB64u(privB64u).buffer,
-    {name:'ECDSA',namedCurve:'P-256'},false,['sign']
-  );
+  const pub=fromB64u(pubB64u);
+  const jwk={kty:'EC',crv:'P-256',
+    d:privB64u,
+    x:toB64u(pub.slice(1,33)),
+    y:toB64u(pub.slice(33,65)),
+    key_ops:['sign'],ext:true};
+  const privKey=await crypto.subtle.importKey('jwk',jwk,{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
   const sig=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},privKey,new TextEncoder().encode(msg));
   return`${msg}.${toB64u(sig)}`;
 }
@@ -99,7 +104,7 @@ async function encryptPayload(plaintext,ua_pub_b64u,auth_b64u){
 
 async function sendWebPush(sub,{title,body},env){
   const encrypted=await encryptPayload(JSON.stringify({title,body}),sub.p256dh,sub.auth);
-  const jwt=await vapidJwt(sub.endpoint,env.VAPID_PUBLIC_KEY,env.VAPID_PRIVATE_KEY);
+  const jwt=await vapidJwt(sub.endpoint,env.VAPID_PUBLIC_KEY,env.VAPID_PRIVATE_D);
   const resp=await fetch(sub.endpoint,{
     method:'POST',
     headers:{

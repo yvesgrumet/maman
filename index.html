@@ -481,8 +481,8 @@ async function sendPushToFamily(title,notifBody){
   try{
     const snap=await db.ref('push_subs').once('value');
     if(!snap.exists())return;
-    const subs=[];
-    snap.forEach(function(child){const v=child.val();if(v&&v.endpoint)subs.push(v);});
+    const subs=[],keys={};
+    snap.forEach(function(child){const v=child.val();if(v&&v.endpoint){subs.push(v);keys[v.endpoint]=child.key;}});
     if(!subs.length)return;
     const resp=await fetch(CF_WORKER_URL,{
       method:'POST',
@@ -490,9 +490,10 @@ async function sendPushToFamily(title,notifBody){
       body:JSON.stringify({title,body:notifBody,subs})
     });
     const data=await resp.json();
-    const errMsg=data.errors&&data.errors.length?' ⚠️ '+data.errors[0].slice(0,80):'';
-    toast('Push: '+data.sent+'/'+data.total+' envoyés'+errMsg);
-  }catch(e){console.error('Push error:',e);toast('Push erreur: '+e.message);}
+    if(data.stale&&data.stale.length){
+      data.stale.forEach(function(ep){if(keys[ep])db.ref('push_subs/'+keys[ep]).remove();});
+    }
+  }catch(e){console.error('Push error:',e);}
 }
 
 let entries=[],rdvs=[],unavails=[];
