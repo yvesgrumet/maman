@@ -658,10 +658,7 @@ function askNotif(){
 // Badge
 const _lastVisit=parseInt(localStorage.getItem('lv')||'0',10);
 localStorage.setItem('lv',Date.now().toString());
-let _badgeSet=false;
 function updateBadge(){
-  if(_badgeSet)return;
-  _badgeSet=true;
   try{
     const n=entries.filter(function(e){return e.ts&&new Date(e.ts).getTime()>_lastVisit;}).length;
     if('setAppBadge' in navigator){if(n>0)navigator.setAppBadge(n);else navigator.clearAppBadge();}

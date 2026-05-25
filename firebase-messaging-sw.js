@@ -14,10 +14,11 @@ firebase.initializeApp({
 firebase.messaging().onBackgroundMessage(payload=>{
   const title=payload.notification?.title||'💛 Suivi Maman';
   const body=payload.notification?.body||'Nouvelle activité';
+  try{if('setAppBadge' in self.navigator)self.navigator.setAppBadge(1);}catch(e){}
   self.registration.showNotification(title,{
     body,
-    icon:payload.notification?.icon||'/maman/icone-famille.png',
-    badge:'/maman/icone-famille.png',
+    icon:'https://yvesgrumet.github.io/maman/icone-maman.png',
+    badge:'https://yvesgrumet.github.io/maman/icone-maman.png',
     tag:'suivi-maman',
     renotify:true,
     vibrate:[200,100,200],
