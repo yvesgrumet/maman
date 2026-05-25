@@ -490,8 +490,9 @@ async function sendPushToFamily(title,notifBody){
       body:JSON.stringify({title,body:notifBody,subs})
     });
     const data=await resp.json();
-    toast('Push: '+data.sent+'/'+data.total+' envoyés');
-  }catch(e){console.error('Push error:',e);}
+    const errMsg=data.errors&&data.errors.length?' ⚠️ '+data.errors[0].slice(0,80):'';
+    toast('Push: '+data.sent+'/'+data.total+' envoyés'+errMsg);
+  }catch(e){console.error('Push error:',e);toast('Push erreur: '+e.message);}
 }
 
 let entries=[],rdvs=[],unavails=[];
