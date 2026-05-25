@@ -463,13 +463,14 @@ async function initPush(){
   if(!familyUser)return;
   if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
   try{
-    const reg=await navigator.serviceWorker.ready;
+    const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    await reg.update();
+    await navigator.serviceWorker.ready;
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted')return;
     let sub=await reg.pushManager.getSubscription();
-    if(!sub){
-      const perm=await Notification.requestPermission();
-      if(perm!=='granted')return;
-      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8Array(VAPID_PUBLIC_KEY)});
-    }
+    if(sub)await sub.unsubscribe();
+    sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8Array(VAPID_PUBLIC_KEY)});
     const s=sub.toJSON();
     await db.ref('push_subs/'+familyUser).set({endpoint:s.endpoint,p256dh:s.keys.p256dh,auth:s.keys.auth,ts:new Date().toISOString()});
     toast('🔔 Notifications activées pour '+familyUser+' !');
