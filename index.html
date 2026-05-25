@@ -461,31 +461,40 @@ const PUSH_SECRET='famille-maman-2024';
 
 let fcmToken=null;
 async function initFCM(){
-  if(!familyUser||!('serviceWorker' in navigator))return;
-  if(VAPID_KEY==='VOTRE_CLE_VAPID_ICI'||CF_WORKER_URL==='VOTRE_URL_WORKER_ICI')return;
+  if(!familyUser||!('serviceWorker' in navigator)){toast('🔔 Navigateur non compatible');return;}
   try{
     const perm=await Notification.requestPermission();
-    if(perm!=='granted')return;
+    if(perm!=='granted'){toast('🔕 Notifications refusées — active-les dans les réglages');return;}
     const reg=await navigator.serviceWorker.register('/maman/firebase-messaging-sw.js');
+    await navigator.serviceWorker.ready;
     const messaging=firebase.messaging();
     fcmToken=await messaging.getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
-    if(fcmToken)await db.ref('fcm_tokens/'+familyUser).set({token:fcmToken,ts:new Date().toISOString()});
-  }catch(e){console.log('FCM:',e);}
+    if(fcmToken){
+      await db.ref('fcm_tokens/'+familyUser).set({token:fcmToken,ts:new Date().toISOString()});
+      toast('🔔 Notifications activées !');
+    }else{
+      toast('⚠️ Token FCM vide — réessaie');
+    }
+  }catch(e){toast('⚠️ Erreur notif : '+e.message);console.error('FCM:',e);}
 }
 async function sendPushToFamily(title,notifBody){
-  if(CF_WORKER_URL==='VOTRE_URL_WORKER_ICI')return;
   try{
     const snap=await db.ref('fcm_tokens').once('value');
     if(!snap.exists())return;
     const tokens=[];
-    snap.forEach(child=>{if(child.key!==familyUser&&child.val()?.token)tokens.push(child.val().token);});
+    snap.forEach(function(child){
+      const v=child.val();
+      if(v&&v.token)tokens.push(v.token);
+    });
     if(!tokens.length)return;
-    fetch(CF_WORKER_URL,{
+    const resp=await fetch(CF_WORKER_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json','X-Push-Secret':PUSH_SECRET},
-      body:JSON.stringify({title,notifBody,icon:'https://yvesgrumet.github.io/maman/icone-famille.png',tokens})
+      body:JSON.stringify({title,notifBody,icon:'https://yvesgrumet.github.io/maman/icone-maman.png',tokens})
     });
-  }catch(e){}
+    const data=await resp.json();
+    console.log('Push envoyé:',data);
+  }catch(e){console.error('Push error:',e);}
 }
 
 let entries=[],rdvs=[],unavails=[];
@@ -638,7 +647,13 @@ showAnnivs();
 
 // Notifications
 (function(){if(!('Notification' in window))return;if(Notification.permission!=='granted')document.getElementById('nbar').classList.add('show');})();
-function askNotif(){Notification.requestPermission().then(p=>{if(p==='granted'){document.getElementById('nbar').style.display='none';toast('🔔 Notifications activées !');}else document.getElementById('nBtn').textContent='🔕 Bloquées';});}
+function askNotif(){
+  if(!familyUser){toast('👤 Choisis d\'abord qui tu es (onglet Journal → 👍 sur un événement)');return;}
+  initFCM().then(()=>{
+    if(Notification.permission==='granted')document.getElementById('nbar').style.display='none';
+    else document.getElementById('nBtn').textContent='🔕 Bloquées — autorise dans les réglages';
+  });
+}
 
 // Badge
 const _lastVisit=parseInt(localStorage.getItem('lv')||'0',10);
