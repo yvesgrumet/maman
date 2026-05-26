@@ -503,6 +503,8 @@ textarea{resize:vertical;min-height:70px;}
   <span onclick="doReactF('😢')">😢</span>
   <span onclick="doReactF('😡')">😡</span>
   <span onclick="doReactF('👍')">👍</span>
+  <span style="width:1px;background:#e0e0e0;align-self:stretch;margin:0 2px;"></span>
+  <span onclick="doReactF('🗑️')" title="Supprimer" style="font-size:1.25rem;">🗑️</span>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -1461,7 +1463,7 @@ function renderGroupMsgsF(){
       +'<div class="ms-row'+(isMe?' me':'')+'">'
       +(!isMe?'<div class="ms-av2'+(nextSame?' hide':'')+'" style="background:'+col+'">'+ini+'</div>':'')
       +'<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';max-width:72%;">'
-      +'<div class="ms-bubble '+(isMe?'me':'them')+'" onclick="showRPopF(event,\''+m._k+'\')">'
+      +'<div class="ms-bubble '+(isMe?'me':'them')+'" onclick="showRPopF(event,\''+m._k+'\',\''+m.from+'\')">'
       +escHtmlF(m.text)+'</div>'
       +rctsHtml
       +'</div></div>';
@@ -1491,10 +1493,10 @@ function ftGF(ts){
   const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
   return d.getDate()+' '+mo[d.getMonth()]+' '+t;
 }
-let rpopKeyF=null;
-function showRPopF(e,key){
+let rpopKeyF=null,rpopFromF=null;
+function showRPopF(e,key,from){
   e.stopPropagation();
-  rpopKeyF=key;
+  rpopKeyF=key;rpopFromF=from||'';
   const pop=document.getElementById('rPopF');
   pop.classList.add('on');
   const r=e.currentTarget.getBoundingClientRect();
@@ -1507,12 +1509,17 @@ function closeRPopF(){const p=document.getElementById('rPopF');if(p)p.classList.
 function doReactF(emoji){
   if(!rpopKeyF)return;
   const who=familyUser||dmWho;
-  if(!who){toast('⚠️ Choisis qui tu es !');closeRPopF();return;}
   const key=rpopKeyF;closeRPopF();
+  if(emoji==='🗑️'){
+    if(!who||rpopFromF!==who){toast('⚠️ Tu ne peux supprimer que tes propres messages');return;}
+    db.ref('group_messages/'+key).remove();return;
+  }
+  if(!who){toast('⚠️ Choisis qui tu es !');return;}
   const ref=db.ref('group_messages/'+key+'/reactions/'+who);
   ref.once('value',function(snap){if(snap.exists()&&snap.val()===emoji)ref.remove();else ref.set(emoji);});
 }
 function escHtmlF(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function delDmF(e,who,key){e.stopPropagation();db.ref('direct_messages/'+who+'/'+key).remove();}
 document.addEventListener('click',function(){closeRPopF();});
 function updateGrpBadgeF(){
   const myId=familyUser;
@@ -1549,10 +1556,12 @@ function renderDirectMsgs(msgs,who){
   const myName=me?me.name:who;
   body.innerHTML=msgs.map(function(m){
     const fromMaman=m.from==='maman';
-    return '<div style="display:flex;flex-direction:column;align-items:'+(fromMaman?'flex-start':'flex-end')+';">'
+    const delBtn='<button onclick="delDmF(event,\''+who+'\',\''+m._k+'\')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:0.75rem;padding:2px 5px;flex-shrink:0;line-height:1;">✕</button>';
+    return '<div style="display:flex;align-items:center;gap:3px;justify-content:'+(fromMaman?'flex-start':'flex-end')+';margin-bottom:2px;">'
+      +(fromMaman?'':delBtn)
       +'<div class="dm-bbl '+(fromMaman?'dm-maman':'dm-me')+'">'+(m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
       +'<div class="dm-bbl-t">'+(fromMaman?'Maman 💛':myName)+' · '+ft(m.ts)+'</div>'
-      +'</div></div>';
+      +'</div>'+(fromMaman?delBtn:'')+'</div>';
   }).join('');
   body.scrollTop=body.scrollHeight;
 }

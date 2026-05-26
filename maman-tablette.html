@@ -328,6 +328,8 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
   <span onclick="doReact('😢')">😢</span>
   <span onclick="doReact('😡')">😡</span>
   <span onclick="doReact('👍')">👍</span>
+  <span style="width:1px;background:#e0e0e0;align-self:stretch;margin:0 2px;"></span>
+  <span onclick="doReact('🗑️')" title="Supprimer" style="font-size:1.25rem;">🗑️</span>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -634,10 +636,12 @@ function renderChat(msgs,who){
   if(!msgs.length){body.innerHTML='<div style="text-align:center;color:#c0a0b8;padding:20px;font-size:0.85rem;">Aucun message encore 💬<br>Écris le premier !</div>';return;}
   body.innerHTML=msgs.map(function(m){
     const fromMaman=m.from==='maman';
-    return '<div style="display:flex;flex-direction:column;align-items:'+(fromMaman?'flex-start':'flex-end')+';">'
+    const delBtn='<button onclick="delDmT(event,\''+who+'\',\''+m._k+'\')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:0.75rem;padding:2px 5px;flex-shrink:0;line-height:1;">✕</button>';
+    return '<div style="display:flex;align-items:center;gap:3px;justify-content:'+(fromMaman?'flex-start':'flex-end')+';margin-bottom:2px;">'
+      +(fromMaman?'':delBtn)
       +'<div class="bbl '+(fromMaman?'bm':'bc')+'">'+escHtml(m.text)
       +'<div class="bbl-t">'+(fromMaman?'Maman':(NOMS[who]||who))+' · '+ft(m.ts)+'</div>'
-      +'</div></div>';
+      +'</div>'+(fromMaman?delBtn:'')+'</div>';
   }).join('');
   body.scrollTop=body.scrollHeight;
 }
@@ -649,6 +653,7 @@ function sendChatMsg(){
   db.ref('direct_messages/'+currentChatWho).push({text:text,from:'maman',ts:new Date().toISOString(),read:false});
 }
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function delDmT(e,who,key){e.stopPropagation();db.ref('direct_messages/'+who+'/'+key).remove();}
 function openPanel(which,btn){
   document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -710,7 +715,7 @@ function renderGroupMsgs(msgs,myId){
       +'<div class="ms-row'+(isMe?' me':'')+'">'
       +(!isMe?'<div class="ms-av2'+(nextSame?' hide':'')+'" style="background:'+col+'">'+ini+'</div>':'')
       +'<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';max-width:72%;">'
-      +'<div class="ms-bubble '+(isMe?'me':'them')+'" onclick="showRPop(event,\''+m._k+'\')">'
+      +'<div class="ms-bubble '+(isMe?'me':'them')+'" onclick="showRPop(event,\''+m._k+'\',\''+m.from+'\')">'
       +escHtml(m.text)+'</div>'
       +rctsHtml
       +'</div></div>';
@@ -736,10 +741,10 @@ function ftG(ts){
   const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
   return d.getDate()+' '+mo[d.getMonth()]+' '+t;
 }
-let rpopKey=null;
-function showRPop(e,key){
+let rpopKey=null,rpopFrom=null;
+function showRPop(e,key,from){
   e.stopPropagation();
-  rpopKey=key;
+  rpopKey=key;rpopFrom=from||'';
   const pop=document.getElementById('rPop');
   pop.classList.add('on');
   const r=e.currentTarget.getBoundingClientRect();
@@ -752,6 +757,7 @@ function closeRPop(){const p=document.getElementById('rPop');if(p)p.classList.re
 function doReact(emoji){
   if(!rpopKey)return;
   const key=rpopKey;closeRPop();
+  if(emoji==='🗑️'){db.ref('group_messages/'+key).remove();return;}
   const ref=db.ref('group_messages/'+key+'/reactions/maman');
   ref.once('value',function(snap){if(snap.exists()&&snap.val()===emoji)ref.remove();else ref.set(emoji);});
 }
