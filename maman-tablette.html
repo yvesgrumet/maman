@@ -280,7 +280,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
     <div class="chat-body" id="chatBody"></div>
     <div class="chat-foot">
-      <input class="chat-inp" id="chatInp" type="text" placeholder="Ton message..." onkeydown="if(event.key==='Enter')sendChatMsg()">
+      <input class="chat-inp" id="chatInp" type="text" placeholder="Ton message..." onkeydown="if(event.key==='Enter')sendChatMsg()" onpaste="handleGifPasteT(event,'dm')">
       <button class="gif-btn" onclick="openGifPickerT('dm')">GIF</button>
       <button class="chat-send" onclick="sendChatMsg()">➤</button>
     </div>
@@ -294,7 +294,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
     <div class="ms-body" id="groupBody" style="max-height:320px;flex:1;"></div>
     <div class="ms-foot">
-      <input class="ms-inp" id="groupInp" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsg()">
+      <input class="ms-inp" id="groupInp" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsg()" onpaste="handleGifPasteT(event,'group')">
       <button class="gif-btn" onclick="openGifPickerT('group')">GIF</button>
       <button class="ms-sbtn" onclick="sendGroupMsg()">➤</button>
     </div>
@@ -705,6 +705,22 @@ function pickGifT(url){
   } else if(gifCtxT==='dm'&&currentChatWho){
     db.ref('direct_messages/'+currentChatWho).push({gif:url,text:'',from:'maman',ts:new Date().toISOString(),read:false});
   }
+}
+function handleGifPasteT(e,ctx){
+  const items=e.clipboardData?Array.from(e.clipboardData.items):[];
+  const imgItem=items.find(function(it){return it.type.startsWith('image/');});
+  if(!imgItem)return;
+  e.preventDefault();
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const dataUrl=ev.target.result;
+    if(ctx==='group'){
+      db.ref('group_messages').push({gif:dataUrl,text:'',from:'maman',fromName:'Maman 💛',ts:new Date().toISOString()});
+    }else if(ctx==='dm'&&currentChatWho){
+      db.ref('direct_messages/'+currentChatWho).push({gif:dataUrl,text:'',from:'maman',ts:new Date().toISOString(),read:false});
+    }
+  };
+  reader.readAsDataURL(imgItem.getAsFile());
 }
 function openPanel(which,btn){
   document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));

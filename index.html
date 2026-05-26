@@ -475,7 +475,7 @@ textarea{resize:vertical;min-height:70px;}
     </div>
     <div class="ms-body" id="groupBodyF" style="max-height:350px;border-radius:0;"></div>
     <div style="padding:8px 12px;border-top:1px solid #e4e6eb;background:#fff;display:flex;gap:7px;align-items:center;">
-      <input class="ms-inp2" id="groupInpF" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsgF()">
+      <input class="ms-inp2" id="groupInpF" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsgF()" onpaste="handleGifPasteF(event,'group')">
       <button class="gif-btnF" onclick="openGifPickerF('group')">GIF</button>
       <button class="ms-sbtn2" onclick="sendGroupMsgF()">➤</button>
     </div>
@@ -497,7 +497,7 @@ textarea{resize:vertical;min-height:70px;}
     <div id="dmChatArea" style="display:none;">
       <div class="dm-body" id="dmBody"></div>
       <div class="dm-foot">
-        <input class="dm-inp" id="dmInp" type="text" placeholder="Ton message à Maman..." onkeydown="if(event.key==='Enter')sendDirectMsg()">
+        <input class="dm-inp" id="dmInp" type="text" placeholder="Ton message à Maman..." onkeydown="if(event.key==='Enter')sendDirectMsg()" onpaste="handleGifPasteF(event,'dm')">
         <button class="gif-btnF" onclick="openGifPickerF('dm')">GIF</button>
         <button class="dm-send" onclick="sendDirectMsg()">➤</button>
       </div>
@@ -1578,6 +1578,26 @@ function pickGifF(url){
   } else if(gifCtxF==='dm'&&dmWho){
     db.ref('direct_messages/'+dmWho).push({gif:url,text:'',from:dmWho,ts:new Date().toISOString(),read:false});
   }
+}
+function handleGifPasteF(e,ctx){
+  const items=e.clipboardData?Array.from(e.clipboardData.items):[];
+  const imgItem=items.find(function(it){return it.type.startsWith('image/');});
+  if(!imgItem)return;
+  e.preventDefault();
+  const who=familyUser||dmWho;
+  if(ctx==='group'&&!who){toast('⚠️ Choisis d\'abord qui tu es !');return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const dataUrl=ev.target.result;
+    if(ctx==='group'){
+      const co=CONTACTS.find(function(c){return c.id===who;});
+      const fromName=co?co.name:who;
+      db.ref('group_messages').push({gif:dataUrl,text:'',from:who,fromName,ts:new Date().toISOString()});
+    }else if(ctx==='dm'&&dmWho){
+      db.ref('direct_messages/'+dmWho).push({gif:dataUrl,text:'',from:dmWho,ts:new Date().toISOString(),read:false});
+    }
+  };
+  reader.readAsDataURL(imgItem.getAsFile());
 }
 document.addEventListener('click',function(){closeRPopF();});
 function updateGrpBadgeF(){
