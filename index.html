@@ -207,6 +207,14 @@ textarea{resize:vertical;min-height:70px;}
 .dm-inp{flex:1;border:1.5px solid #edd9e8;border-radius:22px;padding:9px 14px;font-family:'Lato',sans-serif;font-size:0.9rem;color:#3d2040;outline:none;}
 .dm-inp:focus{border-color:#c4789a;}
 .dm-send{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.gif-btnF{background:none;border:2px solid #0084ff;border-radius:6px;color:#0084ff;font-size:0.72rem;font-weight:700;padding:2px 6px;cursor:pointer;flex-shrink:0;font-family:'Lato',sans-serif;line-height:1.4;letter-spacing:0.5px;}
+.gif-pickerF{display:none;position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #e4e6eb;z-index:700;flex-direction:column;max-height:55vh;box-shadow:0 -4px 20px rgba(0,0,0,0.15);}
+.gif-pickerF.on{display:flex;}
+.gif-s-barF{display:flex;gap:7px;padding:8px 10px;border-bottom:1px solid #e4e6eb;}
+.gif-s-inpF{flex:1;border:1.5px solid #e4e6eb;border-radius:20px;padding:7px 14px;font-size:0.88rem;outline:none;background:#f0f2f5;color:#1c1e21;font-family:'Lato',sans-serif;}
+.gif-s-inpF:focus{border-color:#0084ff;}
+.gif-gridF{overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:6px;}
+.gif-gridF img{width:100%;height:80px;object-fit:cover;cursor:pointer;border-radius:5px;}
 </style>
 </head>
 <body>
@@ -468,6 +476,7 @@ textarea{resize:vertical;min-height:70px;}
     <div class="ms-body" id="groupBodyF" style="max-height:350px;border-radius:0;"></div>
     <div style="padding:8px 12px;border-top:1px solid #e4e6eb;background:#fff;display:flex;gap:7px;align-items:center;">
       <input class="ms-inp2" id="groupInpF" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsgF()">
+      <button class="gif-btnF" onclick="openGifPickerF('group')">GIF</button>
       <button class="ms-sbtn2" onclick="sendGroupMsgF()">➤</button>
     </div>
   </div>
@@ -489,12 +498,20 @@ textarea{resize:vertical;min-height:70px;}
       <div class="dm-body" id="dmBody"></div>
       <div class="dm-foot">
         <input class="dm-inp" id="dmInp" type="text" placeholder="Ton message à Maman..." onkeydown="if(event.key==='Enter')sendDirectMsg()">
+        <button class="gif-btnF" onclick="openGifPickerF('dm')">GIF</button>
         <button class="dm-send" onclick="sendDirectMsg()">➤</button>
       </div>
     </div>
   </div>
 </div>
 
+</div>
+<div class="gif-pickerF" id="gifPickerF">
+  <div class="gif-s-barF">
+    <input class="gif-s-inpF" id="gifSearchF" type="text" placeholder="Rechercher un GIF..." oninput="loadGifsF(this.value)">
+    <button onclick="closeGifPickerF()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888;">✕</button>
+  </div>
+  <div class="gif-gridF" id="gifGridF"></div>
 </div>
 <div class="rpopF" id="rPopF">
   <span onclick="doReactF('❤️')">❤️</span>
@@ -1459,18 +1476,22 @@ function renderGroupMsgsF(){
       const parts=Object.entries(counts).map(function(e){return e[0]+(e[1]>1?'<small style="font-size:0.72rem;color:#555;margin-left:1px;">'+e[1]+'</small>':'');});
       if(parts.length)rctsHtml='<div style="text-align:'+(isMe?'right':'left')+'"><div class="ms-rcts">'+parts.join('')+'</div></div>';
     }
+    const delBtnF=isMe?'<button onclick="delGroupF(\''+m._k+'\')" style="background:none;border:none;cursor:pointer;color:#bbb;font-size:0.72rem;padding:2px 5px;flex-shrink:0;align-self:flex-start;margin-top:5px;line-height:1;">✕</button>':'';
+    const bubbleContentF=m.gif?'<img src="'+m.gif+'" style="max-width:200px;border-radius:12px;display:block;">':escHtmlF(m.text||'');
     html+=(showName?'<div class="ms-sname">'+escHtmlF(m.fromName||m.from)+'</div>':'')
       +'<div class="ms-row'+(isMe?' me':'')+'">'
       +(!isMe?'<div class="ms-av2'+(nextSame?' hide':'')+'" style="background:'+col+'">'+ini+'</div>':'')
+      +(isMe?delBtnF:'')
       +'<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';max-width:72%;">'
       +'<div class="ms-bubble '+(isMe?'me':'them')+'" onclick="showRPopF(event,\''+m._k+'\',\''+m.from+'\')">'
-      +escHtmlF(m.text)+'</div>'
+      +bubbleContentF+'</div>'
       +rctsHtml
       +'</div></div>';
   });
   body.innerHTML=html;
   body.scrollTop=body.scrollHeight;
 }
+function delGroupF(key){db.ref('group_messages/'+key).remove();}
 async function sendGroupMsgF(){
   const inp=document.getElementById('groupInpF');
   const text=inp.value.trim();
@@ -1520,6 +1541,44 @@ function doReactF(emoji){
 }
 function escHtmlF(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function delDmF(e,who,key){e.stopPropagation();db.ref('direct_messages/'+who+'/'+key).remove();}
+let gifCtxF=null;
+function openGifPickerF(ctx){
+  gifCtxF=ctx;
+  document.getElementById('gifPickerF').classList.add('on');
+  document.getElementById('gifSearchF').value='';
+  loadGifsF('');
+}
+function closeGifPickerF(){
+  document.getElementById('gifPickerF').classList.remove('on');
+  gifCtxF=null;
+}
+function loadGifsF(q){
+  const key='dc6zaTOxFJmzC';
+  const url=q?
+    'https://api.giphy.com/v1/gifs/search?api_key='+key+'&q='+encodeURIComponent(q)+'&limit=18&rating=g':
+    'https://api.giphy.com/v1/gifs/trending?api_key='+key+'&limit=18&rating=g';
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    const grid=document.getElementById('gifGridF');
+    if(!data.data||!data.data.length){grid.innerHTML='<div style="padding:12px;color:#aaa;font-size:0.85rem;">Aucun GIF trouvé</div>';return;}
+    grid.innerHTML=data.data.map(function(g){
+      const src=g.images.fixed_height_small?g.images.fixed_height_small.url:g.images.downsized.url;
+      const full=g.images.fixed_height?g.images.fixed_height.url:g.images.downsized.url;
+      return '<img src="'+src+'" onclick="pickGifF(\''+full+'\')" loading="lazy">';
+    }).join('');
+  }).catch(function(){});
+}
+function pickGifF(url){
+  const who=familyUser||dmWho;
+  closeGifPickerF();
+  if(gifCtxF==='group'){
+    if(!who){toast('⚠️ Choisis d\'abord qui tu es !');return;}
+    const co=CONTACTS.find(function(c){return c.id===who;});
+    const fromName=co?co.name:who;
+    db.ref('group_messages').push({gif:url,text:'',from:who,fromName,ts:new Date().toISOString()});
+  } else if(gifCtxF==='dm'&&dmWho){
+    db.ref('direct_messages/'+dmWho).push({gif:url,text:'',from:dmWho,ts:new Date().toISOString(),read:false});
+  }
+}
 document.addEventListener('click',function(){closeRPopF();});
 function updateGrpBadgeF(){
   const myId=familyUser;
@@ -1557,9 +1616,10 @@ function renderDirectMsgs(msgs,who){
   body.innerHTML=msgs.map(function(m){
     const fromMaman=m.from==='maman';
     const delBtn='<button onclick="delDmF(event,\''+who+'\',\''+m._k+'\')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:0.75rem;padding:2px 5px;flex-shrink:0;line-height:1;">✕</button>';
+    const dmContent=m.gif?'<img src="'+m.gif+'" style="max-width:180px;border-radius:10px;display:block;">':(m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return '<div style="display:flex;align-items:center;gap:3px;justify-content:'+(fromMaman?'flex-start':'flex-end')+';margin-bottom:2px;">'
       +(fromMaman?'':delBtn)
-      +'<div class="dm-bbl '+(fromMaman?'dm-maman':'dm-me')+'">'+(m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      +'<div class="dm-bbl '+(fromMaman?'dm-maman':'dm-me')+'">'+dmContent
       +'<div class="dm-bbl-t">'+(fromMaman?'Maman 💛':myName)+' · '+ft(m.ts)+'</div>'
       +'</div>'+(fromMaman?delBtn:'')+'</div>';
   }).join('');
