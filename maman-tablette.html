@@ -142,6 +142,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .chat-inp{flex:1;border:1.5px solid #edd9e8;border-radius:22px;padding:9px 14px;font-family:'Lato',sans-serif;font-size:0.95rem;color:#3d2040;outline:none;}
 .chat-inp:focus{border-color:#c4789a;}
 .chat-send{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+[contenteditable=true]:empty::before{content:attr(data-ph);color:#aaa;pointer-events:none;display:block;}
 </style>
 </head>
 <body>
@@ -272,7 +273,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
     <div class="chat-body" id="chatBody"></div>
     <div class="chat-foot">
-      <input class="chat-inp" id="chatInp" type="text" placeholder="Ton message..." onkeydown="if(event.key==='Enter')sendChatMsg()" onpaste="handleGifPasteT(event,'dm')">
+      <div class="chat-inp" id="chatInp" contenteditable="true" data-ph="Ton message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></div>
       <button class="chat-send" onclick="sendChatMsg()">➤</button>
     </div>
   </div>
@@ -285,7 +286,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
     <div class="ms-body" id="groupBody" style="max-height:320px;flex:1;"></div>
     <div class="ms-foot">
-      <input class="ms-inp" id="groupInp" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsg()" onpaste="handleGifPasteT(event,'group')">
+      <div class="ms-inp" id="groupInp" contenteditable="true" data-ph="Écrire un message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendGroupMsg();}"></div>
       <button class="ms-sbtn" onclick="sendGroupMsg()">➤</button>
     </div>
   </div>
@@ -615,7 +616,7 @@ function openMsg(who,btn){
   const c=COLS[who]||'#7d4e6b';
   document.getElementById('chatHdr').style.background='linear-gradient(135deg,'+c+','+c+'bb)';
   document.getElementById('chatName').textContent='💬 '+(NOMS[who]||who);
-  document.getElementById('chatInp').value='';
+  document.getElementById('chatInp').textContent='';
   document.getElementById('panelChat').classList.add('open');
   document.getElementById('panelChat').scrollIntoView({behavior:'smooth',block:'nearest'});
   // Marquer les messages non lus comme lus
@@ -648,29 +649,22 @@ function renderChat(msgs,who){
 }
 function sendChatMsg(){
   const inp=document.getElementById('chatInp');
-  const text=inp.value.trim();
-  if(!text||!currentChatWho)return;
-  inp.value='';
-  db.ref('direct_messages/'+currentChatWho).push({text:text,from:'maman',ts:new Date().toISOString(),read:false});
+  if(!currentChatWho)return;
+  const img=inp.querySelector('img');
+  if(img){
+    const src=img.src;inp.innerHTML='';
+    const send=function(u){db.ref('direct_messages/'+currentChatWho).push({gif:u,text:'',from:'maman',ts:new Date().toISOString(),read:false});};
+    if(src.startsWith('blob:')){fetch(src).then(function(r){return r.blob();}).then(function(b){const rd=new FileReader();rd.onload=function(e){send(e.target.result);};rd.readAsDataURL(b);});}
+    else{send(src);}
+    return;
+  }
+  const text=inp.textContent.trim();
+  if(!text)return;
+  inp.textContent='';
+  db.ref('direct_messages/'+currentChatWho).push({text,from:'maman',ts:new Date().toISOString(),read:false});
 }
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function delDmT(e,who,key){e.stopPropagation();db.ref('direct_messages/'+who+'/'+key).remove();}
-function handleGifPasteT(e,ctx){
-  const items=e.clipboardData?Array.from(e.clipboardData.items):[];
-  const imgItem=items.find(function(it){return it.type.startsWith('image/');});
-  if(!imgItem)return;
-  e.preventDefault();
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    const dataUrl=ev.target.result;
-    if(ctx==='group'){
-      db.ref('group_messages').push({gif:dataUrl,text:'',from:'maman',fromName:'Maman 💛',ts:new Date().toISOString()});
-    }else if(ctx==='dm'&&currentChatWho){
-      db.ref('direct_messages/'+currentChatWho).push({gif:dataUrl,text:'',from:'maman',ts:new Date().toISOString(),read:false});
-    }
-  };
-  reader.readAsDataURL(imgItem.getAsFile());
-}
 function openPanel(which,btn){
   document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -748,9 +742,17 @@ function renderGroupMsgs(msgs,myId){
 function delGroupT(key){db.ref('group_messages/'+key).remove();}
 function sendGroupMsg(){
   const inp=document.getElementById('groupInp');
-  const text=inp.value.trim();
+  const img=inp.querySelector('img');
+  if(img){
+    const src=img.src;inp.innerHTML='';
+    const send=function(u){db.ref('group_messages').push({gif:u,text:'',from:'maman',fromName:'Maman 💛',ts:new Date().toISOString()});};
+    if(src.startsWith('blob:')){fetch(src).then(function(r){return r.blob();}).then(function(b){const rd=new FileReader();rd.onload=function(e){send(e.target.result);};rd.readAsDataURL(b);});}
+    else{send(src);}
+    return;
+  }
+  const text=inp.textContent.trim();
   if(!text)return;
-  inp.value='';
+  inp.textContent='';
   db.ref('group_messages').push({text,from:'maman',fromName:'Maman 💛',ts:new Date().toISOString()});
 }
 function ftG(ts){
