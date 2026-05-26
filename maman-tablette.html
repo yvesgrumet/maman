@@ -108,6 +108,19 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .toast.show{transform:translateX(-50%) translateY(0);}
 .sc.on{background:#89b5a0;border-color:#89b5a0;color:#fff;}
 .ri{font-size:1.05rem;padding:13px 14px;}
+/* CHAT INTERNE */
+.chat-panel{display:none;flex-direction:column;background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(125,78,107,0.15);margin-bottom:10px;overflow:hidden;border:1.5px solid #edd9e8;animation:pop 0.2s ease;}
+.chat-panel.open{display:flex;}
+.chat-hdr{padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.chat-body{overflow-y:auto;max-height:260px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#fdf6f9;}
+.bbl{max-width:75%;padding:8px 12px;border-radius:14px;font-size:0.9rem;line-height:1.4;word-break:break-word;}
+.bbl.bm{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border-bottom-left-radius:4px;align-self:flex-start;}
+.bbl.bc{background:#e8f0fe;color:#1a2a3a;border-bottom-right-radius:4px;align-self:flex-end;}
+.bbl-t{font-size:0.6rem;opacity:0.7;margin-top:3px;}
+.chat-foot{padding:8px 10px;display:flex;gap:7px;border-top:1.5px solid #edd9e8;background:#fff;}
+.chat-inp{flex:1;border:1.5px solid #edd9e8;border-radius:22px;padding:9px 14px;font-family:'Lato',sans-serif;font-size:0.95rem;color:#3d2040;outline:none;}
+.chat-inp:focus{border-color:#c4789a;}
+.chat-send{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 </style>
 </head>
 <body>
@@ -231,14 +244,15 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
   </div>
 
   <!-- PANNEAUX APPS — s'ouvrent juste sous les rendez-vous -->
-  <div class="panel" id="panelMsg">
-    <div class="ph" id="panelMsgHdr" style="background:linear-gradient(135deg,#0084ff,#0066cc)">
-      <div class="pt"><span id="panelIcon">💬</span><span id="panelName">Messenger</span></div>
+  <div class="chat-panel" id="panelChat">
+    <div class="chat-hdr" id="chatHdr" style="background:linear-gradient(135deg,#7d4e6b,#c47898)">
+      <div class="pt" style="font-family:'Playfair Display',serif;font-size:0.88rem;color:#fff8ee;" id="chatName">💬</div>
       <button class="px" onclick="closePanel()">✕</button>
     </div>
-    <div class="pb">
-      <a id="msgLink" href="#" class="open-btn" style="background:linear-gradient(135deg,#0084ff,#0066cc);" onclick="return openExt(this.href)">💬 Ouvrir Messenger</a>
-      <p class="sim-note">Appuie pour ouvrir directement la conversation</p>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-foot">
+      <input class="chat-inp" id="chatInp" type="text" placeholder="Ton message..." onkeydown="if(event.key==='Enter')sendChatMsg()">
+      <button class="chat-send" onclick="sendChatMsg()">➤</button>
     </div>
   </div>
 
@@ -556,21 +570,54 @@ function startCountdown(sec){
 function hideSent(){document.getElementById('sentBanner').classList.remove('show');sentKey=null;}
 async function deleteSent(){if(sentKey)await db.ref('maman_status/'+sentKey).remove();if(cntInt)clearInterval(cntInt);hideSent();toast('🗑️ Message supprimé');}
 
-// RACCOURCIS
+// CHAT INTERNE
+let currentChatWho=null,currentChatRef=null;
 function openMsg(who,btn){
   document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   closeAllPanels();
   const b=document.getElementById('b-'+who);
   if(b){b.textContent='';b.classList.remove('show');}
-  const c=COLS[who]||'#0084ff';
-  document.getElementById('panelIcon').textContent='💬';
-  document.getElementById('panelName').textContent='Messenger — '+(NOMS[who]||who);
-  document.getElementById('panelMsgHdr').style.background='linear-gradient(135deg,'+c+','+c+'bb)';
-  document.getElementById('msgLink').href=MSGS[who]||'fb-messenger://';
-  document.getElementById('panelMsg').classList.add('open');
-  document.getElementById('panelMsg').scrollIntoView({behavior:'smooth',block:'nearest'});
+  currentChatWho=who;
+  const c=COLS[who]||'#7d4e6b';
+  document.getElementById('chatHdr').style.background='linear-gradient(135deg,'+c+','+c+'bb)';
+  document.getElementById('chatName').textContent='💬 '+(NOMS[who]||who);
+  document.getElementById('chatInp').value='';
+  document.getElementById('panelChat').classList.add('open');
+  document.getElementById('panelChat').scrollIntoView({behavior:'smooth',block:'nearest'});
+  // Marquer les messages non lus comme lus
+  db.ref('direct_messages/'+who).orderByChild('read').equalTo(false).once('value',function(snap){
+    if(snap.exists()){const u={};snap.forEach(function(ch){if(ch.val().from!=='maman')u[ch.key+'/read']=true;});if(Object.keys(u).length)db.ref('direct_messages/'+who).update(u);}
+  });
+  // Listener Firebase
+  if(currentChatRef){currentChatRef.off();currentChatRef=null;}
+  currentChatRef=db.ref('direct_messages/'+who).orderByChild('ts').limitToLast(40);
+  currentChatRef.on('value',function(snap){
+    const msgs=[];
+    if(snap.exists())snap.forEach(function(ch){msgs.push(Object.assign({},ch.val(),{_k:ch.key}));});
+    renderChat(msgs,who);
+  });
 }
+function renderChat(msgs,who){
+  const body=document.getElementById('chatBody');
+  if(!msgs.length){body.innerHTML='<div style="text-align:center;color:#c0a0b8;padding:20px;font-size:0.85rem;">Aucun message encore 💬<br>Écris le premier !</div>';return;}
+  body.innerHTML=msgs.map(function(m){
+    const fromMaman=m.from==='maman';
+    return '<div style="display:flex;flex-direction:column;align-items:'+(fromMaman?'flex-start':'flex-end')+';">'
+      +'<div class="bbl '+(fromMaman?'bm':'bc')+'">'+escHtml(m.text)
+      +'<div class="bbl-t">'+(fromMaman?'Maman':(NOMS[who]||who))+' · '+ft(m.ts)+'</div>'
+      +'</div></div>';
+  }).join('');
+  body.scrollTop=body.scrollHeight;
+}
+function sendChatMsg(){
+  const inp=document.getElementById('chatInp');
+  const text=inp.value.trim();
+  if(!text||!currentChatWho)return;
+  inp.value='';
+  db.ref('direct_messages/'+currentChatWho).push({text:text,from:'maman',ts:new Date().toISOString(),read:false});
+}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function openPanel(which,btn){
   document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -580,7 +627,7 @@ function openPanel(which,btn){
   const ids={mamancie:'panelMamancie',banque:'panelBanque',google:'panelGoogle',facebook:'panelFacebook'};
   if(ids[which]){document.getElementById(ids[which]).classList.add('open');document.getElementById(ids[which]).scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
-function closeAllPanels(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));}
+function closeAllPanels(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));document.getElementById('panelChat').classList.remove('open');if(currentChatRef){currentChatRef.off();currentChatRef=null;}currentChatWho=null;}
 function closePanel(){closeAllPanels();document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));}
 function openExt(url){window.open(url,'_blank');return false;}
 
@@ -589,6 +636,16 @@ function openExt(url){window.open(url,'_blank');return false;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function ft(ts){if(!ts)return'';const d=new Date(ts);const m=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return d.getDate()+' '+m[d.getMonth()]+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function fd(d){if(!d)return'';const[y,m,day]=d.split('-');const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return parseInt(day)+' '+mo[parseInt(m)-1]+' '+y;}
+
+// Badges messages directs non lus
+Object.keys(NOMS).forEach(function(who){
+  db.ref('direct_messages/'+who).on('value',function(snap){
+    let unread=0;
+    if(snap.exists())snap.forEach(function(ch){const v=ch.val();if(v.from!=='maman'&&!v.read)unread++;});
+    const b=document.getElementById('b-'+who);
+    if(b){if(unread>0){b.textContent=unread>9?'9+':String(unread);b.classList.add('show');}else{b.textContent='';b.classList.remove('show');}}
+  });
+});
 
 // Init
 const now=new Date();

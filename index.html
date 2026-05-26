@@ -176,6 +176,16 @@ textarea{resize:vertical;min-height:70px;}
 .cedit-btn{background:#faedf3;border:1.5px solid #edd9e8;border-radius:9px;padding:5px 10px;cursor:pointer;font-size:0.78rem;font-weight:700;color:#7d4e6b;}
 .cedit-btn:hover{background:#c4789a;color:#fff;border-color:#c4789a;}
 .csect{font-size:0.7rem;font-weight:700;color:#8a6080;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 4px;padding-bottom:4px;border-bottom:2px solid #faedf3;}
+/* Messages directs */
+.dm-bbl{max-width:78%;padding:9px 13px;border-radius:14px;font-size:0.88rem;line-height:1.4;word-break:break-word;}
+.dm-bbl.dm-maman{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border-bottom-left-radius:4px;align-self:flex-start;}
+.dm-bbl.dm-me{background:#e8f0fe;color:#1a2a3a;border-bottom-right-radius:4px;align-self:flex-end;}
+.dm-bbl-t{font-size:0.6rem;opacity:0.72;margin-top:3px;}
+.dm-body{display:flex;flex-direction:column;gap:7px;padding:12px;background:#fdf6f9;border-radius:11px;max-height:320px;overflow-y:auto;margin-bottom:4px;}
+.dm-foot{display:flex;gap:6px;margin-top:8px;}
+.dm-inp{flex:1;border:1.5px solid #edd9e8;border-radius:22px;padding:9px 14px;font-family:'Lato',sans-serif;font-size:0.9rem;color:#3d2040;outline:none;}
+.dm-inp:focus{border-color:#c4789a;}
+.dm-send{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 </style>
 </head>
 <body>
@@ -192,6 +202,7 @@ textarea{resize:vertical;min-height:70px;}
     <button class="tab" onclick="goTab('journal',this)">📖 Journal</button>
     <button class="tab" onclick="goTab('stats',this)">📊 Bilan</button>
     <button class="tab" onclick="goTab('contacts',this)">📋 Contacts</button>
+    <button class="tab" id="tab-msg-btn" onclick="goTab('messages',this)">💬 Messages<span class="nb" id="msgTabBadge" style="display:none;"></span></button>
   </div>
 </div>
 <div class="sync" id="syncBar">⏳ Connexion...</div>
@@ -421,6 +432,31 @@ textarea{resize:vertical;min-height:70px;}
     <div style="display:flex;gap:8px;">
       <button onclick="saveNewContact()" style="flex:1;background:linear-gradient(135deg,#89b5a0,#5a9a80);color:#fff;border:none;border-radius:12px;padding:11px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;">✅ Enregistrer</button>
       <button onclick="document.getElementById('addContactCard').style.display='none'" style="background:#faedf3;color:#7d4e6b;border:1.5px solid #edd9e8;border-radius:12px;padding:11px 16px;cursor:pointer;font-size:0.9rem;font-family:'Lato',sans-serif;">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGES DIRECTS -->
+<div id="tab-messages" class="sec">
+  <div class="card">
+    <div class="ct">💬 Messages privés avec Maman</div>
+    <div id="dmPickerArea">
+      <div style="font-size:0.8rem;color:#b07898;margin-bottom:7px;">Qui es-tu ?</div>
+      <div class="chips" id="dmWhoChips" style="margin-bottom:12px;">
+        <div class="chip" data-who="francoise" onclick="pickDmWho(this,'francoise')">Françoise</div>
+        <div class="chip" data-who="martine" onclick="pickDmWho(this,'martine')">Martine</div>
+        <div class="chip" data-who="nicole" onclick="pickDmWho(this,'nicole')">Nicole</div>
+        <div class="chip" data-who="pascale" onclick="pickDmWho(this,'pascale')">Pascale</div>
+        <div class="chip" data-who="isabelle" onclick="pickDmWho(this,'isabelle')">Isabelle</div>
+        <div class="chip" data-who="yves" onclick="pickDmWho(this,'yves')">Yves</div>
+      </div>
+    </div>
+    <div id="dmChatArea" style="display:none;">
+      <div class="dm-body" id="dmBody"></div>
+      <div class="dm-foot">
+        <input class="dm-inp" id="dmInp" type="text" placeholder="Ton message à Maman..." onkeydown="if(event.key==='Enter')sendDirectMsg()">
+        <button class="dm-send" onclick="sendDirectMsg()">➤</button>
+      </div>
     </div>
   </div>
 </div>
@@ -678,6 +714,14 @@ function goTab(name,btn){
   if(name==='journal'){renderJournal();clearBadge();}
   if(name==='stats')renderStats();
   if(name==='contacts')renderContacts();
+  if(name==='messages'){
+    if(familyUser&&!dmWho){
+      const chip=document.querySelector('#dmWhoChips .chip[data-who="'+familyUser+'"]');
+      if(chip)pickDmWho(chip,familyUser);
+    }
+    const badge=document.getElementById('msgTabBadge');
+    if(badge)badge.style.display='none';
+  }
 }
 function refreshView(){
   const a=document.querySelector('.sec.on');
@@ -1035,7 +1079,7 @@ function closeUserPicker(){document.getElementById('userPickerModal').style.disp
 function selectUser(uid){
   familyUser=uid;localStorage.setItem('familyUser',uid);
   document.getElementById('userPickerModal').style.display='none';
-  initPush();
+  initPush();initDmBadge();
   if(pendingReactKey){
     if(pendingReactMode==='unavail'){toggleUnavailReaction(pendingReactKey);}
     else{toggleReaction(pendingReactKey,pendingReactType);}
@@ -1337,6 +1381,61 @@ function showAddContact(){
   const c=document.getElementById('addContactCard');
   if(c){c.style.display='block';c.scrollIntoView({behavior:'smooth',block:'start'});}
 }
+
+// ── MESSAGES DIRECTS ───────────────────────────────────────────
+let dmWho=null,dmRef=null;
+function pickDmWho(el,who){
+  document.querySelectorAll('#dmWhoChips .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  dmWho=who;
+  document.getElementById('dmChatArea').style.display='block';
+  // Marquer les messages de Maman comme lus
+  db.ref('direct_messages/'+who).orderByChild('read').equalTo(false).once('value',function(snap){
+    if(snap.exists()){const u={};snap.forEach(function(ch){if(ch.val().from==='maman')u[ch.key+'/read']=true;});if(Object.keys(u).length)db.ref('direct_messages/'+who).update(u);}
+  });
+  if(dmRef){dmRef.off();dmRef=null;}
+  dmRef=db.ref('direct_messages/'+who).orderByChild('ts').limitToLast(40);
+  dmRef.on('value',function(snap){
+    const msgs=[];
+    if(snap.exists())snap.forEach(function(ch){msgs.push(Object.assign({},ch.val(),{_k:ch.key}));});
+    renderDirectMsgs(msgs,who);
+  });
+}
+function renderDirectMsgs(msgs,who){
+  const body=document.getElementById('dmBody');
+  if(!msgs.length){body.innerHTML='<div style="text-align:center;color:#c0a0b8;padding:20px;font-size:0.85rem;">Aucun message encore 💬<br>Maman t\'écrira ici !</div>';return;}
+  const me=CONTACTS.find(c=>c.id===who);
+  const myName=me?me.name:who;
+  body.innerHTML=msgs.map(function(m){
+    const fromMaman=m.from==='maman';
+    return '<div style="display:flex;flex-direction:column;align-items:'+(fromMaman?'flex-start':'flex-end')+';">'
+      +'<div class="dm-bbl '+(fromMaman?'dm-maman':'dm-me')+'">'+(m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      +'<div class="dm-bbl-t">'+(fromMaman?'Maman 💛':myName)+' · '+ft(m.ts)+'</div>'
+      +'</div></div>';
+  }).join('');
+  body.scrollTop=body.scrollHeight;
+}
+async function sendDirectMsg(){
+  const inp=document.getElementById('dmInp');
+  const text=inp.value.trim();
+  if(!text){toast('⚠️ Écris un message !');return;}
+  if(!dmWho){toast('⚠️ Choisis ton prénom !');return;}
+  inp.value='';
+  try{await db.ref('direct_messages/'+dmWho).push({text,from:dmWho,ts:new Date().toISOString(),read:false});toast('💬 Message envoyé à Maman !');}
+  catch(e){toast('❌ Erreur : '+e.message);}
+}
+function initDmBadge(){
+  if(!familyUser)return;
+  db.ref('direct_messages/'+familyUser).on('value',function(snap){
+    let unread=0;
+    if(snap.exists())snap.forEach(function(ch){const v=ch.val();if(v.from==='maman'&&!v.read)unread++;});
+    const badge=document.getElementById('msgTabBadge');
+    if(!badge)return;
+    if(unread>0){badge.textContent=unread>9?'9+':String(unread);badge.style.display='inline-flex';}
+    else{badge.style.display='none';}
+  });
+}
+if(familyUser)initDmBadge();
 
 async function saveNewContact(){
   const name=document.getElementById('ncName').value.trim();
