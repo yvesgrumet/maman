@@ -108,6 +108,27 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .toast.show{transform:translateX(-50%) translateY(0);}
 .sc.on{background:#89b5a0;border-color:#89b5a0;color:#fff;}
 .ri{font-size:1.05rem;padding:13px 14px;}
+/* MESSENGER GROUPE */
+.ms-body{overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:2px;background:#f0f2f5;}
+.ms-row{display:flex;align-items:flex-end;gap:6px;margin-bottom:1px;}
+.ms-row.me{flex-direction:row-reverse;}
+.ms-av2{width:26px;height:26px;border-radius:50%;font-size:0.6rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ms-av2.hide{visibility:hidden;}
+.ms-sname{font-size:0.65rem;color:#8a8a8a;margin-bottom:2px;margin-left:32px;}
+.ms-bubble{padding:8px 12px;border-radius:18px;font-size:0.9rem;line-height:1.4;word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;}
+.ms-bubble.them{background:#e4e6eb;color:#1c1e21;border-bottom-left-radius:4px;}
+.ms-bubble.me{background:linear-gradient(135deg,#0084ff,#0066cc);color:#fff;border-bottom-right-radius:4px;}
+.ms-rcts{display:inline-flex;gap:1px;background:#fff;border-radius:20px;padding:2px 6px;box-shadow:0 1px 4px rgba(0,0,0,0.18);font-size:0.82rem;margin-top:3px;cursor:pointer;}
+.ms-ts-sep{text-align:center;font-size:0.65rem;color:#aaa;margin:8px 0 4px;user-select:none;}
+.ms-foot{padding:7px 9px;display:flex;gap:7px;align-items:center;border-top:1px solid #e4e6eb;background:#fff;}
+.ms-inp{flex:1;border:1.5px solid #e4e6eb;border-radius:22px;padding:8px 14px;font-size:0.92rem;outline:none;background:#f0f2f5;color:#1c1e21;font-family:'Lato',sans-serif;}
+.ms-inp:focus{border-color:#0084ff;background:#fff;}
+.ms-sbtn{background:#0084ff;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rpop{display:none;position:fixed;background:#fff;border-radius:30px;padding:8px 12px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:600;gap:8px;align-items:center;}
+.rpop.on{display:flex;animation:popIn 0.15s ease;}
+@keyframes popIn{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+.rpop span{font-size:1.6rem;cursor:pointer;transition:transform 0.1s;line-height:1;}
+.rpop span:hover,.rpop span:active{transform:scale(1.35);}
 /* CHAT INTERNE */
 .chat-panel{display:none;flex-direction:column;background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(125,78,107,0.15);margin-bottom:10px;overflow:hidden;border:1.5px solid #edd9e8;animation:pop 0.2s ease;}
 .chat-panel.open{display:flex;}
@@ -154,7 +175,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     <button class="sc-btn" onclick="openMsg('pascale',this)"><span class="badge" id="b-pascale"></span><div class="av" style="background:#ff7043">Pa</div><span class="sl">Pascale</span></button>
     <button class="sc-btn" onclick="openMsg('isabelle',this)"><span class="badge" id="b-isabelle"></span><div class="av" style="background:#26c6da">Is</div><span class="sl">Isabelle</span></button>
     <button class="sc-btn" onclick="openMsg('yves',this)"><span class="badge" id="b-yves"></span><div class="av" style="background:#0084ff">Yv</div><span class="sl">Yves</span></button>
-    <button class="sc-btn" onclick="openPanel('mamancie',this)"><span class="badge" id="b-mamancie"></span><div class="av" style="background:#7d4e6b">M&C</div><span class="sl">Maman & Cie</span></button>
+    <button class="sc-btn" onclick="openGroupChat(this)"><span class="badge" id="b-mamancie"></span><div class="av" style="background:#7d4e6b">M&C</div><span class="sl">Maman & Cie</span></button>
   </div>
   <div class="sc-lbl">👶 Mes petits-enfants</div>
   <div class="sc-grid">
@@ -256,14 +277,16 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
   </div>
 
-  <div class="panel" id="panelMamancie">
-    <div class="ph" style="background:linear-gradient(135deg,#7d4e6b,#a060a0)">
-      <div class="pt"><span>🏡</span><span>Maman & Compagnie</span></div>
+  <div class="chat-panel" id="panelGroupe" style="flex-direction:column;">
+    <div style="background:linear-gradient(135deg,#0084ff,#9b59b6);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">👨‍👩‍👧</div>
+      <div style="flex:1;"><div style="font-family:'Playfair Display',serif;font-weight:700;font-size:0.92rem;color:#fff;">Maman & Compagnie</div><div style="font-size:0.7rem;color:rgba(255,255,255,0.85);">Groupe famille</div></div>
       <button class="px" onclick="closePanel()">✕</button>
     </div>
-    <div class="pb">
-      <a href="fb-messenger://" class="open-btn" style="background:linear-gradient(135deg,#7d4e6b,#a060a0);" onclick="return openExt('fb-messenger://')">💬 Ouvrir Messenger</a>
-      <p class="sim-note">Cherche le groupe "Maman & Compagnie"</p>
+    <div class="ms-body" id="groupBody" style="max-height:320px;flex:1;"></div>
+    <div class="ms-foot">
+      <input class="ms-inp" id="groupInp" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsg()">
+      <button class="ms-sbtn" onclick="sendGroupMsg()">➤</button>
     </div>
   </div>
 
@@ -297,6 +320,14 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
   </div>
 
+</div>
+<div class="rpop" id="rPop">
+  <span onclick="doReact('❤️')">❤️</span>
+  <span onclick="doReact('😂')">😂</span>
+  <span onclick="doReact('😮')">😮</span>
+  <span onclick="doReact('😢')">😢</span>
+  <span onclick="doReact('😡')">😡</span>
+  <span onclick="doReact('👍')">👍</span>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -627,7 +658,7 @@ function openPanel(which,btn){
   const ids={mamancie:'panelMamancie',banque:'panelBanque',google:'panelGoogle',facebook:'panelFacebook'};
   if(ids[which]){document.getElementById(ids[which]).classList.add('open');document.getElementById(ids[which]).scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
-function closeAllPanels(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));document.getElementById('panelChat').classList.remove('open');if(currentChatRef){currentChatRef.off();currentChatRef=null;}currentChatWho=null;}
+function closeAllPanels(){document.querySelectorAll('.panel,.chat-panel').forEach(p=>p.classList.remove('open'));if(currentChatRef){currentChatRef.off();currentChatRef=null;}if(groupRef){groupRef.off();groupRef=null;}currentChatWho=null;}
 function closePanel(){closeAllPanels();document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));}
 function openExt(url){window.open(url,'_blank');return false;}
 
@@ -636,6 +667,104 @@ function openExt(url){window.open(url,'_blank');return false;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function ft(ts){if(!ts)return'';const d=new Date(ts);const m=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return d.getDate()+' '+m[d.getMonth()]+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function fd(d){if(!d)return'';const[y,m,day]=d.split('-');const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return parseInt(day)+' '+mo[parseInt(m)-1]+' '+y;}
+
+// GROUPE MAMAN & COMPAGNIE
+let groupRef=null;
+function openGroupChat(btn){
+  document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  closeAllPanels();
+  const b=document.getElementById('b-mamancie');
+  if(b){b.textContent='';b.classList.remove('show');}
+  localStorage.setItem('lgOpen',Date.now().toString());
+  document.getElementById('panelGroupe').classList.add('open');
+  document.getElementById('panelGroupe').scrollIntoView({behavior:'smooth',block:'nearest'});
+  groupRef=db.ref('group_messages').orderByChild('ts').limitToLast(60);
+  groupRef.on('value',function(snap){
+    const msgs=[];
+    if(snap.exists())snap.forEach(function(ch){msgs.push(Object.assign({},ch.val(),{_k:ch.key}));});
+    renderGroupMsgs(msgs,'maman');
+  });
+}
+function renderGroupMsgs(msgs,myId){
+  const body=document.getElementById('groupBody');
+  if(!msgs.length){body.innerHTML='<div style="text-align:center;color:#aaa;padding:24px;font-size:0.85rem;">Aucun message encore 💬</div>';return;}
+  let html='',lastTs=null,lastFrom=null;
+  msgs.forEach(function(m,i){
+    const isMe=m.from===myId;
+    const col=COLS[m.from]||'#7d4e6b';
+    const ini=(m.fromName||m.from||'?').replace(/\s*💛/,'').slice(0,2).toUpperCase();
+    const ts=new Date(m.ts);
+    if(!lastTs||ts-lastTs>30*60*1000){html+='<div class="ms-ts-sep">'+ftG(m.ts)+'</div>';lastTs=ts;}
+    const showName=!isMe&&m.from!==lastFrom;
+    const nextSame=i<msgs.length-1&&msgs[i+1].from===m.from;
+    lastFrom=m.from;
+    let rctsHtml='';
+    if(m.reactions){
+      const counts={};
+      Object.values(m.reactions).forEach(function(e){counts[e]=(counts[e]||0)+1;});
+      const parts=Object.entries(counts).map(function(e){return e[0]+(e[1]>1?'<small style="font-size:0.72rem;color:#555;margin-left:1px;">'+e[1]+'</small>':'');});
+      if(parts.length)rctsHtml='<div style="text-align:'+(isMe?'right':'left')+'"><div class="ms-rcts">'+parts.join('')+'</div></div>';
+    }
+    html+=(showName?'<div class="ms-sname">'+escHtml(m.fromName||m.from)+'</div>':'')
+      +'<div class="ms-row'+(isMe?' me':'')+'">'
+      +(!isMe?'<div class="ms-av2'+(nextSame?' hide':'')+'" style="background:'+col+'">'+ini+'</div>':'')
+      +'<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';max-width:72%;">'
+      +'<div class="ms-bubble '+(isMe?'me':'them')+'" onclick="showRPop(event,\''+m._k+'\')">'
+      +escHtml(m.text)+'</div>'
+      +rctsHtml
+      +'</div></div>';
+  });
+  body.innerHTML=html;
+  body.scrollTop=body.scrollHeight;
+}
+function sendGroupMsg(){
+  const inp=document.getElementById('groupInp');
+  const text=inp.value.trim();
+  if(!text)return;
+  inp.value='';
+  db.ref('group_messages').push({text,from:'maman',fromName:'Maman 💛',ts:new Date().toISOString()});
+}
+function ftG(ts){
+  const d=new Date(ts),now=new Date();
+  const pad=function(n){return String(n).padStart(2,'0');};
+  const t=pad(d.getHours())+':'+pad(d.getMinutes());
+  const diff=now-d;
+  if(diff<86400000&&d.getDate()===now.getDate())return'Aujourd\'hui '+t;
+  const yest=new Date(now);yest.setDate(now.getDate()-1);
+  if(d.getDate()===yest.getDate()&&d.getMonth()===yest.getMonth())return'Hier '+t;
+  const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  return d.getDate()+' '+mo[d.getMonth()]+' '+t;
+}
+let rpopKey=null;
+function showRPop(e,key){
+  e.stopPropagation();
+  rpopKey=key;
+  const pop=document.getElementById('rPop');
+  pop.classList.add('on');
+  const r=e.currentTarget.getBoundingClientRect();
+  const pw=250;
+  let top=r.top-58;if(top<8)top=r.bottom+8;
+  let left=r.left;if(left+pw>window.innerWidth)left=window.innerWidth-pw-8;if(left<8)left=8;
+  pop.style.top=top+'px';pop.style.left=left+'px';
+}
+function closeRPop(){const p=document.getElementById('rPop');if(p)p.classList.remove('on');rpopKey=null;}
+function doReact(emoji){
+  if(!rpopKey)return;
+  const key=rpopKey;closeRPop();
+  const ref=db.ref('group_messages/'+key+'/reactions/maman');
+  ref.once('value',function(snap){if(snap.exists()&&snap.val()===emoji)ref.remove();else ref.set(emoji);});
+}
+document.addEventListener('click',function(){closeRPop();});
+// Badge groupe (messages non lus depuis dernière ouverture)
+let lastGrpOpen=parseInt(localStorage.getItem('lgOpen')||'0',10);
+db.ref('group_messages').orderByChild('ts').limitToLast(20).on('value',function(snap){
+  if(!snap.exists())return;
+  let unread=0;
+  snap.forEach(function(ch){const v=ch.val();if(v.from!=='maman'&&new Date(v.ts).getTime()>lastGrpOpen)unread++;});
+  const b=document.getElementById('b-mamancie');
+  if(b){if(unread>0){b.textContent=unread>9?'9+':String(unread);b.classList.add('show');}else{b.textContent='';b.classList.remove('show');}}
+});
 
 // Badges messages directs non lus
 Object.keys(NOMS).forEach(function(who){

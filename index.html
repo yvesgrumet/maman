@@ -176,6 +176,27 @@ textarea{resize:vertical;min-height:70px;}
 .cedit-btn{background:#faedf3;border:1.5px solid #edd9e8;border-radius:9px;padding:5px 10px;cursor:pointer;font-size:0.78rem;font-weight:700;color:#7d4e6b;}
 .cedit-btn:hover{background:#c4789a;color:#fff;border-color:#c4789a;}
 .csect{font-size:0.7rem;font-weight:700;color:#8a6080;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 4px;padding-bottom:4px;border-bottom:2px solid #faedf3;}
+/* MESSENGER GROUPE */
+.ms-body{overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:2px;background:#f0f2f5;}
+.ms-row{display:flex;align-items:flex-end;gap:6px;margin-bottom:1px;}
+.ms-row.me{flex-direction:row-reverse;}
+.ms-av2{width:26px;height:26px;border-radius:50%;font-size:0.6rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ms-av2.hide{visibility:hidden;}
+.ms-sname{font-size:0.65rem;color:#8a8a8a;margin-bottom:2px;margin-left:32px;}
+.ms-bubble{padding:8px 12px;border-radius:18px;font-size:0.88rem;line-height:1.4;word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;}
+.ms-bubble.them{background:#e4e6eb;color:#1c1e21;border-bottom-left-radius:4px;}
+.ms-bubble.me{background:linear-gradient(135deg,#0084ff,#0066cc);color:#fff;border-bottom-right-radius:4px;}
+.ms-rcts{display:inline-flex;gap:1px;background:#fff;border-radius:20px;padding:2px 6px;box-shadow:0 1px 4px rgba(0,0,0,0.18);font-size:0.82rem;margin-top:3px;cursor:pointer;}
+.ms-ts-sep{text-align:center;font-size:0.65rem;color:#aaa;margin:8px 0 4px;user-select:none;}
+.ms-foot2{padding:7px 0 0;display:flex;gap:7px;align-items:center;}
+.ms-inp2{flex:1;border:1.5px solid #e4e6eb;border-radius:22px;padding:8px 14px;font-size:0.88rem;outline:none;background:#f0f2f5;color:#1c1e21;font-family:'Lato',sans-serif;}
+.ms-inp2:focus{border-color:#0084ff;background:#fff;}
+.ms-sbtn2{background:#0084ff;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rpopF{display:none;position:fixed;background:#fff;border-radius:30px;padding:8px 12px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:600;gap:8px;align-items:center;}
+.rpopF.on{display:flex;animation:popInF 0.15s ease;}
+@keyframes popInF{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+.rpopF span{font-size:1.6rem;cursor:pointer;transition:transform 0.1s;line-height:1;}
+.rpopF span:hover,.rpopF span:active{transform:scale(1.35);}
 /* Messages directs */
 .dm-bbl{max-width:78%;padding:9px 13px;border-radius:14px;font-size:0.88rem;line-height:1.4;word-break:break-word;}
 .dm-bbl.dm-maman{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border-bottom-left-radius:4px;align-self:flex-start;}
@@ -438,6 +459,19 @@ textarea{resize:vertical;min-height:70px;}
 
 <!-- MESSAGES DIRECTS -->
 <div id="tab-messages" class="sec">
+  <!-- GROUPE -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#0084ff,#9b59b6);padding:10px 14px;display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">👨‍👩‍👧</div>
+      <div><div style="font-family:'Playfair Display',serif;font-weight:700;font-size:0.92rem;color:#fff;">Maman & Compagnie</div><div style="font-size:0.7rem;color:rgba(255,255,255,0.85);">Groupe famille</div></div>
+    </div>
+    <div class="ms-body" id="groupBodyF" style="max-height:350px;border-radius:0;"></div>
+    <div style="padding:8px 12px;border-top:1px solid #e4e6eb;background:#fff;display:flex;gap:7px;align-items:center;">
+      <input class="ms-inp2" id="groupInpF" type="text" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendGroupMsgF()">
+      <button class="ms-sbtn2" onclick="sendGroupMsgF()">➤</button>
+    </div>
+  </div>
+  <!-- PRIVÉ -->
   <div class="card">
     <div class="ct">💬 Messages privés avec Maman</div>
     <div id="dmPickerArea">
@@ -461,6 +495,14 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+</div>
+<div class="rpopF" id="rPopF">
+  <span onclick="doReactF('❤️')">❤️</span>
+  <span onclick="doReactF('😂')">😂</span>
+  <span onclick="doReactF('😮')">😮</span>
+  <span onclick="doReactF('😢')">😢</span>
+  <span onclick="doReactF('😡')">😡</span>
+  <span onclick="doReactF('👍')">👍</span>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -715,12 +757,14 @@ function goTab(name,btn){
   if(name==='stats')renderStats();
   if(name==='contacts')renderContacts();
   if(name==='messages'){
+    lastGrpViewF=Date.now();localStorage.setItem('lgvF',String(lastGrpViewF));
+    renderGroupMsgsF();
+    const badge=document.getElementById('msgTabBadge');
+    if(badge)badge.style.display='none';
     if(familyUser&&!dmWho){
       const chip=document.querySelector('#dmWhoChips .chip[data-who="'+familyUser+'"]');
       if(chip)pickDmWho(chip,familyUser);
     }
-    const badge=document.getElementById('msgTabBadge');
-    if(badge)badge.style.display='none';
   }
 }
 function refreshView(){
@@ -1380,6 +1424,103 @@ async function deleteContact(id,name,isCustom){
 function showAddContact(){
   const c=document.getElementById('addContactCard');
   if(c){c.style.display='block';c.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+
+// ── GROUPE MAMAN & COMPAGNIE ────────────────────────────────────
+let groupMsgsF=[],lastGrpViewF=parseInt(localStorage.getItem('lgvF')||'0',10);
+db.ref('group_messages').orderByChild('ts').limitToLast(60).on('value',function(snap){
+  groupMsgsF=[];
+  if(snap.exists())snap.forEach(function(ch){groupMsgsF.push(Object.assign({},ch.val(),{_k:ch.key}));});
+  if(document.getElementById('tab-messages').classList.contains('on'))renderGroupMsgsF();
+  updateGrpBadgeF();
+});
+function renderGroupMsgsF(){
+  const body=document.getElementById('groupBodyF');
+  if(!body)return;
+  const myId=familyUser||dmWho;
+  if(!groupMsgsF.length){body.innerHTML='<div style="text-align:center;color:#aaa;padding:24px;font-size:0.85rem;">Aucun message encore 💬<br>Sois le premier à écrire !</div>';return;}
+  let html='',lastTs=null,lastFrom=null;
+  groupMsgsF.forEach(function(m,i){
+    const isMe=m.from===myId;
+    const co=CONTACTS.find(function(c){return c.id===m.from;});
+    const col=co?co.col:'#7d4e6b';
+    const ini=(m.fromName||m.from||'?').replace(/\s*💛/,'').slice(0,2).toUpperCase();
+    const ts=new Date(m.ts);
+    if(!lastTs||ts-lastTs>30*60*1000){html+='<div class="ms-ts-sep">'+ftGF(m.ts)+'</div>';lastTs=ts;}
+    const showName=!isMe&&m.from!==lastFrom;
+    const nextSame=i<groupMsgsF.length-1&&groupMsgsF[i+1].from===m.from;
+    lastFrom=m.from;
+    let rctsHtml='';
+    if(m.reactions){
+      const counts={};
+      Object.values(m.reactions).forEach(function(e){counts[e]=(counts[e]||0)+1;});
+      const parts=Object.entries(counts).map(function(e){return e[0]+(e[1]>1?'<small style="font-size:0.72rem;color:#555;margin-left:1px;">'+e[1]+'</small>':'');});
+      if(parts.length)rctsHtml='<div style="text-align:'+(isMe?'right':'left')+'"><div class="ms-rcts">'+parts.join('')+'</div></div>';
+    }
+    html+=(showName?'<div class="ms-sname">'+escHtmlF(m.fromName||m.from)+'</div>':'')
+      +'<div class="ms-row'+(isMe?' me':'')+'">'
+      +(!isMe?'<div class="ms-av2'+(nextSame?' hide':'')+'" style="background:'+col+'">'+ini+'</div>':'')
+      +'<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';max-width:72%;">'
+      +'<div class="ms-bubble '+(isMe?'me':'them')+'" onclick="showRPopF(event,\''+m._k+'\')">'
+      +escHtmlF(m.text)+'</div>'
+      +rctsHtml
+      +'</div></div>';
+  });
+  body.innerHTML=html;
+  body.scrollTop=body.scrollHeight;
+}
+async function sendGroupMsgF(){
+  const inp=document.getElementById('groupInpF');
+  const text=inp.value.trim();
+  if(!text)return;
+  const who=familyUser||dmWho;
+  if(!who){toast('⚠️ Choisis d\'abord qui tu es !');return;}
+  inp.value='';
+  const co=CONTACTS.find(function(c){return c.id===who;});
+  const fromName=co?co.name:who;
+  try{await db.ref('group_messages').push({text,from:who,fromName,ts:new Date().toISOString()});}
+  catch(e){toast('❌ Erreur : '+e.message);}
+}
+function ftGF(ts){
+  const d=new Date(ts),now=new Date();
+  const pad=function(n){return String(n).padStart(2,'0');};
+  const t=pad(d.getHours())+':'+pad(d.getMinutes());
+  if(now-d<86400000&&d.getDate()===now.getDate())return'Aujourd\'hui '+t;
+  const yest=new Date(now);yest.setDate(now.getDate()-1);
+  if(d.getDate()===yest.getDate()&&d.getMonth()===yest.getMonth())return'Hier '+t;
+  const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  return d.getDate()+' '+mo[d.getMonth()]+' '+t;
+}
+let rpopKeyF=null;
+function showRPopF(e,key){
+  e.stopPropagation();
+  rpopKeyF=key;
+  const pop=document.getElementById('rPopF');
+  pop.classList.add('on');
+  const r=e.currentTarget.getBoundingClientRect();
+  const pw=250;
+  let top=r.top-58;if(top<8)top=r.bottom+8;
+  let left=r.left;if(left+pw>window.innerWidth)left=window.innerWidth-pw-8;if(left<8)left=8;
+  pop.style.top=top+'px';pop.style.left=left+'px';
+}
+function closeRPopF(){const p=document.getElementById('rPopF');if(p)p.classList.remove('on');rpopKeyF=null;}
+function doReactF(emoji){
+  if(!rpopKeyF)return;
+  const who=familyUser||dmWho;
+  if(!who){toast('⚠️ Choisis qui tu es !');closeRPopF();return;}
+  const key=rpopKeyF;closeRPopF();
+  const ref=db.ref('group_messages/'+key+'/reactions/'+who);
+  ref.once('value',function(snap){if(snap.exists()&&snap.val()===emoji)ref.remove();else ref.set(emoji);});
+}
+function escHtmlF(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+document.addEventListener('click',function(){closeRPopF();});
+function updateGrpBadgeF(){
+  const myId=familyUser;
+  const unread=groupMsgsF.filter(function(m){return new Date(m.ts).getTime()>lastGrpViewF&&m.from!==myId;}).length;
+  const badge=document.getElementById('msgTabBadge');
+  if(!badge)return;
+  if(unread>0){badge.textContent=unread>9?'9+':String(unread);badge.style.display='inline-flex';}
+  else{badge.style.display='none';}
 }
 
 // ── MESSAGES DIRECTS ───────────────────────────────────────────
