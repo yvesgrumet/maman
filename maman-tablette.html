@@ -53,12 +53,19 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .sc-btn.ggl .sl{color:#3d2040;}
 .sc-btn.fb .sl{color:#3d2040;}
 .badge{position:absolute;top:-5px;right:-5px;background:#e53935;color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.64rem;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff;animation:pulse 1.5s infinite;}
-.btn-menu{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.18);padding:7px;display:none;flex-direction:column;gap:4px;z-index:400;min-width:170px;}
-.btn-menu.on{display:flex;}
-.btn-menu .bm-opt{display:flex;align-items:center;gap:9px;padding:10px 13px;border-radius:10px;font-size:0.85rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;font-family:'Lato',sans-serif;width:100%;text-align:left;color:inherit;}
-.btn-menu .bm-msg{background:#faedf3;color:#7d4e6b;}
-.btn-menu .bm-wa{background:#e8faf0;color:#128C7E;}
-.btn-menu .bm-call{background:#e8f4fb;color:#0055cc;}
+.btn-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center;}
+.btn-overlay.on{display:flex;animation:fadeBg 0.2s ease;}
+@keyframes fadeBg{from{opacity:0}to{opacity:1}}
+.btn-sheet{background:#fff;border-radius:30px 30px 0 0;padding:24px 20px 40px;width:100%;max-width:500px;animation:slideUp 0.25s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.btn-sheet-name{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#7d4e6b;text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #edd9e8;}
+.btn-sheet-opts{display:flex;flex-direction:column;gap:13px;}
+.bm-big{display:flex;align-items:center;gap:20px;padding:22px 24px;border-radius:22px;font-size:1.25rem;font-weight:700;border:3px solid transparent;cursor:pointer;width:100%;text-align:left;font-family:'Lato',sans-serif;text-decoration:none;-webkit-tap-highlight-color:transparent;}
+.bm-big .bm-ico{font-size:2.4rem;flex-shrink:0;line-height:1;}
+.bm-big-msg{background:#faedf3;color:#7d4e6b;border-color:#edd9e8;}
+.bm-big-wa{background:#e8faf0;color:#075E54;border-color:#c8e6c9;}
+.bm-big-call{background:#e8f4fb;color:#0055cc;border-color:#bbdefb;}
+.btn-sheet-close{margin-top:16px;width:100%;padding:18px;border:none;border-radius:20px;background:#f0f2f5;color:#999;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;}
 .badge.show{display:flex;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 
@@ -169,12 +176,12 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 <div class="sc-bar" id="scBar">
   <div class="sc-lbl">👨‍👩‍👧 Mes enfants</div>
   <div class="sc-grid">
-    <button class="sc-btn" onclick="toggleBtnMenu(event,'bm-francoise')"><span class="badge" id="b-francoise"></span><div class="av" style="background:#e040fb">Fr</div><span class="sl">Françoise</span><div class="btn-menu" id="bm-francoise"><button class="bm-opt bm-msg" onclick="event.stopPropagation();openMsg('francoise',this.closest('.sc-btn'))">💬 Message app</button><a class="bm-opt bm-wa" href="https://wa.me/33679348170" onclick="event.stopPropagation()" target="_blank">📱 WhatsApp</a><a class="bm-opt bm-call" href="tel:0679348170" onclick="event.stopPropagation()">📞 Appeler</a></div></button>
-    <button class="sc-btn" onclick="toggleBtnMenu(event,'bm-martine')"><span class="badge" id="b-martine"></span><div class="av" style="background:#f06292">Ma</div><span class="sl">Martine</span><div class="btn-menu" id="bm-martine"><button class="bm-opt bm-msg" onclick="event.stopPropagation();openMsg('martine',this.closest('.sc-btn'))">💬 Message app</button><a class="bm-opt bm-wa" href="https://wa.me/33789685007" onclick="event.stopPropagation()" target="_blank">📱 WhatsApp</a><a class="bm-opt bm-call" href="tel:0789685007" onclick="event.stopPropagation()">📞 Appeler</a></div></button>
-    <button class="sc-btn" onclick="toggleBtnMenu(event,'bm-nicole')"><span class="badge" id="b-nicole"></span><div class="av" style="background:#ba68c8">Ni</div><span class="sl">Nicole</span><div class="btn-menu" id="bm-nicole"><button class="bm-opt bm-msg" onclick="event.stopPropagation();openMsg('nicole',this.closest('.sc-btn'))">💬 Message app</button><a class="bm-opt bm-wa" href="https://wa.me/33611567896" onclick="event.stopPropagation()" target="_blank">📱 WhatsApp</a><a class="bm-opt bm-call" href="tel:0611567896" onclick="event.stopPropagation()">📞 Appeler</a></div></button>
-    <button class="sc-btn" onclick="toggleBtnMenu(event,'bm-pascale')"><span class="badge" id="b-pascale"></span><div class="av" style="background:#ff7043">Pa</div><span class="sl">Pascale</span><div class="btn-menu" id="bm-pascale"><button class="bm-opt bm-msg" onclick="event.stopPropagation();openMsg('pascale',this.closest('.sc-btn'))">💬 Message app</button><a class="bm-opt bm-wa" href="https://wa.me/33677487757" onclick="event.stopPropagation()" target="_blank">📱 WhatsApp</a><a class="bm-opt bm-call" href="tel:0677487757" onclick="event.stopPropagation()">📞 Appeler</a></div></button>
-    <button class="sc-btn" onclick="toggleBtnMenu(event,'bm-isabelle')"><span class="badge" id="b-isabelle"></span><div class="av" style="background:#26c6da">Is</div><span class="sl">Isabelle</span><div class="btn-menu" id="bm-isabelle"><button class="bm-opt bm-msg" onclick="event.stopPropagation();openMsg('isabelle',this.closest('.sc-btn'))">💬 Message app</button><a class="bm-opt bm-wa" href="https://wa.me/33761434901" onclick="event.stopPropagation()" target="_blank">📱 WhatsApp</a><a class="bm-opt bm-call" href="tel:0761434901" onclick="event.stopPropagation()">📞 Appeler</a></div></button>
-    <button class="sc-btn" onclick="toggleBtnMenu(event,'bm-yves')"><span class="badge" id="b-yves"></span><div class="av" style="background:#0084ff">Yv</div><span class="sl">Yves</span><div class="btn-menu" id="bm-yves"><button class="bm-opt bm-msg" onclick="event.stopPropagation();openMsg('yves',this.closest('.sc-btn'))">💬 Message app</button><a class="bm-opt bm-wa" href="https://wa.me/33633250010" onclick="event.stopPropagation()" target="_blank">📱 WhatsApp</a><a class="bm-opt bm-call" href="tel:0633250010" onclick="event.stopPropagation()">📞 Appeler</a></div></button>
+    <button class="sc-btn" onclick="openBtnMenu('Françoise','francoise','https://wa.me/33679348170','0679348170')"><span class="badge" id="b-francoise"></span><div class="av" style="background:#e040fb">Fr</div><span class="sl">Françoise</span></button>
+    <button class="sc-btn" onclick="openBtnMenu('Martine','martine','https://wa.me/33789685007','0789685007')"><span class="badge" id="b-martine"></span><div class="av" style="background:#f06292">Ma</div><span class="sl">Martine</span></button>
+    <button class="sc-btn" onclick="openBtnMenu('Nicole','nicole','https://wa.me/33611567896','0611567896')"><span class="badge" id="b-nicole"></span><div class="av" style="background:#ba68c8">Ni</div><span class="sl">Nicole</span></button>
+    <button class="sc-btn" onclick="openBtnMenu('Pascale','pascale','https://wa.me/33677487757','0677487757')"><span class="badge" id="b-pascale"></span><div class="av" style="background:#ff7043">Pa</div><span class="sl">Pascale</span></button>
+    <button class="sc-btn" onclick="openBtnMenu('Isabelle','isabelle','https://wa.me/33761434901','0761434901')"><span class="badge" id="b-isabelle"></span><div class="av" style="background:#26c6da">Is</div><span class="sl">Isabelle</span></button>
+    <button class="sc-btn" onclick="openBtnMenu('Yves','yves','https://wa.me/33633250010','0633250010')"><span class="badge" id="b-yves"></span><div class="av" style="background:#0084ff">Yv</div><span class="sl">Yves</span></button>
     <button class="sc-btn" onclick="openGroupChat(this)"><span class="badge" id="b-mamancie"></span><div class="av" style="background:#7d4e6b">M&C</div><span class="sl">Maman & Cie</span></button>
   </div>
   <div class="sc-lbl">👶 Mes petits-enfants</div>
@@ -320,6 +327,13 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     </div>
   </div>
 
+</div>
+<div class="btn-overlay" id="btnOverlay" onclick="closeBtnMenu()">
+  <div class="btn-sheet" onclick="event.stopPropagation()">
+    <div class="btn-sheet-name" id="btnSheetName"></div>
+    <div class="btn-sheet-opts" id="btnSheetOpts"></div>
+    <button class="btn-sheet-close" onclick="closeBtnMenu()">✕ Fermer</button>
+  </div>
 </div>
 <div class="rpop" id="rPop">
   <span onclick="doReact('❤️')">❤️</span>
@@ -607,7 +621,7 @@ async function deleteSent(){if(sentKey)await db.ref('maman_status/'+sentKey).rem
 let currentChatWho=null,currentChatRef=null;
 function openMsg(who,btn){
   document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn)btn.classList.add('active');
   closeAllPanels();
   const b=document.getElementById('b-'+who);
   if(b){b.textContent='';b.classList.remove('show');}
@@ -676,15 +690,15 @@ function openPanel(which,btn){
 function closeAllPanels(){document.querySelectorAll('.panel,.chat-panel').forEach(p=>p.classList.remove('open'));if(currentChatRef){currentChatRef.off();currentChatRef=null;}if(groupRef){groupRef.off();groupRef=null;}currentChatWho=null;}
 function closePanel(){closeAllPanels();document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));}
 function openExt(url){window.open(url,'_blank');return false;}
-let _openMenu=null;
-function toggleBtnMenu(e,id){
-  e.stopPropagation();
-  const menu=document.getElementById(id);
-  if(_openMenu&&_openMenu!==menu)_openMenu.classList.remove('on');
-  menu.classList.toggle('on');
-  _openMenu=menu.classList.contains('on')?menu:null;
+function openBtnMenu(name,who,waUrl,tel){
+  document.getElementById('btnSheetName').textContent=name;
+  document.getElementById('btnSheetOpts').innerHTML=
+    '<button class="bm-big bm-big-msg" onclick="closeBtnMenu();openMsg(\''+who+'\',null)"><span class="bm-ico">💬</span><span>Message app</span></button>'
+    +'<a class="bm-big bm-big-wa" href="'+waUrl+'" target="_blank" onclick="closeBtnMenu()"><span class="bm-ico">📱</span><span>WhatsApp</span></a>'
+    +'<a class="bm-big bm-big-call" href="tel:'+tel+'" onclick="closeBtnMenu()"><span class="bm-ico">📞</span><span>Appeler</span></a>';
+  document.getElementById('btnOverlay').classList.add('on');
 }
-document.addEventListener('click',function(){if(_openMenu){_openMenu.classList.remove('on');_openMenu=null;}});
+function closeBtnMenu(){document.getElementById('btnOverlay').classList.remove('on');}
 
 
 // Helpers
