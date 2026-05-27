@@ -53,6 +53,7 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 .sc-btn.ggl .sl{color:#3d2040;}
 .sc-btn.fb .sl{color:#3d2040;}
 .badge{position:absolute;top:-5px;right:-5px;background:#e53935;color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.64rem;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff;animation:pulse 1.5s infinite;}
+.wa-link{position:absolute;bottom:5px;right:5px;background:#25D366;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;color:#fff;text-decoration:none;z-index:2;border:2px solid #fff;line-height:1;}
 .badge.show{display:flex;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 
@@ -163,12 +164,12 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
 <div class="sc-bar" id="scBar">
   <div class="sc-lbl">👨‍👩‍👧 Mes enfants</div>
   <div class="sc-grid">
-    <button class="sc-btn" onclick="openMsg('francoise',this)"><span class="badge" id="b-francoise"></span><div class="av" style="background:#e040fb">Fr</div><span class="sl">Françoise</span></button>
-    <button class="sc-btn" onclick="openMsg('martine',this)"><span class="badge" id="b-martine"></span><div class="av" style="background:#f06292">Ma</div><span class="sl">Martine</span></button>
-    <button class="sc-btn" onclick="openMsg('nicole',this)"><span class="badge" id="b-nicole"></span><div class="av" style="background:#ba68c8">Ni</div><span class="sl">Nicole</span></button>
-    <button class="sc-btn" onclick="openMsg('pascale',this)"><span class="badge" id="b-pascale"></span><div class="av" style="background:#ff7043">Pa</div><span class="sl">Pascale</span></button>
-    <button class="sc-btn" onclick="openMsg('isabelle',this)"><span class="badge" id="b-isabelle"></span><div class="av" style="background:#26c6da">Is</div><span class="sl">Isabelle</span></button>
-    <button class="sc-btn" onclick="openMsg('yves',this)"><span class="badge" id="b-yves"></span><div class="av" style="background:#0084ff">Yv</div><span class="sl">Yves</span></button>
+    <button class="sc-btn" onclick="openMsg('francoise',this)"><span class="badge" id="b-francoise"></span><a class="wa-link" href="https://wa.me/33679348170" onclick="event.stopPropagation()" target="_blank">WA</a><div class="av" style="background:#e040fb">Fr</div><span class="sl">Françoise</span></button>
+    <button class="sc-btn" onclick="openMsg('martine',this)"><span class="badge" id="b-martine"></span><a class="wa-link" href="https://wa.me/33789685007" onclick="event.stopPropagation()" target="_blank">WA</a><div class="av" style="background:#f06292">Ma</div><span class="sl">Martine</span></button>
+    <button class="sc-btn" onclick="openMsg('nicole',this)"><span class="badge" id="b-nicole"></span><a class="wa-link" href="https://wa.me/33611567896" onclick="event.stopPropagation()" target="_blank">WA</a><div class="av" style="background:#ba68c8">Ni</div><span class="sl">Nicole</span></button>
+    <button class="sc-btn" onclick="openMsg('pascale',this)"><span class="badge" id="b-pascale"></span><a class="wa-link" href="https://wa.me/33677487757" onclick="event.stopPropagation()" target="_blank">WA</a><div class="av" style="background:#ff7043">Pa</div><span class="sl">Pascale</span></button>
+    <button class="sc-btn" onclick="openMsg('isabelle',this)"><span class="badge" id="b-isabelle"></span><a class="wa-link" href="https://wa.me/33761434901" onclick="event.stopPropagation()" target="_blank">WA</a><div class="av" style="background:#26c6da">Is</div><span class="sl">Isabelle</span></button>
+    <button class="sc-btn" onclick="openMsg('yves',this)"><span class="badge" id="b-yves"></span><a class="wa-link" href="https://wa.me/33633250010" onclick="event.stopPropagation()" target="_blank">WA</a><div class="av" style="background:#0084ff">Yv</div><span class="sl">Yves</span></button>
     <button class="sc-btn" onclick="openGroupChat(this)"><span class="badge" id="b-mamancie"></span><div class="av" style="background:#7d4e6b">M&C</div><span class="sl">Maman & Cie</span></button>
   </div>
   <div class="sc-lbl">👶 Mes petits-enfants</div>
