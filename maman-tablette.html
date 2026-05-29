@@ -172,61 +172,10 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
   <div id="childMsgsTop" style="display:none;margin-top:8px;border-top:1px solid rgba(255,255,255,0.25);padding-top:8px;max-height:180px;overflow-y:auto;"></div>
 </div>
 
-<!-- RACCOURCIS - FOND BLANC -->
-<div class="sc-bar" id="scBar">
-  <div class="sc-lbl">👨‍👩‍👧 Mes enfants</div>
-  <div class="sc-grid">
-    <button class="sc-btn" onclick="openBtnMenu('Françoise','francoise','https://wa.me/33679348170','0679348170')"><span class="badge" id="b-francoise"></span><div class="av" style="background:#e040fb">Fr</div><span class="sl">Françoise</span></button>
-    <button class="sc-btn" onclick="openBtnMenu('Martine','martine','https://wa.me/33789685007','0789685007')"><span class="badge" id="b-martine"></span><div class="av" style="background:#f06292">Ma</div><span class="sl">Martine</span></button>
-    <button class="sc-btn" onclick="openBtnMenu('Nicole','nicole','https://wa.me/33611567896','0611567896')"><span class="badge" id="b-nicole"></span><div class="av" style="background:#ba68c8">Ni</div><span class="sl">Nicole</span></button>
-    <button class="sc-btn" onclick="openBtnMenu('Pascale','pascale','https://wa.me/33677487757','0677487757')"><span class="badge" id="b-pascale"></span><div class="av" style="background:#ff7043">Pa</div><span class="sl">Pascale</span></button>
-    <button class="sc-btn" onclick="openBtnMenu('Isabelle','isabelle','https://wa.me/33761434901','0761434901')"><span class="badge" id="b-isabelle"></span><div class="av" style="background:#26c6da">Is</div><span class="sl">Isabelle</span></button>
-    <button class="sc-btn" onclick="openBtnMenu('Yves','yves','https://wa.me/33633250010','0633250010')"><span class="badge" id="b-yves"></span><div class="av" style="background:#0084ff">Yv</div><span class="sl">Yves</span></button>
-    <button class="sc-btn" onclick="openGroupChat(this)"><span class="badge" id="b-mamancie"></span><div class="av" style="background:#7d4e6b">M&C</div><span class="sl">Maman & Cie</span></button>
-  </div>
-  <div class="sc-lbl">👶 Mes petits-enfants</div>
-  <div class="sc-grid">
-    <button class="sc-btn" onclick="openMsg('stephanie',this)"><span class="badge" id="b-stephanie"></span><div class="av" style="background:#ec407a">St</div><span class="sl">Stéphanie</span></button>
-    <button class="sc-btn" onclick="openMsg('simon',this)"><span class="badge" id="b-simon"></span><div class="av" style="background:#42a5f5">Si</div><span class="sl">Simon</span></button>
-    <button class="sc-btn" onclick="openMsg('lise',this)"><span class="badge" id="b-lise"></span><div class="av" style="background:#ab47bc">Li</div><span class="sl">Lise</span></button>
-    <button class="sc-btn" onclick="openMsg('anaele',this)"><span class="badge" id="b-anaele"></span><div class="av" style="background:#ef5350">An</div><span class="sl">Anaele</span></button>
-    <button class="sc-btn" onclick="openMsg('florent',this)"><span class="badge" id="b-florent"></span><div class="av" style="background:#26a69a">Fl</div><span class="sl">Florent</span></button>
-    <button class="sc-btn" onclick="openMsg('elisa',this)"><span class="badge" id="b-elisa"></span><div class="av" style="background:#ff7043">El</div><span class="sl">Elisa</span></button>
-    <button class="sc-btn" onclick="openMsg('paul',this)"><span class="badge" id="b-paul"></span><div class="av" style="background:#5c6bc0">Pl</div><span class="sl">Paul</span></button>
-    <button class="sc-btn" onclick="openMsg('clement',this)"><span class="badge" id="b-clement"></span><div class="av" style="background:#66bb6a">Cl</div><span class="sl">Clément</span></button>
-    <button class="sc-btn" onclick="openMsg('bastien',this)"><span class="badge" id="b-bastien"></span><div class="av" style="background:#ffa726">Ba</div><span class="sl">Bastien</span></button>
-    <button class="sc-btn" onclick="openMsg('xavier',this)"><span class="badge" id="b-xavier"></span><div class="av" style="background:#8d6e63">Xa</div><span class="sl">Xavier</span></button>
-    <button class="sc-btn" onclick="openMsg('remi',this)"><span class="badge" id="b-remi"></span><div class="av" style="background:#29b6f6">Ré</div><span class="sl">Rémi</span></button>
-    <button class="sc-btn" onclick="openMsg('manon',this)"><span class="badge" id="b-manon"></span><div class="av" style="background:#f06292">Mn</div><span class="sl">Manon</span></button>
-  </div>
-  <div class="sc-lbl">👴 Arrière-petits-enfants</div>
-  <div class="sc-grid">
-    <button class="sc-btn" onclick="openMsg('timothe',this)"><span class="badge" id="b-timothe"></span><div class="av" style="background:#ff8f00">Ti</div><span class="sl">Timothé</span></button>
-    <button class="sc-btn" style="opacity:0.5;cursor:default;"><div class="av" style="background:#9e9e9e">Lé</div><span class="sl">Léo</span></button>
-    <button class="sc-btn" style="opacity:0.5;cursor:default;"><div class="av" style="background:#9e9e9e">Na</div><span class="sl">Nathanaël</span></button>
-  </div>
-  <div class="sc-lbl">🌐 Services</div>
-  <div class="sc-grid">
-    <button class="sc-btn svc" onclick="openPanel('banque',this)"><span class="badge" id="b-banque"></span><div class="av" style="background:#003399">📮</div><span class="sl">Ma banque</span></button>
-    <button class="sc-btn ggl" onclick="openPanel('google',this)"><div class="av" style="background:#4285f4">G</div><span class="sl">Google</span></button>
-    <button class="sc-btn fb" onclick="openPanel('facebook',this)"><span class="badge" id="b-facebook"></span><div class="av" style="background:#1877f2">f</div><span class="sl">Facebook</span></button>
-  </div>
-</div>
 </div><!-- fin left-panel -->
 
 <!-- CONTENU -->
 <div class="main" id="mainContent">
-
-  <!-- BANDEAU ENVOI -->
-  <div class="sent" id="sentBanner">
-    <div style="font-family:'Playfair Display',serif;font-size:0.95rem;color:#2e6b50;margin-bottom:8px;">✅ Message envoyé à tes enfants !</div>
-    <div id="sentMood" style="font-size:1.1rem;margin-bottom:3px;"></div>
-    <div id="sentMsg" style="font-size:0.88rem;color:#3d2040;font-style:italic;margin-bottom:8px;"></div>
-    <div style="background:rgba(137,181,160,0.15);border-radius:9px;padding:7px 12px;display:flex;align-items:center;gap:7px;">
-      <span style="font-size:0.75rem;color:#5a8a70;font-weight:700;">⏳ Visible pendant encore</span>
-      <span class="countdown" id="countdown">5:00</span>
-    </div>
-  </div>
 
   <!-- COURSES -->
   <div class="card">
@@ -257,93 +206,6 @@ body{font-family:'Lato',sans-serif;background:#f5eef8;display:flex;flex-directio
     <button onclick="sendCourses()" id="sendCoursesBtn" style="width:100%;background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:12px;padding:11px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;margin-top:10px;display:none;">📤 Envoyer ma liste de courses à mes enfants</button>
   </div>
 
-  <!-- RDV -->
-  <div class="card">
-    <div class="ct">📅 Mes rendez-vous</div>
-    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;">
-      <span class="sc" onclick="document.getElementById('rdvT').value='✂️ Coiffeur'">✂️ Coiffeur</span>
-      <span class="sc" onclick="document.getElementById('rdvT').value='💆 Soins'">💆 Soins</span>
-    </div>
-    <input class="ri" type="text" id="rdvT" placeholder="Ex : Soins, Coiffeur..." style="margin-bottom:7px;">
-    <input class="ri" type="date" id="rdvD" style="margin-bottom:7px;">
-    <input class="ri" type="time" id="rdvTime" style="margin-bottom:7px;font-size:1.2rem;text-align:center;">
-    <button onclick="addRdv()" style="width:100%;background:#c4789a;color:#fff;border:none;border-radius:11px;padding:10px;font-family:'Playfair Display',serif;font-size:0.9rem;cursor:pointer;margin-top:8px;margin-bottom:10px;">＋ Ajouter ce rendez-vous</button>
-    <ul id="rdvList"></ul>
-  </div>
-
-  <!-- PANNEAUX APPS — s'ouvrent juste sous les rendez-vous -->
-  <div class="chat-panel" id="panelChat">
-    <div class="chat-hdr" id="chatHdr" style="background:linear-gradient(135deg,#7d4e6b,#c47898)">
-      <div class="pt" style="font-family:'Playfair Display',serif;font-size:0.88rem;color:#fff8ee;" id="chatName">💬</div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="chat-body" id="chatBody"></div>
-    <div class="chat-foot">
-      <div class="chat-inp" id="chatInp" contenteditable="true" data-ph="Ton message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></div>
-      <button class="chat-send" onclick="sendChatMsg()">➤</button>
-    </div>
-  </div>
-
-  <div class="chat-panel" id="panelGroupe" style="flex-direction:column;">
-    <div style="background:linear-gradient(135deg,#0084ff,#9b59b6);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
-      <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">👨‍👩‍👧</div>
-      <div style="flex:1;"><div style="font-family:'Playfair Display',serif;font-weight:700;font-size:0.92rem;color:#fff;">Maman & Compagnie</div><div style="font-size:0.7rem;color:rgba(255,255,255,0.85);">Groupe famille</div></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="ms-body" id="groupBody" style="max-height:320px;flex:1;"></div>
-    <div class="ms-foot">
-      <div class="ms-inp" id="groupInp" contenteditable="true" data-ph="Écrire un message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendGroupMsg();}"></div>
-      <button class="ms-sbtn" onclick="sendGroupMsg()">➤</button>
-    </div>
-  </div>
-
-  <div class="panel" id="panelBanque">
-    <div class="ph" style="background:linear-gradient(135deg,#003399,#0055cc)">
-      <div class="pt"><span>📮</span><span>La Banque Postale</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a href="https://www.labanquepostale.fr/particuliers.html" class="open-btn" style="background:linear-gradient(135deg,#003399,#0055cc);" onclick="return openExt('https://www.labanquepostale.fr/particuliers.html')">📮 Ouvrir La Banque Postale</a>
-    </div>
-  </div>
-
-  <div class="panel" id="panelGoogle">
-    <div class="ph" style="background:linear-gradient(135deg,#4285f4,#34a853)">
-      <div class="pt"><span>🔍</span><span>Google</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a href="https://www.google.fr" class="open-btn" style="background:linear-gradient(135deg,#4285f4,#34a853);" onclick="return openExt('https://www.google.fr')">🔍 Ouvrir Google</a>
-    </div>
-  </div>
-
-  <div class="panel" id="panelFacebook">
-    <div class="ph" style="background:linear-gradient(135deg,#1877f2,#0d5fc4)">
-      <div class="pt"><span>📘</span><span>Facebook</span></div>
-      <button class="px" onclick="closePanel()">✕</button>
-    </div>
-    <div class="pb">
-      <a href="fb://feed" class="open-btn" style="background:linear-gradient(135deg,#1877f2,#0d5fc4);" onclick="return openExt('fb://feed')">📘 Ouvrir Facebook</a>
-    </div>
-  </div>
-
-</div>
-<div class="btn-overlay" id="btnOverlay" onclick="closeBtnMenu()">
-  <div class="btn-sheet" onclick="event.stopPropagation()">
-    <div class="btn-sheet-name" id="btnSheetName"></div>
-    <div class="btn-sheet-opts" id="btnSheetOpts"></div>
-    <button class="btn-sheet-close" onclick="closeBtnMenu()">✕ Fermer</button>
-  </div>
-</div>
-<div class="rpop" id="rPop">
-  <span onclick="doReact('❤️')">❤️</span>
-  <span onclick="doReact('😂')">😂</span>
-  <span onclick="doReact('😮')">😮</span>
-  <span onclick="doReact('😢')">😢</span>
-  <span onclick="doReact('😡')">😡</span>
-  <span onclick="doReact('👍')">👍</span>
-  <span style="width:1px;background:#e0e0e0;align-self:stretch;margin:0 2px;"></span>
-  <span onclick="doReact('🗑️')" title="Supprimer" style="font-size:1.25rem;">🗑️</span>
 </div>
 <div class="toast" id="toast"></div>
 
