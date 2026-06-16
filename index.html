@@ -549,7 +549,7 @@ function submitPw(){
     document.getElementById('pwInput').focus();
   }
 }
-checkAuth();
+window.addEventListener('DOMContentLoaded',checkAuth);
 
 // ── PUSH NOTIFICATIONS ───────────────────────────────────────
 const VAPID_PUBLIC_KEY='BAEROU3tbuDf08jwsrCgHxualIaM6JN06FvUXS0f_Yqr9L6y87YTpMYdkyoA-8IZslTyj1E1zBuqx0zq4K-Z2AQ';
