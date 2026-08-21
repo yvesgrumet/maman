@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suivi Andrée — Élodie</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Suivi Andrée">
+<meta name="theme-color" content="#2e6b5e">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Lato',sans-serif;background:#eef6f3;color:#1f4a40;min-height:100vh;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#2e6b5e 0%,#4a9c88 60%,#7bc4ae 100%);padding:12px 16px 10px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
+.hd{font-family:'Playfair Display',serif;font-size:1.05rem;color:#f2fbf8;}
+.ht{font-size:1.9rem;font-weight:700;color:#fff;letter-spacing:1px;line-height:1.1;}
+.hinfo{display:flex;flex-direction:column;gap:3px;align-items:center;margin:4px 0 2px;}
+.hfete,.hanniv,.hdemain{display:inline-flex;align-items:center;border-radius:10px;padding:3px 11px;font-size:0.76rem;font-weight:700;}
+.hfete{background:rgba(255,220,100,0.28);color:#fffbe0;}
+.hanniv{background:rgba(255,140,170,0.3);color:#ffe6ee;}
+.hdemain{background:rgba(255,255,255,0.16);color:rgba(255,255,255,0.9);font-size:0.72rem;}
+.hw{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);border-radius:12px;padding:3px 11px;color:#f2fbf8;font-size:0.76rem;font-weight:700;margin-top:3px;}
+.tabs{display:flex;justify-content:center;gap:5px;margin-top:9px;flex-wrap:wrap;}
+.tab{position:relative;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:#f2fbf8;padding:5px 12px;border-radius:20px;cursor:pointer;font-size:0.77rem;font-family:'Lato',sans-serif;font-weight:700;transition:all 0.2s;}
+.tab:hover,.tab.on{background:rgba(255,255,255,0.92);color:#2e6b5e;border-color:transparent;}
+.nb{position:absolute;top:-5px;right:-5px;background:#e53935;color:#fff;border-radius:50%;min-width:17px;height:17px;font-size:0.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #4a9c88;padding:0 3px;}
+
+.sync{text-align:center;font-size:0.7rem;padding:4px;background:#dcefe8;color:#3d7a6a;font-weight:700;}
+.main{max-width:700px;margin:0 auto;padding:14px 12px 90px;}
+.sec{display:none;}.sec.on{display:block;}
+
+/* CARDS */
+.card{background:#fff;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(46,107,94,0.1);border:1px solid rgba(74,156,136,0.12);}
+.ct{font-family:'Playfair Display',serif;font-size:1rem;color:#2e6b5e;margin-bottom:11px;display:flex;align-items:center;gap:6px;}
+.lbl{display:block;font-size:0.72rem;font-weight:700;color:#5e8f81;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+input[type=text],input[type=date],input[type=time],input[type=tel],textarea{width:100%;padding:9px 11px;border:1.5px solid #d6ebe4;border-radius:9px;font-family:'Lato',sans-serif;font-size:0.9rem;background:#f7fcfa;color:#1f4a40;outline:none;transition:border-color 0.2s;}
+input:focus,textarea:focus{border-color:#4a9c88;background:#fff;}
+textarea{resize:vertical;min-height:80px;}
+
+/* GROUPES DE BOUTONS */
+.es{margin-bottom:13px;}
+.el{font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#5e8f81;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.el::after{content:'';flex:1;height:1px;background:#d6ebe4;}
+.eg{display:flex;flex-wrap:wrap;gap:5px;}
+.eb{background:#eef6f3;border:2px solid transparent;border-radius:16px;padding:6px 11px;cursor:pointer;font-size:0.78rem;font-weight:700;color:#4a7a6d;transition:all 0.2s;font-family:'Lato',sans-serif;}
+.eb.on{border-color:#4a9c88;background:#dff2ec;color:#1f4a40;}
+.eb.pos.on{border-color:#4caf50;background:#e8f7e9;color:#256b2c;}
+.eb.neg.on{border-color:#e08f6a;background:#fdeee6;color:#a0512a;}
+.eb.alerte.on{border-color:#e05555;background:#fdeaea;color:#a02020;}
+
+/* PRESTATIONS */
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px;}
+.pb2{background:#eef6f3;border:2px solid transparent;border-radius:11px;padding:11px 8px;cursor:pointer;text-align:center;font-size:0.79rem;color:#4a7a6d;font-weight:700;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Lato',sans-serif;line-height:1.25;}
+.pb2 .ico{font-size:1.4rem;}
+.pb2.on{border-color:#4a9c88;background:#dff2ec;color:#1f4a40;}
+
+/* BOUTONS */
+.sbtn{width:100%;background:linear-gradient(135deg,#2e6b5e,#7bc4ae);color:#fff;border:none;border-radius:13px;padding:15px;font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(46,107,94,0.32);transition:all 0.2s;margin-top:4px;}
+.sbtn:disabled{opacity:0.6;cursor:not-allowed;}
+.rbtn{background:#2e6b5e;color:#fff;border:none;border-radius:11px;padding:9px 15px;cursor:pointer;font-size:0.85rem;font-weight:700;font-family:'Lato',sans-serif;white-space:nowrap;}
+.qbtn{background:#eef6f3;border:1.5px solid #d6ebe4;border-radius:16px;padding:5px 10px;cursor:pointer;font-size:0.74rem;font-weight:700;color:#2e6b5e;font-family:'Lato',sans-serif;}
+
+/* ALERTE */
+.alert-tog{display:flex;align-items:center;gap:11px;background:#fff6f4;border:2px solid #f5d5cc;border-radius:12px;padding:12px 14px;cursor:pointer;transition:all 0.2s;}
+.alert-tog.on{background:#fdeaea;border-color:#e05555;}
+.alert-box{width:26px;height:26px;border-radius:7px;border:2.5px solid #e0a090;display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0;background:#fff;}
+.alert-tog.on .alert-box{background:#e05555;border-color:#e05555;color:#fff;}
+.alert-txt{font-size:0.85rem;font-weight:700;color:#a0512a;text-align:left;line-height:1.35;}
+
+/* JOURNAL / VISITES */
+.vi{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(46,107,94,0.09);border-left:4px solid #4a9c88;}
+.vi.alerte{border-left-color:#e05555;background:#fffaf9;}
+.vih{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.vid{font-family:'Playfair Display',serif;font-size:0.95rem;color:#2e6b5e;font-weight:700;}
+.vit{font-size:0.72rem;color:#7aa89b;}
+.tag{background:#eef6f3;color:#3d7a6a;border-radius:14px;padding:3px 10px;font-size:0.73rem;font-weight:700;display:inline-block;margin:2px 2px 0 0;}
+.tag.pos{background:#e8f7e9;color:#256b2c;}
+.tag.neg{background:#fdeee6;color:#a0512a;}
+.tag.alerte{background:#fdeaea;color:#a02020;}
+.vnote{background:#f7fcfa;border-radius:9px;padding:10px;font-size:0.86rem;line-height:1.45;margin-top:8px;color:#2c4f46;white-space:pre-wrap;}
+.vrep{background:#eef4fb;border-left:3px solid #5b8bc4;border-radius:9px;padding:9px 11px;font-size:0.84rem;margin-top:7px;color:#22406b;}
+.vrep b{color:#1a3560;}
+.vdel{background:none;border:1px solid #d6ebe4;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:0.72rem;color:#c07070;font-weight:700;flex-shrink:0;}
+
+/* MESSAGES */
+.dm-body{display:flex;flex-direction:column;gap:8px;padding:12px;background:#f7fcfa;border-radius:11px;max-height:60vh;min-height:220px;overflow-y:auto;margin-bottom:6px;}
+.dm-bbl{max-width:80%;padding:9px 13px;border-radius:14px;font-size:0.89rem;line-height:1.42;word-break:break-word;position:relative;}
+.dm-bbl.dm-fam{background:linear-gradient(135deg,#2e6b5e,#4a9c88);color:#fff;border-bottom-left-radius:4px;align-self:flex-start;}
+.dm-bbl.dm-me{background:#e4f0fb;color:#1a2a3a;border-bottom-right-radius:4px;align-self:flex-end;}
+.dm-bbl-w{font-size:0.66rem;font-weight:700;opacity:0.85;margin-bottom:2px;}
+.dm-bbl-t{font-size:0.6rem;opacity:0.7;margin-top:3px;}
+.dm-foot{display:flex;gap:7px;}
+.dm-inp{flex:1;border:1.5px solid #d6ebe4;border-radius:22px;padding:10px 15px;font-family:'Lato',sans-serif;font-size:0.92rem;color:#1f4a40;outline:none;background:#fff;}
+.dm-inp:focus{border-color:#4a9c88;}
+.dm-send{background:linear-gradient(135deg,#2e6b5e,#4a9c88);color:#fff;border:none;border-radius:50%;width:42px;height:42px;font-size:1.15rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+
+/* LISTES SIMPLES */
+.li2{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;margin-bottom:6px;background:#f7fcfa;border-left:3px solid #4a9c88;}
+.li2.rdv{border-left-color:#e8a030;background:#fffbf2;}
+.li2.today{background:#e8f7e9;border-left-color:#4caf50;}
+.li2 .av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:700;color:#fff;flex-shrink:0;}
+.li2-main{flex:1;min-width:0;}
+.li2-t{font-weight:700;font-size:0.89rem;color:#2e6b5e;}
+.li2-s{font-size:0.75rem;color:#7aa89b;}
+.badge2{background:#e8a030;color:#fff;border-radius:6px;padding:1px 7px;font-size:0.67rem;font-weight:700;margin-left:5px;}
+
+.empty{text-align:center;padding:32px 16px;color:#5e8f81;}
+.empty .be{font-size:2.6rem;margin-bottom:9px;}
+.empty p{font-size:0.88rem;}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);background:#2e6b5e;color:#f2fbf8;padding:11px 22px;border-radius:26px;font-size:0.87rem;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:999;transition:transform 0.3s ease;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+.hint{font-size:0.73rem;color:#7aa89b;font-style:italic;margin-bottom:10px;line-height:1.4;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hd" id="hDate">...</div>
+  <div class="ht" id="hTime">00:00</div>
+  <div class="hinfo" id="hInfo"></div>
+  <div class="hw"><span id="hwIco">🌡️</span><span id="hwTxt">Météo...</span></div>
+  <div class="tabs">
+    <button class="tab on" onclick="goTab('visite',this)">📝 Ma visite</button>
+    <button class="tab" onclick="goTab('journal',this)">📖 Mes visites</button>
+    <button class="tab" onclick="goTab('messages',this)">💬 Messages<span class="nb" id="msgBadge" style="display:none;"></span></button>
+    <button class="tab" onclick="goTab('fetes',this)">🎂 Fêtes</button>
+    <button class="tab" onclick="goTab('famille',this)">👨‍👩‍👧 La famille</button>
+  </div>
+</div>
+<div class="sync" id="syncBar">⏳ Connexion...</div>
+
+<div class="main">
+
+<!-- ===== MA VISITE ===== -->
+<div id="tab-visite" class="sec on">
+
+  <div class="card">
+    <div class="ct">🕐 Ma visite</div>
+    <div style="display:flex;gap:8px;margin-bottom:11px;">
+      <div style="flex:1.4;"><span class="lbl">Date</span><input type="date" id="vDate"></div>
+      <div style="flex:1;"><span class="lbl">Heure</span><input type="time" id="vTime"></div>
+    </div>
+    <span class="lbl">Moment</span>
+    <div class="eg">
+      <button class="eb" onclick="togMoment(this)">🌅 Matin</button>
+      <button class="eb" onclick="togMoment(this)">🍽️ Midi</button>
+      <button class="eb" onclick="togMoment(this)">☀️ Après-midi</button>
+      <button class="eb" onclick="togMoment(this)">🌙 Soir</button>
+    </div>
+    <div style="margin-top:11px;"><span class="lbl">Durée de la visite</span>
+      <div class="eg">
+        <button class="eb" onclick="pickOne(this,'duree')">30 min</button>
+        <button class="eb" onclick="pickOne(this,'duree')">1 h</button>
+        <button class="eb" onclick="pickOne(this,'duree')">1 h 30</button>
+        <button class="eb" onclick="pickOne(this,'duree')">2 h</button>
+        <button class="eb" onclick="pickOne(this,'duree')">Plus de 2 h</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">🤝 Ce que j'ai fait aujourd'hui</div>
+    <p class="hint">Cochez toutes les prestations réalisées pendant la visite.</p>
+    <div class="pg" id="prestGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">💭 Comment était Andrée ?</div>
+    <p class="hint">Plusieurs choix possibles — cela aide la famille à savoir comment elle va.</p>
+    <div id="emoGroups"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">🩺 Observations du jour</div>
+    <div id="obsGroups"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">📝 Un mot pour la famille</div>
+    <textarea id="vNote" placeholder="Ce que vous avez fait ensemble, ce qu'elle a raconté, ce qu'il faudrait prévoir..."></textarea>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;">
+      <button class="qbtn" onclick="addNote('Bonne journée, tout s\'est bien passé. ')">😊 Tout va bien</button>
+      <button class="qbtn" onclick="addNote('Il faudrait racheter : ')">🛒 À racheter</button>
+      <button class="qbtn" onclick="addNote('Elle m\'a parlé de : ')">💬 Elle m'a dit</button>
+      <button class="qbtn" onclick="addNote('Rendez-vous à prévoir : ')">📅 RDV à prévoir</button>
+      <button class="qbtn" onclick="addNote('Je serai absente le : ')">🚫 Mon absence</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">⚠️ Point de vigilance</div>
+    <div class="alert-tog" id="alertTog" onclick="togAlert()">
+      <div class="alert-box" id="alertBox"></div>
+      <div class="alert-txt">Signaler cette visite à la famille comme <b>importante</b><br><span style="font-weight:400;font-size:0.78rem;">(chute, douleur, refus de soin, changement inhabituel...)</span></div>
+    </div>
+  </div>
+
+  <button class="sbtn" id="saveBtn" onclick="saveVisite()">💚 Enregistrer ma visite</button>
+</div>
+
+<!-- ===== MES VISITES ===== -->
+<div id="tab-journal" class="sec">
+  <div class="card" style="padding:12px 14px;">
+    <div class="ct" style="margin-bottom:8px;">📖 Mes visites chez Andrée</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;" id="jFilt">
+      <button class="eb on" onclick="setJFilt(this,'all')">Toutes</button>
+      <button class="eb" onclick="setJFilt(this,'alerte')">⚠️ Importantes</button>
+      <button class="eb" onclick="setJFilt(this,'rep')">💬 Avec réponse</button>
+    </div>
+  </div>
+  <div id="jList"></div>
+</div>
+
+<!-- ===== MESSAGES ===== -->
+<div id="tab-messages" class="sec">
+  <div class="card">
+    <div class="ct">💬 Discussion avec la famille</div>
+    <div class="dm-body" id="dmBody"></div>
+    <div class="dm-foot">
+      <input class="dm-inp" type="text" id="dmInp" placeholder="Écrire à la famille..." onkeydown="if(event.key==='Enter')sendDm()">
+      <button class="dm-send" onclick="sendDm()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FÊTES & ANNIVERSAIRES ===== -->
+<div id="tab-fetes" class="sec">
+  <div class="card">
+    <div class="ct">🌸 La fête du jour</div>
+    <div id="feteJour"></div>
+  </div>
+  <div class="card">
+    <div class="ct">🎂 Les prochains anniversaires</div>
+    <p class="hint">De quoi lancer la conversation avec Andrée : « Vous savez que c'est bientôt l'anniversaire de… ? »</p>
+    <div id="annivList"></div>
+  </div>
+  <div class="card">
+    <div class="ct">📅 Les rendez-vous d'Andrée</div>
+    <div id="rdvList"></div>
+  </div>
+</div>
+
+<!-- ===== LA FAMILLE ===== -->
+<div id="tab-famille" class="sec">
+  <div class="card">
+    <div class="ct">👨‍👩‍👧 Quand la famille est passée</div>
+    <p class="hint">Les derniers passages et appels de ses enfants, pour savoir qui est venu récemment.</p>
+    <div id="famList"></div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyB7Pq9t4T_dqG_xzf8829yKXe-RX4_rMhs",
+  authDomain:"suivi-maman.firebaseapp.com",
+  databaseURL:"https://suivi-maman-default-rtdb.firebaseio.com",
+  projectId:"suivi-maman",
+  storageBucket:"suivi-maman.firebasestorage.app",
+  messagingSenderId:"464641073360",
+  appId:"1:464641073360:web:327a3738757cdfc7fa7ed5"
+});
+const db=firebase.database();
+
+/* ---------- FILE D'ATTENTE D'AUTHENTIFICATION ----------
+   Firebase annule définitivement un écouteur refusé par les règles.
+   Les règles exigent auth != null : on n'attache donc les écouteurs
+   qu'une fois la connexion anonyme réellement établie. */
+const _readyQ=[];let _authed=false;
+function onReady(fn){if(_authed){fn();return;}_readyQ.push(fn);}
+firebase.auth().onAuthStateChanged(function(u){
+  if(!u||_authed)return;
+  _authed=true;
+  _readyQ.splice(0).forEach(function(f){try{f();}catch(e){console.error(e);}});
+});
+
+/* ---------- MOT DE PASSE ---------- */
+const AUTH_KEY='elodie_app_auth';
+function norm(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();}
+function checkAuth(){
+  if(localStorage.getItem(AUTH_KEY)){firebase.auth().signInAnonymously();return;}
+  document.getElementById('pwOverlay').style.display='flex';
+}
+function submitPw(){
+  if(norm(document.getElementById('pwInput').value)==='andree'){
+    firebase.auth().signInAnonymously().then(function(){
+      localStorage.setItem(AUTH_KEY,'1');
+      document.getElementById('pwOverlay').style.display='none';
+    });
+  } else {
+    document.getElementById('pwError').style.display='block';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+  }
+}
+window.addEventListener('DOMContentLoaded',checkAuth);
+
+/* ---------- DONNÉES DE RÉFÉRENCE ---------- */
+const PRESTATIONS=[
+  {ico:'🛏️',lbl:'Aide au lever'},
+  {ico:'🌙',lbl:'Aide au coucher'},
+  {ico:'👗',lbl:"Aide à l'habillage"},
+  {ico:'🚿',lbl:'Aide à la toilette'},
+  {ico:'🍲',lbl:'Préparation du repas'},
+  {ico:'🍽️',lbl:'Aide à la prise du repas'},
+  {ico:'🧹',lbl:'Entretien du logement'},
+  {ico:'👕',lbl:'Entretien du linge'},
+  {ico:'💬',lbl:'Compagnie et discussion'},
+  {ico:'🧩',lbl:'Jeux et stimulation'},
+  {ico:'🚗',lbl:'Accompagnement à un RDV'},
+  {ico:'📄',lbl:'Démarches administratives'},
+  {ico:'🛒',lbl:'Courses'},
+  {ico:'🚶',lbl:'Promenade / sortie'}
+];
+
+const EMOS=[
+  {cat:'bien',lbl:'🤗 Une bonne journée',cls:'pos',items:['😊 Souriante','💪 En forme','🌸 Sereine','🗣️ Bavarde','🤝 Coopérative','😄 De bonne humeur','🏅 Fière de faire seule','🙏 Reconnaissante','💞 Affectueuse']},
+  {cat:'moral',lbl:'😔 Moral en baisse',cls:'neg',items:['😞 Triste','🕰️ Nostalgique','🏠 Se sent seule','😥 Découragée','😢 A pleuré','🕯️ A parlé de ses disparus','💭 Se sent inutile']},
+  {cat:'inquiet',lbl:'😰 Inquiétudes',cls:'neg',items:['😰 Anxieuse','🚶 Peur de tomber','🌙 Peur de rester seule','🩺 Inquiète pour sa santé','😬 Agitée','❓ Pose sans cesse les mêmes questions']},
+  {cat:'tension',lbl:'😤 Tensions',cls:'neg',items:['😤 Irritable','🙅 A refusé mon aide','⏱️ Impatiente','🚿 Opposition à la toilette','😠 Mécontente','🗯️ Paroles dures']},
+  {cat:'memoire',lbl:'🧠 Mémoire et repères',cls:'',items:['✅ Bien orientée','🔁 Répète les mêmes choses','🌀 Un peu confuse','📆 Perdue dans les dates','🙋 Ne m\'a pas reconnue tout de suite','🔤 Cherche ses mots','🔎 A cherché des objets perdus']},
+  {cat:'fatigue',lbl:'😴 Énergie',cls:'',items:['😴 Fatiguée','🥱 Somnolente','🛏️ Est restée au lit','🌜 A mal dormi','😌 A bien dormi','⚡ Bien réveillée']}
+];
+
+const OBS=[
+  {cat:'appetit',lbl:'🍽️ Appétit',items:[['✅ Bon appétit','pos'],['🙂 Appétit moyen',''],['⚠️ A peu mangé','neg'],['❌ N\'a pas voulu manger','alerte']]},
+  {cat:'boisson',lbl:'💧 Hydratation',items:[['✅ A bien bu','pos'],['⚠️ A peu bu','neg']]},
+  {cat:'mobilite',lbl:'🚶 Déplacements',items:[['✅ Se déplace bien','pos'],['🤝 Se déplace avec aide',''],['⚠️ Marche difficilement','neg'],['🪑 Est restée assise',''],['🆘 A fait une chute','alerte']]},
+  {cat:'douleur',lbl:'🩹 Douleurs',items:[['✅ Aucune douleur','pos'],['🦵 Douleurs aux jambes','neg'],['🔙 Mal au dos','neg'],['🤕 Mal à la tête','neg'],['❗ Autre douleur','neg']]},
+  {cat:'medic',lbl:'💊 Traitement',items:[['✅ Traitement pris','pos'],['⚠️ Traitement oublié','alerte'],['❌ A refusé le traitement','alerte'],['➖ Non concerné(e)','']]},
+  {cat:'hygiene',lbl:'🚿 Hygiène',items:[['✅ Toilette complète','pos'],['🙂 Toilette partielle',''],['❌ Toilette refusée','neg']]},
+  {cat:'logement',lbl:'🏠 Le logement',items:[['✅ Tout est en ordre','pos'],['🌡️ Trop chaud / trop froid','neg'],['🔧 Quelque chose est cassé','neg'],['🧺 Linge à faire','']]}
+];
+
+const CONTACTS=[
+  {name:'Françoise',bd:'1957-03-02'},{name:'Martine',  bd:'1958-02-14'},
+  {name:'Nicole',   bd:'1960-08-01'},{name:'Pascale',  bd:'1964-04-25'},
+  {name:'Isabelle', bd:'1969-09-20'},{name:'Yves',     bd:'1977-08-06'},
+  {name:'Stéphanie',bd:'1982-05-15'},{name:'Simon',    bd:'1990-08-06'},
+  {name:'Lise',     bd:'1981-07-01'},{name:'Anaele',   bd:'1984-09-09'},
+  {name:'Florent',  bd:'1989-11-10'},{name:'Elisa',    bd:'1992-12-08'},
+  {name:'Paul',     bd:'1999-07-31'},{name:'Clément',  bd:'1992-05-14'},
+  {name:'Bastien',  bd:'1996-04-21'},{name:'Xavier',   bd:'1988-12-30'},
+  {name:'Rémi',     bd:'1992-12-03'},{name:'Manon',    bd:'2004-03-03'},
+  {name:'Timothé',  bd:'2007-03-07'},{name:'Léo',      bd:'2012-11-04'},
+  {name:'Nathanaël',bd:'2015-06-05'},
+  {name:'Papa',     bd:'1932-12-22'},{name:'Andrée',   bd:'1935-05-29'},
+  {name:'Alba',     bd:'2019-03-23'},{name:'Amelys',   bd:'2022-04-24'},
+  {name:'Livy',     bd:'2022-07-06'},{name:'Benoît',   bd:'1990-12-31'},
+];
+const COLS={'Françoise':'#e040fb','Martine':'#f06292','Nicole':'#ba68c8','Pascale':'#ff7043','Isabelle':'#26c6da','Yves':'#0084ff'};
+function colFor(n){if(COLS[n])return COLS[n];let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return'hsl('+(Math.abs(h)%360)+',52%,55%)';}
+function initials(n){return n.trim().slice(0,2).toUpperCase();}
+
+const SAINTS={"01-01":"Marie","01-02":"Basile","01-03":"Geneviève","01-04":"Odilon","01-05":"Édouard","01-06":"Melchior","01-07":"Raymond","01-08":"Lucien","01-09":"Alix","01-10":"Guillaume","01-11":"Paulin","01-12":"Tatiana","01-13":"Yvette","01-14":"Nina","01-15":"Rémi","01-16":"Marcel","01-17":"Roseline","01-18":"Prisca","01-19":"Marius","01-20":"Sébastien","01-21":"Agnès","01-22":"Vincent","01-23":"Barnard","01-24":"François de Sales","01-25":"Conv. de Paul","01-26":"Timothée","01-27":"Angèle","01-28":"Thomas d'Aquin","01-29":"Gildas","01-30":"Martine","01-31":"Marcelle","02-01":"Ella","02-02":"Présentation","02-03":"Blaise","02-04":"Véronique","02-05":"Agathe","02-06":"Gaston","02-07":"Eugénie","02-08":"Jacqueline","02-09":"Apolline","02-10":"Arnaud","02-11":"N.-D. de Lourdes","02-12":"Félix","02-13":"Béatrice","02-14":"Valentin","02-15":"Claude","02-16":"Julienne","02-17":"Alexis","02-18":"Bernadette","02-19":"Gabin","02-20":"Aimée","02-21":"Damien","02-22":"Isabelle","02-23":"Lazare","02-24":"Modeste","02-25":"Roméo","02-26":"Nestor","02-27":"Honorine","02-28":"Romain","02-29":"Auguste","03-01":"Aubin","03-02":"Charles le Bon","03-03":"Guénolé","03-04":"Casimir","03-05":"Olive","03-06":"Colette","03-07":"Félicité","03-08":"Jean de Dieu","03-09":"Françoise","03-10":"Vivien","03-11":"Rosine","03-12":"Justine","03-13":"Rodrigue","03-14":"Mathilde","03-15":"Louise","03-16":"Bénédicte","03-17":"Patrick","03-18":"Cyrille","03-19":"Joseph","03-20":"Herbert","03-21":"Clémence","03-22":"Léa","03-23":"Victorien","03-24":"Cath. de Suède","03-25":"Annonciation","03-26":"Larissa","03-27":"Habib","03-28":"Gontran","03-29":"Gwladys","03-30":"Amédée","03-31":"Benjamin","04-01":"Hugues","04-02":"Sandrine","04-03":"Richard","04-04":"Isidore","04-05":"Irène","04-06":"Marcellin","04-07":"J.-B. de La Salle","04-08":"Julie","04-09":"Gautier","04-10":"Fulbert","04-11":"Stanislas","04-12":"Jules","04-13":"Ida","04-14":"Maxime","04-15":"Paterne","04-16":"Benoît-Joseph","04-17":"Anicet","04-18":"Parfait","04-19":"Emma","04-20":"Odette","04-21":"Anselme","04-22":"Alexandre","04-23":"Georges","04-24":"Fidèle","04-25":"Marc","04-26":"Alida","04-27":"Zita","04-28":"Valérie","04-29":"Cath. de Sienne","04-30":"Robert","05-01":"Fête du Travail","05-02":"Boris","05-03":"Phil. et Jacques","05-04":"Sylvain","05-05":"Judith","05-06":"Prudence","05-07":"Gisèle","05-08":"Victoire 1945","05-09":"Pacôme","05-10":"Isidore","05-11":"Estelle","05-12":"Achille","05-13":"Rolande","05-14":"Matthias","05-15":"Denise","05-16":"Honoré","05-17":"Pascal","05-18":"Éric","05-19":"Yves","05-20":"Bernardin","05-21":"Constantin","05-22":"Émile","05-23":"Didier","05-24":"Donatien","05-25":"Sophie","05-26":"Bérenger","05-27":"Augustin","05-28":"Germain","05-29":"Aymar","05-30":"Ferdinand","05-31":"Visitation","06-01":"Justin","06-02":"Blandine","06-03":"Kevin","06-04":"Clotilde","06-05":"Igor","06-06":"Norbert","06-07":"Gilbert","06-08":"Médard","06-09":"Diane","06-10":"Landry","06-11":"Barnabé","06-12":"Guy","06-13":"Antoine de Padoue","06-14":"Élisée","06-15":"Germaine","06-16":"J.-F. Régis","06-17":"Hervé","06-18":"Léonce","06-19":"Romuald","06-20":"Silvère","06-21":"Rodolphe","06-22":"Alban","06-23":"Audrey","06-24":"Jean-Baptiste","06-25":"Prosper","06-26":"Anthelme","06-27":"Fernand","06-28":"Irénée","06-29":"Pierre et Paul","06-30":"Martial","07-01":"Thierry","07-02":"Martinien","07-03":"Thomas","07-04":"Florent","07-05":"Antoine","07-06":"Mariette","07-07":"Raoul","07-08":"Thibaut","07-09":"Amandine","07-10":"Ulrich","07-11":"Benoît","07-12":"Olivier","07-13":"Henri","07-14":"Fête Nationale","07-15":"Donald","07-16":"N.-D. du Carmel","07-17":"Charlotte","07-18":"Frédéric","07-19":"Arsène","07-20":"Marina","07-21":"Victor","07-22":"Marie-Madeleine","07-23":"Brigitte","07-24":"Christine","07-25":"Jacques","07-26":"Anne et Joachim","07-27":"Nathalie","07-28":"Samson","07-29":"Marthe","07-30":"Juliette","07-31":"Ignace de Loyola","08-01":"Alphonse","08-02":"Julien Eymard","08-03":"Lydie","08-04":"Jean-Marie Vianney","08-05":"Abel","08-06":"Transfiguration","08-07":"Gaétan","08-08":"Dominique","08-09":"Amour","08-10":"Laurent","08-11":"Claire","08-12":"Clarisse","08-13":"Hippolyte","08-14":"Eusèbe","08-15":"Assomption","08-16":"Armel","08-17":"Hyacinthe","08-18":"Hélène","08-19":"Jean-Claude","08-20":"Bernard","08-21":"Christophe","08-22":"Fabrice","08-23":"Rose de Lima","08-24":"Barthélemy","08-25":"Louis","08-26":"Natacha","08-27":"Monique","08-28":"Augustin","08-29":"Sabine","08-30":"Fiacre","08-31":"Aristide","09-01":"Gilles","09-02":"Ingrid","09-03":"Grégoire","09-04":"Rosalie","09-05":"Raïssa","09-06":"Bertrand","09-07":"Reine","09-08":"Nativité","09-09":"Alain","09-10":"Inès","09-11":"Adelphe","09-12":"Apollinaire","09-13":"Aimé","09-14":"La Sainte-Croix","09-15":"Roland","09-16":"Edith","09-17":"Renaud","09-18":"Nadège","09-19":"Émilie","09-20":"Davy","09-21":"Matthieu","09-22":"Maurice","09-23":"Constance","09-24":"Thècle","09-25":"Hermann","09-26":"Côme et Damien","09-27":"Vinc. de Paul","09-28":"Venceslas","09-29":"Michel","09-30":"Jérôme","10-01":"Thérèse","10-02":"Léger","10-03":"Gérard","10-04":"François d'Assise","10-05":"Fleur","10-06":"Bruno","10-07":"Serge","10-08":"Pélagie","10-09":"Denis","10-10":"Ghislain","10-11":"Firmin","10-12":"Wilfrid","10-13":"Géraud","10-14":"Juste","10-15":"Thérèse d'Avila","10-16":"Edwige","10-17":"Baudouin","10-18":"Luc","10-19":"René","10-20":"Adeline","10-21":"Céline","10-22":"Élodie","10-23":"Jean de Capistran","10-24":"Florentin","10-25":"Crépin","10-26":"Dimitri","10-27":"Émeline","10-28":"Simon et Jude","10-29":"Narcisse","10-30":"Bienvenu","10-31":"Quentin","11-01":"Toussaint","11-02":"Défunts","11-03":"Hubert","11-04":"Charles","11-05":"Sylvie","11-06":"Bertille","11-07":"Carine","11-08":"Geoffrey","11-09":"Théodore","11-10":"Léon","11-11":"Armistice 1918","11-12":"Christian","11-13":"Brice","11-14":"Sidoine","11-15":"Albert","11-16":"Marguerite","11-17":"Élisabeth","11-18":"Aude","11-19":"Tanguy","11-20":"Edmond","11-21":"Prés. de Marie","11-22":"Cécile","11-23":"Clément","11-24":"Flora","11-25":"Catherine","11-26":"Delphine","11-27":"Sévrin","11-28":"Jacques de la Marche","11-29":"Saturnin","11-30":"André","12-01":"Florence","12-02":"Viviane","12-03":"François-Xavier","12-04":"Barbara","12-05":"Gérald","12-06":"Nicolas","12-07":"Ambroise","12-08":"Immaculée Conception","12-09":"Pierre Fourier","12-10":"Romaric","12-11":"Daniel","12-12":"Jeanne de Chantal","12-13":"Lucie","12-14":"Odile","12-15":"Ninon","12-16":"Alice","12-17":"Gaël","12-18":"Gatien","12-19":"Urbain","12-20":"Abraham","12-21":"Pierre Canisius","12-22":"Françoise-Xavière","12-23":"Armand","12-24":"Adèle","12-25":"Noël","12-26":"Étienne","12-27":"Jean","12-28":"Innocents","12-29":"David","12-30":"Roger","12-31":"Sylvestre"};
+
+const JOURS=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+/* ---------- ÉTAT ---------- */
+let selPrest=[],selEmos=[],selObs=[],selMoments=[],selDuree='',selAlerte=false;
+let customContacts={},mesVisites=[],famVisites=[],rdvItems=[],jFilt='all';
+let dmMsgs=[],currentTab='visite';
+
+/* ---------- OUTILS ---------- */
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function fd(ds){if(!ds)return'';const[y,m,d]=ds.split('-').map(Number);const dt=new Date(y,m-1,d);return JOURS[dt.getDay()]+' '+d+' '+MOIS[m-1];}
+function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
+function hhmm(d){return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+function goTab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
+  currentTab=id;
+  window.scrollTo(0,0);
+  if(id==='messages'){markDmRead();setTimeout(()=>{const b=document.getElementById('dmBody');b.scrollTop=b.scrollHeight;},60);}
+}
+
+/* ---------- HORLOGE / MÉTÉO ---------- */
+function updateClock(){
+  const n=new Date();
+  document.getElementById('hDate').textContent=JOURS[n.getDay()]+' '+n.getDate()+' '+MOIS[n.getMonth()]+' '+n.getFullYear();
+  document.getElementById('hTime').textContent=hhmm(n);
+}
+updateClock();setInterval(updateClock,30000);
+
+async function loadWeather(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=46.2197&longitude=5.5456&current_weather=true&timezone=Europe%2FParis');
+    const d=await r.json();
+    const wc=d.current_weather.weathercode,t=Math.round(d.current_weather.temperature);
+    const map=[[99,'⛈️','Orage'],[95,'⛈️','Orage'],[82,'🌧️','Averses'],[80,'🌦️','Averses'],[75,'❄️','Neige'],[71,'❄️','Neige'],[65,'🌧️','Pluie'],[63,'🌧️','Pluie'],[61,'🌧️','Pluie légère'],[55,'🌦️','Bruine'],[51,'🌦️','Bruine'],[48,'🌫️','Brouillard'],[45,'🌫️','Brouillard'],[3,'☁️','Couvert'],[2,'⛅','Nuageux'],[1,'🌤️','Peu nuageux'],[0,'☀️','Ensoleillé']];
+    let ico='🌡️',desc='Variable';
+    for(const[c,i,de]of map){if(wc>=c){ico=i;desc=de;break;}}
+    document.getElementById('hwIco').textContent=ico;
+    document.getElementById('hwTxt').textContent=desc+' · '+t+'°C · Izernore';
+  }catch(e){document.getElementById('hwTxt').textContent='Météo indisponible';}
+}
+loadWeather();setInterval(loadWeather,30*60*1000);
+
+/* ---------- FÊTES & ANNIVERSAIRES ---------- */
+function allContacts(){
+  return CONTACTS.concat(Object.values(customContacts).map(c=>({name:c.name,bd:c.birthday||c.bd||null})));
+}
+function showHeaderInfo(){
+  const now=new Date(),d=now.getDate(),m=now.getMonth()+1,y=now.getFullYear();
+  const tom=new Date(now);tom.setDate(d+1);
+  const dt=tom.getDate(),mt=tom.getMonth()+1,yt=tom.getFullYear();
+  const parts=[];
+  const saint=SAINTS[String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')];
+  if(saint)parts.push('<span class="hfete">🌸 Aujourd\'hui : fête de '+esc(saint)+'</span>');
+  allContacts().forEach(c=>{
+    if(!c.bd)return;
+    const p=c.bd.split('-').map(Number);
+    if(p[2]===d&&p[1]===m)parts.push('<span class="hanniv">🎂 Anniversaire de '+esc(c.name)+' — '+(y-p[0])+' ans !</span>');
+  });
+  allContacts().forEach(c=>{
+    if(!c.bd)return;
+    const p=c.bd.split('-').map(Number);
+    if(p[2]===dt&&p[1]===mt)parts.push('<span class="hdemain">🎁 Demain : anniversaire de '+esc(c.name)+' ('+(yt-p[0])+' ans)</span>');
+  });
+  document.getElementById('hInfo').innerHTML=parts.join('');
+  renderFetes();
+}
+
+function renderFetes(){
+  const now=new Date(),d=now.getDate(),m=now.getMonth()+1;
+  const saint=SAINTS[String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')];
+  document.getElementById('feteJour').innerHTML=
+    '<div style="text-align:center;padding:8px 0;">'
+    +'<div style="font-size:2.6rem;">🌸</div>'
+    +'<div style="font-family:\'Playfair Display\',serif;font-size:1.5rem;color:#2e6b5e;margin-top:4px;">'+esc(saint||'—')+'</div>'
+    +'<div style="font-size:0.8rem;color:#7aa89b;margin-top:5px;">Nous fêtons les '+esc(saint||'')+' aujourd\'hui</div>'
+    +'</div>';
+
+  // Anniversaires à venir (90 jours)
+  const today=new Date();today.setHours(0,0,0,0);
+  const list=[];
+  allContacts().forEach(c=>{
+    if(!c.bd)return;
+    const p=c.bd.split('-').map(Number);
+    let next=new Date(today.getFullYear(),p[1]-1,p[2]);
+    if(next<today)next=new Date(today.getFullYear()+1,p[1]-1,p[2]);
+    const days=Math.round((next-today)/86400000);
+    if(days<=90)list.push({name:c.name,days,age:next.getFullYear()-p[0],date:next});
+  });
+  list.sort((a,b)=>a.days-b.days);
+  const el=document.getElementById('annivList');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="be">🎂</div><p>Aucun anniversaire dans les 3 prochains mois.</p></div>';return;}
+  el.innerHTML=list.map(a=>{
+    const when=a.days===0?'<span class="badge2" style="background:#e91e63;">Aujourd\'hui !</span>'
+      :a.days===1?'<span class="badge2">Demain</span>'
+      :'<span class="li2-s">dans '+a.days+' jours</span>';
+    return '<div class="li2'+(a.days===0?' today':'')+'">'
+      +'<div class="av" style="background:'+colFor(a.name)+'">'+esc(initials(a.name))+'</div>'
+      +'<div class="li2-main"><div class="li2-t">'+esc(a.name)+' — '+a.age+' ans '+when+'</div>'
+      +'<div class="li2-s">'+fd(a.date.getFullYear()+'-'+String(a.date.getMonth()+1).padStart(2,'0')+'-'+String(a.date.getDate()).padStart(2,'0'))+'</div></div></div>';
+  }).join('');
+}
+
+/* ---------- FORMULAIRE ---------- */
+function buildForm(){
+  document.getElementById('prestGrid').innerHTML=PRESTATIONS.map(p=>
+    '<button class="pb2" data-l="'+esc(p.ico+' '+p.lbl)+'" onclick="togPrest(this)"><span class="ico">'+p.ico+'</span><span>'+esc(p.lbl)+'</span></button>'
+  ).join('');
+
+  document.getElementById('emoGroups').innerHTML=EMOS.map(g=>
+    '<div class="es"><div class="el">'+esc(g.lbl)+'</div><div class="eg">'
+    +g.items.map(i=>'<button class="eb '+g.cls+'" onclick="togEmo(this,\''+g.cat+'\')">'+esc(i)+'</button>').join('')
+    +'</div></div>'
+  ).join('');
+
+  document.getElementById('obsGroups').innerHTML=OBS.map(g=>
+    '<div class="es"><div class="el">'+esc(g.lbl)+'</div><div class="eg">'
+    +g.items.map(i=>'<button class="eb '+i[1]+'" onclick="togObs(this,\''+g.cat+'\',\''+i[1]+'\')">'+esc(i[0])+'</button>').join('')
+    +'</div></div>'
+  ).join('');
+}
+
+function initForm(){
+  const n=new Date();
+  document.getElementById('vDate').value=todayStr();
+  document.getElementById('vTime').value=hhmm(n);
+  const h=n.getHours();
+  const want=h<11?'🌅 Matin':h<14?'🍽️ Midi':h<18?'☀️ Après-midi':'🌙 Soir';
+  document.querySelectorAll('#tab-visite .eb').forEach(b=>{
+    if(b.textContent.trim()===want&&!b.classList.contains('on')){b.classList.add('on');selMoments=[want];}
+  });
+}
+
+function togPrest(el){
+  el.classList.toggle('on');
+  const t=el.getAttribute('data-l');
+  selPrest=selPrest.includes(t)?selPrest.filter(x=>x!==t):selPrest.concat([t]);
+}
+function togEmo(el,cat){
+  el.classList.toggle('on');
+  const label=el.textContent.trim(),k=label+'|'+cat;
+  const ex=selEmos.find(e=>e.k===k);
+  if(ex)selEmos=selEmos.filter(e=>e.k!==k);else selEmos.push({label,cat,k});
+}
+function togObs(el,cat,tone){
+  el.classList.toggle('on');
+  const label=el.textContent.trim(),k=label+'|'+cat;
+  const ex=selObs.find(e=>e.k===k);
+  if(ex)selObs=selObs.filter(e=>e.k!==k);else selObs.push({label,cat,tone,k});
+}
+function togMoment(el){
+  el.classList.toggle('on');
+  const t=el.textContent.trim();
+  selMoments=selMoments.includes(t)?selMoments.filter(x=>x!==t):selMoments.concat([t]);
+}
+function pickOne(el,grp){
+  const sibs=el.parentElement.querySelectorAll('.eb');
+  const was=el.classList.contains('on');
+  sibs.forEach(s=>s.classList.remove('on'));
+  if(!was){el.classList.add('on');selDuree=el.textContent.trim();}else{selDuree='';}
+}
+function togAlert(){
+  selAlerte=!selAlerte;
+  document.getElementById('alertTog').classList.toggle('on',selAlerte);
+  document.getElementById('alertBox').textContent=selAlerte?'✓':'';
+}
+function addNote(txt){
+  const t=document.getElementById('vNote');
+  t.value=(t.value?t.value.replace(/\s*$/,'')+'\n':'')+txt;
+  t.focus();
+  t.setSelectionRange(t.value.length,t.value.length);
+}
+
+async function saveVisite(){
+  if(!selPrest.length&&!selEmos.length&&!selObs.length&&!document.getElementById('vNote').value.trim()){
+    toast('⚠️ Renseignez au moins une information');return;
+  }
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true;btn.textContent='⏳ Enregistrement...';
+  try{
+    await db.ref('aide_visites').push({
+      aide:'Élodie',
+      date:document.getElementById('vDate').value||todayStr(),
+      time:document.getElementById('vTime').value||'',
+      moments:selMoments.slice(),
+      duree:selDuree,
+      prestations:selPrest.slice(),
+      emotions:selEmos.map(e=>({label:e.label,cat:e.cat})),
+      observations:selObs.map(o=>({label:o.label,cat:o.cat,tone:o.tone})),
+      note:document.getElementById('vNote').value.trim(),
+      alerte:selAlerte,
+      ts:new Date().toISOString()
+    });
+    document.querySelectorAll('#tab-visite .eb.on,#tab-visite .pb2.on').forEach(e=>e.classList.remove('on'));
+    selPrest=[];selEmos=[];selObs=[];selMoments=[];selDuree='';
+    if(selAlerte)togAlert();
+    document.getElementById('vNote').value='';
+    initForm();
+    toast('✅ Visite envoyée à la famille 💚');
+    window.scrollTo(0,0);
+  }catch(e){toast('❌ Erreur : '+e.message);}
+  btn.disabled=false;btn.textContent='💚 Enregistrer ma visite';
+}
+
+/* ---------- MES VISITES ---------- */
+onReady(function(){db.ref('aide_visites').on('value',snap=>{
+  mesVisites=[];
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))mesVisites.push(Object.assign({},v[k],{_k:k}));}
+  mesVisites.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  document.getElementById('syncBar').textContent='✅ Connecté · '+mesVisites.length+' visite'+(mesVisites.length>1?'s':'')+' enregistrée'+(mesVisites.length>1?'s':'');
+  renderJournal();
+});});
+
+function setJFilt(el,f){
+  document.querySelectorAll('#jFilt .eb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');jFilt=f;renderJournal();
+}
+
+function renderJournal(){
+  let list=mesVisites;
+  if(jFilt==='alerte')list=list.filter(v=>v.alerte);
+  if(jFilt==='rep')list=list.filter(v=>v.reponses&&Object.keys(v.reponses).length);
+  const el=document.getElementById('jList');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="be">📖</div><p>Aucune visite pour le moment.<br>Elles apparaîtront ici après enregistrement.</p></div>';return;}
+  el.innerHTML=list.slice(0,60).map(v=>{
+    const tags=[]
+      .concat((v.prestations||[]).map(p=>'<span class="tag">'+esc(p)+'</span>'))
+      .concat((v.emotions||[]).map(e=>'<span class="tag '+(e.cat==='bien'?'pos':(e.cat==='moral'||e.cat==='inquiet'||e.cat==='tension')?'neg':'')+'">'+esc(e.label)+'</span>'))
+      .concat((v.observations||[]).map(o=>'<span class="tag '+esc(o.tone||'')+'">'+esc(o.label)+'</span>'))
+      .join('');
+    const reps=v.reponses?Object.keys(v.reponses).map(k=>{
+      const r=v.reponses[k];
+      return '<div class="vrep"><b>'+esc(r.who||'La famille')+'</b> · '+esc(new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}))+'<br>'+esc(r.text)+'</div>';
+    }).join(''):'';
+    return '<div class="vi'+(v.alerte?' alerte':'')+'">'
+      +'<div class="vih"><div><div class="vid">'+(v.alerte?'⚠️ ':'')+fd(v.date)+'</div>'
+      +'<div class="vit">'+esc([v.time,(v.moments||[]).join(' · '),v.duree].filter(Boolean).join(' · '))+'</div></div>'
+      +'<button class="vdel" onclick="delVisite(\''+v._k+'\')">🗑️</button></div>'
+      +(tags?'<div>'+tags+'</div>':'')
+      +(v.note?'<div class="vnote">'+esc(v.note)+'</div>':'')
+      +reps
+      +'</div>';
+  }).join('');
+}
+
+async function delVisite(k){
+  if(!confirm('Supprimer cette visite ?'))return;
+  await db.ref('aide_visites/'+k).remove();
+  toast('🗑️ Visite supprimée');
+}
+
+/* ---------- MESSAGES ---------- */
+onReady(function(){db.ref('aide_messages').orderByChild('ts').limitToLast(80).on('value',snap=>{
+  dmMsgs=[];
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))dmMsgs.push(Object.assign({},v[k],{_k:k}));}
+  dmMsgs.sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+  renderDm();
+  const unread=dmMsgs.filter(m=>m.from!=='elodie'&&!m.readByAide).length;
+  const b=document.getElementById('msgBadge');
+  if(unread&&currentTab!=='messages'){b.textContent=unread;b.style.display='flex';}else b.style.display='none';
+  if(currentTab==='messages')markDmRead();
+});});
+
+function renderDm(){
+  const el=document.getElementById('dmBody');
+  if(!dmMsgs.length){el.innerHTML='<div class="empty" style="margin:auto;"><div class="be">💬</div><p>Aucun message.<br>Écrivez le premier mot à la famille !</p></div>';return;}
+  const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<60;
+  el.innerHTML=dmMsgs.map(m=>{
+    const mine=m.from==='elodie';
+    const t=new Date(m.ts);
+    return '<div class="dm-bbl '+(mine?'dm-me':'dm-fam')+'">'
+      +(mine?'':'<div class="dm-bbl-w">'+esc(m.fromName||'La famille')+'</div>')
+      +esc(m.text)
+      +'<div class="dm-bbl-t">'+t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '+hhmm(t)+'</div></div>';
+  }).join('');
+  if(wasBottom)el.scrollTop=el.scrollHeight;
+}
+
+function markDmRead(){
+  const upd={};
+  dmMsgs.forEach(m=>{if(m.from!=='elodie'&&!m.readByAide)upd[m._k+'/readByAide']=true;});
+  if(Object.keys(upd).length)db.ref('aide_messages').update(upd);
+  document.getElementById('msgBadge').style.display='none';
+}
+
+async function sendDm(){
+  const inp=document.getElementById('dmInp');
+  const text=inp.value.trim();
+  if(!text)return;
+  inp.value='';
+  try{
+    await db.ref('aide_messages').push({text,from:'elodie',fromName:'Élodie',ts:new Date().toISOString(),readByAide:true});
+  }catch(e){toast('❌ Erreur : '+e.message);inp.value=text;}
+}
+
+/* ---------- RENDEZ-VOUS ---------- */
+onReady(function(){db.ref('maman_rdv').on('value',snap=>{
+  rdvItems=[];
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))rdvItems.push(Object.assign({},v[k],{_k:k}));}
+  rdvItems.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  renderRdv();
+});});
+function renderRdv(){
+  const ts=todayStr();
+  const tom=new Date();tom.setDate(tom.getDate()+1);
+  const tts=tom.getFullYear()+'-'+String(tom.getMonth()+1).padStart(2,'0')+'-'+String(tom.getDate()).padStart(2,'0');
+  const fut=rdvItems.filter(r=>r.date>=ts);
+  const el=document.getElementById('rdvList');
+  if(!fut.length){el.innerHTML='<div class="empty" style="padding:20px;"><div class="be">📅</div><p>Aucun rendez-vous prévu.</p></div>';return;}
+  el.innerHTML=fut.slice(0,15).map(r=>
+    '<div class="li2 rdv'+(r.date===ts?' today':'')+'">'
+    +'<div style="font-size:1.4rem;">📅</div>'
+    +'<div class="li2-main"><div class="li2-t">'+esc(r.title)
+    +(r.date===ts?'<span class="badge2" style="background:#4caf50;">Aujourd\'hui !</span>':r.date===tts?'<span class="badge2">Demain</span>':'')
+    +'</div><div class="li2-s">'+fd(r.date)+(r.time?' à '+esc(r.time):'')+'</div></div></div>'
+  ).join('');
+}
+
+/* ---------- PASSAGES DE LA FAMILLE ---------- */
+onReady(function(){db.ref('visites_publiques').on('value',snap=>{
+  famVisites=[];
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))famVisites.push(Object.assign({},v[k],{_k:k}));}
+  famVisites.sort((a,b)=>String(b.date+(b.time||'')).localeCompare(String(a.date+(a.time||''))));
+  renderFam();
+});});
+function renderFam(){
+  const el=document.getElementById('famList');
+  if(!famVisites.length){el.innerHTML='<div class="empty"><div class="be">👨‍👩‍👧</div><p>Aucun passage enregistré pour le moment.</p></div>';return;}
+  const ts=todayStr();
+  const yd=new Date();yd.setDate(yd.getDate()-1);
+  const yts=yd.getFullYear()+'-'+String(yd.getMonth()+1).padStart(2,'0')+'-'+String(yd.getDate()).padStart(2,'0');
+  el.innerHTML=famVisites.slice(0,40).map(v=>{
+    const when=v.date===ts?'<span class="badge2" style="background:#4caf50;">Aujourd\'hui</span>':v.date===yts?'<span class="badge2">Hier</span>':'';
+    return '<div class="li2'+(v.date===ts?' today':'')+'">'
+      +'<div class="av" style="background:'+colFor(v.who||'?')+'">'+esc(initials(v.who||'?'))+'</div>'
+      +'<div class="li2-main"><div class="li2-t">'+esc(v.who||'—')+' '+when+'</div>'
+      +'<div class="li2-s">'+fd(v.date)+(v.time?' à '+esc(v.time):'')+((v.periods&&v.periods.length)?' · '+esc(v.periods.join(' · ')):'')+'</div></div></div>';
+  }).join('');
+}
+
+/* ---------- CONTACTS PERSONNALISÉS ---------- */
+onReady(function(){db.ref('contacts_custom').on('value',snap=>{
+  customContacts={};
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))customContacts[k]=v[k];}
+  showHeaderInfo();
+});});
+
+/* ---------- DÉMARRAGE ---------- */
+window.addEventListener('DOMContentLoaded',function(){
+  buildForm();
+  initForm();
+  showHeaderInfo();
+});
+</script>
+
+<!-- MOT DE PASSE -->
+<div id="pwOverlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#2e6b5e 0%,#4a9c88 60%,#7bc4ae 100%);z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:30px;">
+  <div style="background:#fff;border-radius:24px;padding:38px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:3.6rem;margin-bottom:14px;">🔐</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.7rem;color:#2e6b5e;margin-bottom:6px;">Bonjour Élodie !</div>
+    <div style="font-size:1rem;color:#5e8f81;margin-bottom:24px;">Entrez le mot de passe</div>
+    <input type="password" id="pwInput" style="width:100%;padding:16px;font-size:1.4rem;border:2px solid #d6ebe4;border-radius:14px;text-align:center;outline:none;color:#1f4a40;letter-spacing:3px;font-family:'Lato',sans-serif;" placeholder="••••••" onkeydown="if(event.key==='Enter')submitPw()">
+    <div id="pwError" style="display:none;color:#e53935;margin-top:12px;font-size:0.95rem;">❌ Mot de passe incorrect</div>
+    <button onclick="submitPw()" style="margin-top:22px;width:100%;padding:18px;background:#2e6b5e;color:#fff;border:none;border-radius:14px;font-size:1.2rem;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;">Entrer ✓</button>
+    <div style="margin-top:18px;font-size:0.75rem;color:#9ab8ae;line-height:1.4;">Cet espace est réservé au suivi d'Andrée.<br>Vous n'aurez à saisir ce mot de passe qu'une seule fois sur cet appareil.</div>
+  </div>
+</div>
+
+</body>
+</html>

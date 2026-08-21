@@ -209,6 +209,26 @@ textarea{resize:vertical;min-height:70px;}
 .dm-inp:focus{border-color:#c4789a;}
 .dm-send{background:linear-gradient(135deg,#7d4e6b,#c47898);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 [contenteditable=true]:empty::before{content:attr(data-ph);color:#aaa;pointer-events:none;display:block;}
+/* AIDE À DOMICILE */
+.aide-body{display:flex;flex-direction:column;gap:8px;padding:12px;background:#f7fcfa;max-height:320px;min-height:120px;overflow-y:auto;}
+.aide-bbl{max-width:80%;padding:9px 13px;border-radius:14px;font-size:0.88rem;line-height:1.42;word-break:break-word;}
+.aide-bbl.ab-el{background:linear-gradient(135deg,#2e6b5e,#4a9c88);color:#fff;border-bottom-left-radius:4px;align-self:flex-start;}
+.aide-bbl.ab-fam{background:#e8f0fe;color:#1a2a3a;border-bottom-right-radius:4px;align-self:flex-end;}
+.aide-bbl-w{font-size:0.66rem;font-weight:700;opacity:0.85;margin-bottom:2px;}
+.aide-bbl-t{font-size:0.6rem;opacity:0.7;margin-top:3px;}
+.av2{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(46,107,94,0.09);border-left:4px solid #4a9c88;}
+.av2.alerte{border-left-color:#e05555;background:#fffaf9;}
+.av2-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.av2-d{font-family:'Playfair Display',serif;font-size:0.95rem;color:#2e6b5e;font-weight:700;}
+.av2-t{font-size:0.72rem;color:#7aa89b;}
+.atag{background:#eef6f3;color:#3d7a6a;border-radius:14px;padding:3px 10px;font-size:0.73rem;font-weight:700;display:inline-block;margin:2px 2px 0 0;}
+.atag.pos{background:#e8f7e9;color:#256b2c;}
+.atag.neg{background:#fdeee6;color:#a0512a;}
+.atag.alerte{background:#fdeaea;color:#a02020;}
+.av2-note{background:#f7fcfa;border-radius:9px;padding:10px;font-size:0.86rem;line-height:1.45;margin-top:8px;color:#2c4f46;white-space:pre-wrap;}
+.av2-rep{background:#eef4fb;border-left:3px solid #5b8bc4;border-radius:9px;padding:8px 11px;font-size:0.83rem;margin-top:6px;color:#22406b;}
+.av2-rf{display:flex;gap:6px;margin-top:9px;}
+.av2-rf input{flex:1;font-size:0.82rem;}
 </style>
 </head>
 <body>
@@ -225,6 +245,7 @@ textarea{resize:vertical;min-height:70px;}
     <button class="tab" onclick="goTab('journal',this)">📖 Journal</button>
     <button class="tab" onclick="goTab('stats',this)">📊 Bilan</button>
     <button class="tab" onclick="goTab('contacts',this)">📋 Contacts</button>
+    <button class="tab" id="tab-aide-btn" onclick="goTab('aide',this)">🤝 Élodie<span class="nb" id="aideTabBadge" style="display:none;"></span></button>
     <button class="tab" id="tab-msg-btn" onclick="goTab('messages',this)">💬 Messages<span class="nb" id="msgTabBadge" style="display:none;"></span></button>
   </div>
 </div>
@@ -324,54 +345,9 @@ textarea{resize:vertical;min-height:70px;}
       <button onclick="rmPhoto()" style="position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:27px;height:27px;cursor:pointer;font-size:0.86rem;color:#7d4e6b;">✕</button>
     </div></div>
   </div>
-  <div class="card"><div class="ct">💭 Comment était-elle ?</div>
-    <p style="font-size:0.73rem;color:#8a6080;margin-bottom:12px;font-style:italic;">Plusieurs choix possibles</p>
-    <div class="es"><div class="el">🤗 Émotions positives</div><div class="eg">
-      <button class="eb ej" onclick="togEmo(this,'cat-joie')">😊 Heureuse</button>
-      <button class="eb ej" onclick="togEmo(this,'cat-joie')">💪 En forme</button>
-      <button class="eb ej" onclick="togEmo(this,'cat-joie')">🌸 Sereine</button>
-      <button class="eb ej" onclick="togEmo(this,'cat-joie')">🏅 Fière</button>
-      <button class="eb ej" onclick="togEmo(this,'cat-joie')">🙏 Reconnaissante</button>
-      <button class="eb ej" onclick="togEmo(this,'cat-joie')">💞 Tendre</button>
-      <button class="eb ej" onclick="togEmo(this,'cat-joie')">✅ Devoir accompli</button>
-    </div></div>
-    <div class="es"><div class="el">😔 Perte et deuil</div><div class="eg">
-      <button class="eb ep" onclick="togEmo(this,'cat-perte')">😔 Deuil des capacités physiques</button>
-      <button class="eb ep" onclick="togEmo(this,'cat-perte')">😔 Deuil de l'autonomie</button>
-      <button class="eb ep" onclick="togEmo(this,'cat-perte')">😔 Deuil de la mémoire</button>
-      <button class="eb ep" onclick="togEmo(this,'cat-perte')">😔 Deuil des proches</button>
-      <button class="eb ep" onclick="togEmo(this,'cat-perte')">😔 Nostalgique</button>
-    </div></div>
-    <div class="es"><div class="el">😰 Peurs</div><div class="eg">
-      <button class="eb ef" onclick="togEmo(this,'cat-peur')">😰 Peur de tomber</button>
-      <button class="eb ef" onclick="togEmo(this,'cat-peur')">😰 Peur d'être un fardeau</button>
-      <button class="eb ef" onclick="togEmo(this,'cat-peur')">😰 Peur de l'oubli de soi</button>
-      <button class="eb ef" onclick="togEmo(this,'cat-peur')">😰 Peur de la mort</button>
-      <button class="eb ef" onclick="togEmo(this,'cat-peur')">😰 Angoisse du vide</button>
-    </div></div>
-    <div class="es"><div class="el">😞 Tristesse</div><div class="eg">
-      <button class="eb ett" onclick="togEmo(this,'cat-triste')">😞 Mélancolie</button>
-      <button class="eb ett" onclick="togEmo(this,'cat-triste')">😞 Sentiment d'inutilité</button>
-      <button class="eb ett" onclick="togEmo(this,'cat-triste')">😞 Solitude profonde</button>
-      <button class="eb ett" onclick="togEmo(this,'cat-triste')">😞 Abattement</button>
-    </div></div>
-    <div class="es"><div class="el">😤 Colère</div><div class="eg">
-      <button class="eb ecc" onclick="togEmo(this,'cat-colere')">😤 Colère contre son corps</button>
-      <button class="eb ecc" onclick="togEmo(this,'cat-colere')">😤 Frustration face à la dépendance</button>
-      <button class="eb ecc" onclick="togEmo(this,'cat-colere')">😤 Irritable</button>
-      <button class="eb ecc" onclick="togEmo(this,'cat-colere')">😤 Sentiment d'injustice</button>
-    </div></div>
-    <div class="es"><div class="el">😳 Honte</div><div class="eg">
-      <button class="eb ehh" onclick="togEmo(this,'cat-honte')">😳 Honte du corps vieillissant</button>
-      <button class="eb ehh" onclick="togEmo(this,'cat-honte')">😳 Humiliation de ne pas se souvenir</button>
-      <button class="eb ehh" onclick="togEmo(this,'cat-honte')">😳 Sentiment de diminution</button>
-    </div></div>
-    <div class="es"><div class="el">🌀 États mixtes</div><div class="eg">
-      <button class="eb emm" onclick="togEmo(this,'cat-mixte')">🌀 Ambivalente</button>
-      <button class="eb emm" onclick="togEmo(this,'cat-mixte')">🌀 Confusion émotionnelle</button>
-      <button class="eb emm" onclick="togEmo(this,'cat-mixte')">🌀 Résignée</button>
-      <button class="eb emm" onclick="togEmo(this,'cat-mixte')">🌀 Hypervigilante</button>
-    </div></div>
+  <div class="card" style="background:#f2faf7;border:1px solid #cfe8e0;">
+    <div class="ct">💭 Comment était-elle ?</div>
+    <p style="font-size:0.8rem;color:#4a7a6d;line-height:1.5;margin:0;">Ce suivi est maintenant rempli par <b>Élodie</b> à chaque visite.<br>Retrouvez ses observations dans l'onglet <b>🤝 Élodie</b>.</p>
   </div>
   <div class="card"><div class="ct">📅 Rendez-vous de Maman</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;">
@@ -459,6 +435,48 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- AIDE À DOMICILE -->
+<div id="tab-aide" class="sec">
+  <div class="card" style="background:linear-gradient(135deg,#f2faf7,#eef6f3);border:1px solid #cfe8e0;">
+    <div style="display:flex;align-items:center;gap:13px;">
+      <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#2e6b5e,#7bc4ae);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;color:#fff;font-weight:700;">EL</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:#2e6b5e;font-weight:700;">Élodie</div>
+        <div style="font-size:0.76rem;color:#5e8f81;">Aide à domicile de Maman</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:12px;">
+      <a href="tel:0621674036" style="flex:1;text-align:center;background:#2e6b5e;color:#fff;border-radius:11px;padding:10px;font-size:0.84rem;font-weight:700;text-decoration:none;">📞 06 21 67 40 36</a>
+      <a href="sms:0621674036" style="flex:0 0 auto;text-align:center;background:#eef6f3;color:#2e6b5e;border:1.5px solid #cfe8e0;border-radius:11px;padding:10px 15px;font-size:0.84rem;font-weight:700;text-decoration:none;">✉️ SMS</a>
+    </div>
+    <div style="margin-top:12px;font-size:0.73rem;color:#5e8f81;line-height:1.6;">
+      <b style="color:#2e6b5e;">Ses prestations :</b> aide au lever, au coucher et à l'habillage · aide à la toilette · préparation et aide à la prise des repas · entretien du logement et du linge · accompagnement et compagnie · jeux et stimulation cognitive · accompagnement aux rendez-vous · aide aux démarches administratives.
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#2e6b5e,#7bc4ae);padding:10px 14px;display:flex;align-items:center;gap:10px;">
+      <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">💬</div>
+      <div><div style="font-family:'Playfair Display',serif;font-weight:700;font-size:0.92rem;color:#fff;">Discussion avec Élodie</div><div style="font-size:0.7rem;color:rgba(255,255,255,0.85);">Toute la famille voit cette conversation</div></div>
+    </div>
+    <div class="aide-body" id="aideBody"></div>
+    <div style="padding:8px 12px;border-top:1px solid #e4e6eb;background:#fff;display:flex;gap:7px;align-items:center;">
+      <input class="dm-inp" type="text" id="aideInp" placeholder="Écrire à Élodie..." onkeydown="if(event.key==='Enter')sendAideMsg()">
+      <button class="dm-send" style="background:linear-gradient(135deg,#2e6b5e,#4a9c88);" onclick="sendAideMsg()">➤</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding:12px 14px;">
+    <div class="ct">📖 Ses comptes rendus de visite</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;" id="aFilt">
+      <div class="fc on" onclick="setAFilt(this,'all')">Tous</div>
+      <div class="fc" onclick="setAFilt(this,'alerte')">⚠️ Importants</div>
+      <div class="fc" onclick="setAFilt(this,'7')">7 derniers jours</div>
+    </div>
+  </div>
+  <div id="aideVisites"></div>
+</div>
+
 <!-- MESSAGES DIRECTS -->
 <div id="tab-messages" class="sec">
   <!-- GROUPE -->
@@ -531,6 +549,29 @@ firebase.initializeApp({
   appId:"1:464641073360:web:327a3738757cdfc7fa7ed5"
 });
 const db=firebase.database();
+
+/* --- Attente d'authentification ---
+   Les règles Firebase exigent auth != null. Or les écouteurs .on() sont
+   déclarés plus bas, avant que la connexion anonyme soit établie : Firebase
+   les refusait alors et les annulait DÉFINITIVEMENT (d'où les « erreurs de
+   connexion » et les listes vides). On met donc toute lecture en file
+   d'attente et on l'exécute dès que l'utilisateur est authentifié. */
+var _readyQ=[],_authed=false;
+function onReady(fn){if(_authed){fn();return;}_readyQ.push(fn);}
+firebase.auth().onAuthStateChanged(function(u){
+  if(!u||_authed)return;
+  _authed=true;
+  _readyQ.splice(0).forEach(function(f){try{f();}catch(e){console.error(e);}});
+});
+(function(){
+  var proto=firebase.database.Query.prototype,_on=proto.on,_once=proto.once;
+  proto.on=function(){var self=this,args=arguments;onReady(function(){_on.apply(self,args);});return args[1];};
+  proto.once=function(){var self=this,args=arguments;
+    if(_authed)return _once.apply(self,args);
+    return new Promise(function(res,rej){onReady(function(){_once.apply(self,args).then(res,rej);});});
+  };
+})();
+
 const AUTH_KEY='maman_app_auth';
 function checkAuth(){
   if(localStorage.getItem(AUTH_KEY)){firebase.auth().signInAnonymously();return;}
@@ -619,6 +660,7 @@ db.ref('entries').on('value',snap=>{
   document.getElementById('syncBar').textContent='🟢 Synchronisé · '+entries.length+' visite'+(entries.length>1?'s':'');
   document.getElementById('syncBar').className='sync ok';
   updateBadge();refreshView();
+  syncVisitesPubliques();
   if(pendingCalNav){
     pendingCalNav=false;
     const btnCal=document.getElementById('tab-cal-btn');
@@ -779,6 +821,7 @@ function goTab(name,btn){
   if(name==='journal'){renderJournal();clearBadge();}
   if(name==='stats')renderStats();
   if(name==='contacts')renderContacts();
+  if(name==='aide'){markAideRead();setTimeout(function(){const b=document.getElementById('aideBody');if(b)b.scrollTop=b.scrollHeight;},60);}
   if(name==='messages'){
     lastGrpViewF=Date.now();localStorage.setItem('lgvF',String(lastGrpViewF));
     renderGroupMsgsF();
@@ -1648,6 +1691,152 @@ async function saveNewContact(){
     document.getElementById('addContactCard').style.display='none';
     toast('✅ '+name+' ajouté au répertoire !');
   }catch(e){toast('❌ Erreur : '+e.message);}
+}
+
+/* ============================================================
+   AIDE À DOMICILE — Élodie
+   ============================================================ */
+let aideMsgs=[],aideVisites=[],aFilt='all';
+
+function myName(){
+  const who=familyUser||dmWho;
+  if(!who)return null;
+  const co=CONTACTS.find(function(c){return c.id===who;});
+  if(co)return co.name.split(' ')[0];
+  return who.charAt(0).toUpperCase()+who.slice(1);
+}
+
+/* --- Journal public des passages famille (lu par Élodie) ---
+   On ne publie que le prénom, la date, l'heure et le moment.
+   Ni les notes, ni les photos, ni les émotions ne sortent d'ici. */
+let lastPubHash='';
+function syncVisitesPubliques(){
+  const map={};
+  entries.forEach(function(e){
+    if(!e.date)return;
+    map[e._k]={who:e.who||'',date:e.date,time:e.time||'',periods:e.periods||[]};
+  });
+  const h=JSON.stringify(map);
+  if(h===lastPubHash)return;
+  lastPubHash=h;
+  db.ref('visites_publiques').set(map).catch(function(){});
+}
+
+/* --- Messages --- */
+db.ref('aide_messages').orderByChild('ts').limitToLast(80).on('value',function(snap){
+  aideMsgs=[];
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))aideMsgs.push(Object.assign({},v[k],{_k:k}));}
+  aideMsgs.sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});
+  renderAideMsgs();
+  updateAideBadge();
+});
+
+function renderAideMsgs(){
+  const el=document.getElementById('aideBody');
+  if(!el)return;
+  if(!aideMsgs.length){el.innerHTML='<div class="empty" style="padding:18px;margin:auto;"><div class="be">💬</div><p style="font-size:0.82rem;">Aucun message échangé avec Élodie.</p></div>';return;}
+  const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<60;
+  el.innerHTML=aideMsgs.map(function(m){
+    const fromEl=m.from==='elodie';
+    const t=new Date(m.ts);
+    return '<div class="aide-bbl '+(fromEl?'ab-el':'ab-fam')+'">'
+      +'<div class="aide-bbl-w">'+escHtmlF(fromEl?'Élodie':(m.fromName||'Famille'))+'</div>'
+      +escHtmlF(m.text)
+      +'<div class="aide-bbl-t">'+t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '
+      +String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+'</div></div>';
+  }).join('');
+  if(wasBottom)el.scrollTop=el.scrollHeight;
+}
+
+function updateAideBadge(){
+  const b=document.getElementById('aideTabBadge');
+  if(!b)return;
+  const seen=parseInt(localStorage.getItem('aideSeen')||'0',10);
+  const n=aideMsgs.filter(function(m){return m.from==='elodie'&&new Date(m.ts).getTime()>seen;}).length;
+  const onTab=document.getElementById('tab-aide').classList.contains('on');
+  if(n&&!onTab){b.textContent=n;b.style.display='flex';}else b.style.display='none';
+}
+
+function markAideRead(){
+  localStorage.setItem('aideSeen',String(Date.now()));
+  const b=document.getElementById('aideTabBadge');
+  if(b)b.style.display='none';
+  const upd={};
+  aideMsgs.forEach(function(m){if(m.from==='elodie'&&!m.readByFam)upd[m._k+'/readByFam']=true;});
+  if(Object.keys(upd).length)db.ref('aide_messages').update(upd);
+}
+
+async function sendAideMsg(){
+  const inp=document.getElementById('aideInp');
+  const text=inp.value.trim();
+  if(!text)return;
+  const nm=myName();
+  if(!nm){toast('⚠️ Choisis d\'abord qui tu es dans l\'onglet Messages !');return;}
+  inp.value='';
+  try{
+    await db.ref('aide_messages').push({text,from:'famille',fromName:nm,ts:new Date().toISOString(),readByFam:true});
+  }catch(e){toast('❌ Erreur : '+e.message);inp.value=text;}
+}
+
+/* --- Comptes rendus de visite --- */
+db.ref('aide_visites').on('value',function(snap){
+  aideVisites=[];
+  if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))aideVisites.push(Object.assign({},v[k],{_k:k}));}
+  aideVisites.sort(function(a,b){return String((b.date||'')+(b.time||'')).localeCompare(String((a.date||'')+(a.time||'')));});
+  renderAideVisites();
+});
+
+function setAFilt(el,f){
+  document.querySelectorAll('#aFilt .fc').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');aFilt=f;renderAideVisites();
+}
+
+function renderAideVisites(){
+  const el=document.getElementById('aideVisites');
+  if(!el)return;
+  let list=aideVisites;
+  if(aFilt==='alerte')list=list.filter(function(v){return v.alerte;});
+  if(aFilt==='7'){
+    const lim=new Date();lim.setDate(lim.getDate()-7);
+    const ls=lim.toISOString().slice(0,10);
+    list=list.filter(function(v){return v.date>=ls;});
+  }
+  if(!list.length){el.innerHTML='<div class="empty"><div class="be">🤝</div><p>Aucun compte rendu pour le moment.<br>Ils apparaîtront ici après chaque visite d\'Élodie.</p></div>';return;}
+  el.innerHTML=list.slice(0,60).map(function(v){
+    const negCats={moral:1,inquiet:1,tension:1};
+    const tags=[]
+      .concat((v.prestations||[]).map(function(p){return'<span class="atag">'+escHtmlF(p)+'</span>';}))
+      .concat((v.emotions||[]).map(function(e){return'<span class="atag '+(e.cat==='bien'?'pos':negCats[e.cat]?'neg':'')+'">'+escHtmlF(e.label)+'</span>';}))
+      .concat((v.observations||[]).map(function(o){return'<span class="atag '+escHtmlF(o.tone||'')+'">'+escHtmlF(o.label)+'</span>';}))
+      .join('');
+    const reps=v.reponses?Object.keys(v.reponses).map(function(k){
+      const r=v.reponses[k];
+      return '<div class="av2-rep"><b>'+escHtmlF(r.who||'')+'</b> · '
+        +new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})
+        +'<br>'+escHtmlF(r.text)+'</div>';
+    }).join(''):'';
+    return '<div class="av2'+(v.alerte?' alerte':'')+'">'
+      +'<div class="av2-h"><div><div class="av2-d">'+(v.alerte?'⚠️ ':'🤝 ')+fd(v.date)+'</div>'
+      +'<div class="av2-t">'+escHtmlF([v.time,(v.moments||[]).join(' · '),v.duree].filter(Boolean).join(' · '))+' · par '+escHtmlF(v.aide||'Élodie')+'</div></div></div>'
+      +(tags?'<div>'+tags+'</div>':'')
+      +(v.note?'<div class="av2-note">'+escHtmlF(v.note)+'</div>':'')
+      +reps
+      +'<div class="av2-rf"><input type="text" id="rep-'+v._k+'" placeholder="Répondre à Élodie..." onkeydown="if(event.key===\'Enter\')replyAide(\''+v._k+'\')"><button class="rbtn" style="background:#2e6b5e;" onclick="replyAide(\''+v._k+'\')">Envoyer</button></div>'
+      +'</div>';
+  }).join('');
+}
+
+async function replyAide(k){
+  const inp=document.getElementById('rep-'+k);
+  const text=inp.value.trim();
+  if(!text)return;
+  const nm=myName();
+  if(!nm){toast('⚠️ Choisis d\'abord qui tu es dans l\'onglet Messages !');return;}
+  inp.value='';
+  try{
+    await db.ref('aide_visites/'+k+'/reponses').push({who:nm,text,ts:new Date().toISOString()});
+    toast('💬 Réponse envoyée à Élodie');
+  }catch(e){toast('❌ Erreur : '+e.message);inp.value=text;}
 }
 </script>
 

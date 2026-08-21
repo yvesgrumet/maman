@@ -221,6 +221,29 @@ firebase.initializeApp({
   appId:"1:464641073360:web:327a3738757cdfc7fa7ed5"
 });
 const db=firebase.database();
+
+/* --- Attente d'authentification ---
+   Les règles Firebase exigent auth != null. Or les écouteurs .on() sont
+   déclarés plus bas, avant que la connexion anonyme soit établie : Firebase
+   les refusait alors et les annulait DÉFINITIVEMENT (d'où les « erreurs de
+   connexion » et les listes vides). On met donc toute lecture en file
+   d'attente et on l'exécute dès que l'utilisateur est authentifié. */
+var _readyQ=[],_authed=false;
+function onReady(fn){if(_authed){fn();return;}_readyQ.push(fn);}
+firebase.auth().onAuthStateChanged(function(u){
+  if(!u||_authed)return;
+  _authed=true;
+  _readyQ.splice(0).forEach(function(f){try{f();}catch(e){console.error(e);}});
+});
+(function(){
+  var proto=firebase.database.Query.prototype,_on=proto.on,_once=proto.once;
+  proto.on=function(){var self=this,args=arguments;onReady(function(){_on.apply(self,args);});return args[1];};
+  proto.once=function(){var self=this,args=arguments;
+    if(_authed)return _once.apply(self,args);
+    return new Promise(function(res,rej){onReady(function(){_once.apply(self,args).then(res,rej);});});
+  };
+})();
+
 const AUTH_KEY='maman_app_auth';
 function checkAuth(){
   if(localStorage.getItem(AUTH_KEY)){firebase.auth().signInAnonymously();return;}
