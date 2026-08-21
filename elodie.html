@@ -433,6 +433,8 @@ const CONTACTS=[
   {name:'Livy',     bd:'2022-07-06',rel:'arriere'},
   {name:'Monica',   bd:'2026-08-01',rel:'arriere'},
   {name:'Benoît',   bd:'1990-12-31',rel:'petit',  nuage:'1991-01-11'},
+  // Année de naissance non communiquée : la date suffit pour l'anniversaire
+  {name:'Claire',   bd:'--05-09',   rel:'autre'},
 ];
 const RELS={
   elle:     {lbl:'Andrée',                 ico:'🌸',col:'#e91e63'},
@@ -487,7 +489,9 @@ const FETES_FAMILLE={
   'Simon':'10-28','Lise':'11-17','Florent':'07-04','Elisa':'11-17',
   'Paul':'06-29','Clément':'11-23','Bastien':'01-20','Xavier':'12-03',
   'Rémi':'01-15','Manon':'08-15','Timothé':'01-26','Léo':'11-10',
-  'Nathanaël':'08-24'
+  'Nathanaël':'08-24','Monica':'08-27',
+  // Les conjoints
+  'Bernard':'08-20','Christian':'11-12','Luc':'10-18','Claire':'08-11'
 };
 const COLS={'Françoise':'#e040fb','Martine':'#f06292','Nicole':'#ba68c8','Pascale':'#ff7043','Isabelle':'#26c6da','Yves':'#0084ff'};
 function colFor(n){if(COLS[n])return COLS[n];let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return'hsl('+(Math.abs(h)%360)+',52%,55%)';}
@@ -559,14 +563,14 @@ function showHeaderInfo(){
     if(FETES_FAMILLE[c.name]===fk)parts.push('<span class="hfete">🎉 C\'est la fête de '+esc(c.name)+' !</span>');
   });
   vivants().forEach(c=>{
-    if(!c.bd)return;
-    const p=c.bd.split('-').map(Number);
-    if(p[2]===d&&p[1]===m)parts.push('<span class="hanniv">🎂 Anniversaire de '+esc(c.name)+' — '+(y-p[0])+' ans !</span>');
+    const p=bdParts(c.bd);
+    if(!p||p.d!==d||p.m!==m)return;
+    parts.push('<span class="hanniv">🎂 Anniversaire de '+esc(c.name)+(p.y?' — '+(y-p.y)+' ans':'')+' !</span>');
   });
   vivants().forEach(c=>{
-    if(!c.bd)return;
-    const p=c.bd.split('-').map(Number);
-    if(p[2]===dt&&p[1]===mt)parts.push('<span class="hdemain">🎁 Demain : anniversaire de '+esc(c.name)+' ('+(yt-p[0])+' ans)</span>');
+    const p=bdParts(c.bd);
+    if(!p||p.d!==dt||p.m!==mt)return;
+    parts.push('<span class="hdemain">🎁 Demain : anniversaire de '+esc(c.name)+(p.y?' ('+(yt-p.y)+' ans)':'')+'</span>');
   });
   vivants().forEach(c=>{
     if(FETES_FAMILLE[c.name]===fkt)parts.push('<span class="hdemain">🌸 Demain : fête de '+esc(c.name)+'</span>');
@@ -615,10 +619,10 @@ function renderFetes(){
   // --- Anniversaires à venir (120 jours) ---
   const list=[];
   vivants().forEach(c=>{
-    if(!c.bd)return;
-    const p=c.bd.split('-').map(Number);
-    const n=prochaine(String(p[1]).padStart(2,'0')+'-'+String(p[2]).padStart(2,'0'));
-    if(n.days<=120)list.push({name:c.name,rel:c.rel,days:n.days,age:n.date.getFullYear()-p[0],date:n.date});
+    const p=bdParts(c.bd);
+    if(!p)return;
+    const n=prochaine(String(p.m).padStart(2,'0')+'-'+String(p.d).padStart(2,'0'));
+    if(n.days<=120)list.push({name:c.name,rel:c.rel,days:n.days,age:p.y?n.date.getFullYear()-p.y:null,date:n.date});
   });
   list.sort((a,b)=>a.days-b.days);
   const el=document.getElementById('annivList');
@@ -627,30 +631,36 @@ function renderFetes(){
     const r=lienDe(a);
     return '<div class="li2'+(a.days===0?' today':'')+'">'
       +'<div class="av" style="background:'+colFor(a.name)+'">'+esc(initials(a.name))+'</div>'
-      +'<div class="li2-main"><div class="li2-t">🎂 '+esc(a.name)+' — '+a.age+' an'+(a.age>1?'s':'')+' '+quandBadge(a.days)+'</div>'
+      +'<div class="li2-main"><div class="li2-t">🎂 '+esc(a.name)+(a.age!==null?' — '+a.age+' an'+(a.age>1?'s':''):'')+' '+quandBadge(a.days)+'</div>'
       +'<div class="li2-s">'+fd(dateStr(a.date))+' · <span style="color:'+r.col+';font-weight:700;">'+r.ico+' '+esc(r.lbl)+'</span></div></div></div>';
   }).join('');
 }
 
 /* ---------- ARBRE DE FAMILLE ---------- */
+/* Date de naissance au format 'AAAA-MM-JJ', ou '--MM-JJ' lorsque
+   l'année n'est pas connue (on affiche alors la date sans l'âge). */
+function bdParts(bd){
+  const m=String(bd||'').match(/^(\d{4})?-{1,2}(\d{2})-(\d{2})$/);
+  return m?{y:m[1]?Number(m[1]):null,m:Number(m[2]),d:Number(m[3])}:null;
+}
 function ageDe(bd,ref){
-  if(!bd)return null;
-  const p=bd.split('-').map(Number);
+  const p=bdParts(bd);
+  if(!p||!p.y)return null;
   const r=ref?new Date(ref):new Date();
-  let a=r.getFullYear()-p[0];
-  if(r.getMonth()+1<p[1]||(r.getMonth()+1===p[1]&&r.getDate()<p[2]))a--;
+  let a=r.getFullYear()-p.y;
+  if(r.getMonth()+1<p.m||(r.getMonth()+1===p.m&&r.getDate()<p.d))a--;
   return a;
 }
-function anneeDe(bd){return bd?bd.split('-')[0]:'';}
+function anneeDe(bd){const p=bdParts(bd);return p&&p.y?String(p.y):'';}
 /* Âge lisible : « 20 jours », « 5 mois », « 1 an », « 13 ans » */
 function ageTexte(bd){
-  if(!bd)return'';
-  const p=bd.split('-').map(Number);
-  const n=new Date(),naiss=new Date(p[0],p[1]-1,p[2]);
+  const p=bdParts(bd);
+  if(!p||!p.y)return'';
+  const n=new Date(),naiss=new Date(p.y,p.m-1,p.d);
   const jours=Math.floor((n-naiss)/86400000);
   if(jours<0)return'';
   if(jours<31)return jours<=1?'nouveau-né':jours+' jours';
-  const mois=(n.getFullYear()-p[0])*12+(n.getMonth()+1-p[1])-(n.getDate()<p[2]?1:0);
+  const mois=(n.getFullYear()-p.y)*12+(n.getMonth()+1-p.m)-(n.getDate()<p.d?1:0);
   if(mois<24)return mois+' mois';
   const a=ageDe(bd);
   return a+' an'+(a>1?'s':'');
