@@ -139,6 +139,13 @@ textarea{resize:vertical;min-height:80px;}
 .tr-m .tr-a{font-size:0.66rem;color:#7aa89b;}
 .tr-m.parti .tr-av{filter:grayscale(1);opacity:0.5;}
 .tr-m.parti .tr-n{color:#8aa39b;font-weight:400;}
+.tr-br{border:1px solid #dcefe8;border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#f7fcfa;}
+.tr-br-h{display:flex;align-items:center;gap:11px;}
+.tr-br-h .tr-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:700;color:#fff;flex-shrink:0;}
+.tr-br-h .tr-n{font-family:'Playfair Display',serif;font-size:1rem;color:#2e6b5e;font-weight:700;line-height:1.2;}
+.tr-br-h .tr-a{font-size:0.72rem;color:#7aa89b;}
+.tr-br-k{margin-top:10px;margin-left:22px;padding-left:14px;border-left:2px solid #d6ebe4;}
+.tr-br-0{margin-top:6px;margin-left:22px;padding-left:14px;font-size:0.71rem;color:#a8c2ba;font-style:italic;}
 .tr-mem{margin-top:14px;background:#f7fcfa;border-left:3px solid #c3ded4;border-radius:9px;padding:10px 12px;font-size:0.75rem;color:#5e8f81;line-height:1.5;}
 </style>
 </head>
@@ -413,6 +420,14 @@ const RELS={
 };
 function relOf(r){return RELS[r]||RELS.autre;}
 
+/* Qui est l'enfant de qui, pour l'arbre de famille.
+   Une ligne = un prénom et son parent. Les personnes absentes de cette
+   table restent affichees dans leur generation, sans branche. */
+const PARENTS={
+  'Lise':'Martine','Florent':'Martine','Anaele':'Martine',
+  'Paul':'Nicole','Elisa':'Nicole'
+};
+
 /* Fêtes (jour du prénom) des personnes de la famille — format MM-JD.
    Table explicite : le rapprochement automatique avec le calendrier des
    saints donnait trop de faux résultats (Françoise → tous les François,
@@ -614,19 +629,40 @@ function renderArbre(){
   }
   h+='</div><div class="tr-stem"></div><div class="tr-bar" style="width:78%;"></div></div>';
 
-  const gens=[
-    {rel:'enfant', ico:'👨‍👩‍👧',lbl:'Ses enfants',              sing:'enfant',              plur:'enfants'},
-    {rel:'petit',  ico:'👶',    lbl:'Ses petits-enfants',       sing:'petit-enfant',        plur:'petits-enfants'},
-    {rel:'arriere',ico:'🌟',    lbl:'Ses arrière-petits-enfants',sing:'arrière-petit-enfant',plur:'arrière-petits-enfants'}
-  ];
-  gens.forEach(function(g){
-    const l=par(g.rel);
-    if(!l.length)return;
-    const n=l.filter(c=>!c.nuage).length;
-    h+='<div class="tr-gen">'
-      +'<div class="tr-lbl">'+g.ico+' '+esc(g.lbl)+'<span class="tr-cnt">'+n+'</span></div>'
-      +'<div class="tr-grid">'+l.map(membre).join('')+'</div></div>';
+  // --- Ses enfants, chacun avec ses propres enfants quand on les connaît ---
+  const enfants=par('enfant'),petits=par('petit');
+  const rattaches={};
+  petits.forEach(function(c){if(PARENTS[c.name])(rattaches[PARENTS[c.name]]=rattaches[PARENTS[c.name]]||[]).push(c);});
+  const orphelins=petits.filter(c=>!PARENTS[c.name]);
+
+  h+='<div class="tr-gen"><div class="tr-lbl">👨‍👩‍👧 Ses enfants<span class="tr-cnt">'
+    +enfants.filter(c=>!c.nuage).length+'</span></div>';
+  enfants.forEach(function(e){
+    const kids=rattaches[e.name]||[];
+    h+='<div class="tr-br"><div class="tr-br-h">'
+      +'<div class="tr-av" style="background:'+colFor(e.name)+'">'+esc(initials(e.name))+'</div>'
+      +'<div><div class="tr-n">'+esc(e.name)+'</div><div class="tr-a">'+ageDe(e.bd)+' ans</div></div></div>';
+    if(kids.length){
+      h+='<div class="tr-br-k"><div class="tr-grid">'+kids.map(membre).join('')+'</div></div>';
+    } else {
+      h+='<div class="tr-br-0">Ses enfants ne sont pas encore renseignés</div>';
+    }
+    h+='</div>';
   });
+  h+='</div>';
+
+  if(orphelins.length){
+    h+='<div class="tr-gen"><div class="tr-lbl">👶 Ses autres petits-enfants<span class="tr-cnt">'
+      +orphelins.filter(c=>!c.nuage).length+'</span></div>'
+      +'<div class="tr-grid">'+orphelins.map(membre).join('')+'</div></div>';
+  }
+
+  const arrieres=par('arriere');
+  if(arrieres.length){
+    h+='<div class="tr-gen"><div class="tr-lbl">🌟 Ses arrière-petits-enfants<span class="tr-cnt">'
+      +arrieres.filter(c=>!c.nuage).length+'</span></div>'
+      +'<div class="tr-grid">'+arrieres.map(membre).join('')+'</div></div>';
+  }
 
   const partis=CONTACTS.filter(c=>c.nuage&&c.rel!=='conjoint');
   if(partis.length){
