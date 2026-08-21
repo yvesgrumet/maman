@@ -117,6 +117,29 @@ textarea{resize:vertical;min-height:80px;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 
 .hint{font-size:0.73rem;color:#7aa89b;font-style:italic;margin-bottom:10px;line-height:1.4;}
+
+/* ARBRE DE FAMILLE */
+.tr-root{text-align:center;padding:4px 0 2px;}
+.tr-couple{display:inline-flex;align-items:center;gap:14px;}
+.tr-p{display:flex;flex-direction:column;align-items:center;gap:5px;width:96px;}
+.tr-p .tr-av{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:700;color:#fff;box-shadow:0 3px 10px rgba(46,107,94,0.25);}
+.tr-p .tr-n{font-family:'Playfair Display',serif;font-size:1rem;color:#2e6b5e;font-weight:700;line-height:1.2;}
+.tr-p .tr-a{font-size:0.7rem;color:#7aa89b;line-height:1.3;}
+.tr-amp{font-size:1.1rem;color:#9ab8ae;align-self:center;margin-bottom:22px;}
+.tr-stem{width:2px;height:20px;background:#c3ded4;margin:2px auto 0;}
+.tr-gen{margin-top:0;}
+.tr-bar{height:2px;background:#c3ded4;margin:0 auto;border-radius:2px;}
+.tr-lbl{display:flex;align-items:center;gap:7px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#5e8f81;margin:12px 0 8px;}
+.tr-lbl::after{content:'';flex:1;height:1px;background:#d6ebe4;}
+.tr-lbl .tr-cnt{background:#dff2ec;color:#2e6b5e;border-radius:10px;padding:1px 8px;font-size:0.68rem;letter-spacing:0;}
+.tr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px 6px;}
+.tr-m{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;}
+.tr-m .tr-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;}
+.tr-m .tr-n{font-size:0.78rem;font-weight:700;color:#1f4a40;line-height:1.2;}
+.tr-m .tr-a{font-size:0.66rem;color:#7aa89b;}
+.tr-m.parti .tr-av{filter:grayscale(1);opacity:0.5;}
+.tr-m.parti .tr-n{color:#8aa39b;font-weight:400;}
+.tr-mem{margin-top:14px;background:#f7fcfa;border-left:3px solid #c3ded4;border-radius:9px;padding:10px 12px;font-size:0.75rem;color:#5e8f81;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -251,6 +274,11 @@ textarea{resize:vertical;min-height:80px;}
 
 <!-- ===== LA FAMILLE ===== -->
 <div id="tab-famille" class="sec">
+  <div class="card">
+    <div class="ct">🌳 L'arbre de famille d'Andrée</div>
+    <p class="hint">Pour mettre un visage et un âge sur les prénoms dont elle vous parlera.</p>
+    <div id="arbre"></div>
+  </div>
   <div class="card">
     <div class="ct">👨‍👩‍👧 Quand la famille est passée</div>
     <p class="hint">Les derniers passages et appels de ses enfants, pour savoir qui est venu récemment.</p>
@@ -541,6 +569,75 @@ function renderFetes(){
   }).join('');
 }
 
+/* ---------- ARBRE DE FAMILLE ---------- */
+function ageDe(bd,ref){
+  if(!bd)return null;
+  const p=bd.split('-').map(Number);
+  const r=ref?new Date(ref):new Date();
+  let a=r.getFullYear()-p[0];
+  if(r.getMonth()+1<p[1]||(r.getMonth()+1===p[1]&&r.getDate()<p[2]))a--;
+  return a;
+}
+function anneeDe(bd){return bd?bd.split('-')[0]:'';}
+
+function membre(c){
+  const parti=!!c.nuage;
+  const age=ageDe(c.bd);
+  const sous=parti
+    ? '🕊️ '+anneeDe(c.bd)+'–'+anneeDe(c.nuage)
+    : (age!==null?age+' ans':'');
+  return '<div class="tr-m'+(parti?' parti':'')+'">'
+    +'<div class="tr-av" style="background:'+colFor(c.name)+'">'+esc(initials(c.name))+'</div>'
+    +'<div class="tr-n">'+esc(c.name)+'</div>'
+    +(sous?'<div class="tr-a">'+esc(sous)+'</div>':'')
+    +'</div>';
+}
+
+function renderArbre(){
+  const el=document.getElementById('arbre');
+  if(!el)return;
+  const par=r=>CONTACTS.filter(c=>c.rel===r);
+  const andree=CONTACTS.find(c=>c.rel==='elle');
+  const papa=CONTACTS.find(c=>c.rel==='conjoint');
+
+  let h='<div class="tr-root"><div class="tr-couple">';
+  if(andree){
+    h+='<div class="tr-p"><div class="tr-av" style="background:'+colFor(andree.name)+'">'+esc(initials(andree.name))+'</div>'
+      +'<div class="tr-n">'+esc(andree.name)+'</div>'
+      +'<div class="tr-a">'+ageDe(andree.bd)+' ans</div></div>';
+  }
+  if(papa){
+    h+='<div class="tr-amp">&amp;</div>'
+      +'<div class="tr-p" style="opacity:0.62;"><div class="tr-av" style="background:'+colFor(papa.name)+';filter:grayscale(1);">'+esc(initials(papa.name))+'</div>'
+      +'<div class="tr-n">'+esc(papa.name)+'</div>'
+      +'<div class="tr-a">🕊️ '+anneeDe(papa.bd)+'–'+anneeDe(papa.nuage)+'</div></div>';
+  }
+  h+='</div><div class="tr-stem"></div><div class="tr-bar" style="width:78%;"></div></div>';
+
+  const gens=[
+    {rel:'enfant', ico:'👨‍👩‍👧',lbl:'Ses enfants',              sing:'enfant',              plur:'enfants'},
+    {rel:'petit',  ico:'👶',    lbl:'Ses petits-enfants',       sing:'petit-enfant',        plur:'petits-enfants'},
+    {rel:'arriere',ico:'🌟',    lbl:'Ses arrière-petits-enfants',sing:'arrière-petit-enfant',plur:'arrière-petits-enfants'}
+  ];
+  gens.forEach(function(g){
+    const l=par(g.rel);
+    if(!l.length)return;
+    const n=l.filter(c=>!c.nuage).length;
+    h+='<div class="tr-gen">'
+      +'<div class="tr-lbl">'+g.ico+' '+esc(g.lbl)+'<span class="tr-cnt">'+n+'</span></div>'
+      +'<div class="tr-grid">'+l.map(membre).join('')+'</div></div>';
+  });
+
+  const partis=CONTACTS.filter(c=>c.nuage&&c.rel!=='conjoint');
+  if(partis.length){
+    h+='<div class="tr-mem">🕊️ <b>À garder en tête :</b> '
+      +partis.map(c=>esc(c.name)+' ('+anneeDe(c.bd)+'–'+anneeDe(c.nuage)+')').join(', ')
+      +(papa?', ainsi que '+esc(papa.name)+' ('+anneeDe(papa.bd)+'–'+anneeDe(papa.nuage)+')':'')
+      +' ne sont plus là. Mieux vaut le savoir avant d\'aborder le sujet.</div>';
+  }
+  el.innerHTML=h;
+}
+
 /* ---------- FORMULAIRE ---------- */
 function buildForm(){
   document.getElementById('prestGrid').innerHTML=PRESTATIONS.map(p=>
@@ -790,6 +887,7 @@ window.addEventListener('DOMContentLoaded',function(){
   buildForm();
   initForm();
   showHeaderInfo();
+  renderArbre();
 });
 </script>
 
