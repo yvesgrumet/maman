@@ -144,8 +144,24 @@ textarea{resize:vertical;min-height:80px;}
 .tr-br-h .tr-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:700;color:#fff;flex-shrink:0;}
 .tr-br-h .tr-n{font-family:'Playfair Display',serif;font-size:1rem;color:#2e6b5e;font-weight:700;line-height:1.2;}
 .tr-br-h .tr-a{font-size:0.72rem;color:#7aa89b;}
-.tr-br-k{margin-top:10px;margin-left:22px;padding-left:14px;border-left:2px solid #d6ebe4;}
-.tr-br-0{margin-top:6px;margin-left:22px;padding-left:14px;font-size:0.71rem;color:#a8c2ba;font-style:italic;}
+.tr-br-k{margin-top:10px;margin-left:22px;padding-left:15px;border-left:2px solid #d6ebe4;}
+.tr-br-0{margin-top:6px;margin-left:22px;padding-left:15px;font-size:0.71rem;color:#a8c2ba;font-style:italic;}
+.tr-g{margin-bottom:10px;}
+.tr-g:last-child{margin-bottom:0;}
+.tr-g-h{display:flex;align-items:center;gap:9px;}
+.tr-g-h .tr-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#fff;flex-shrink:0;}
+.tr-g-h .tr-n{font-size:0.87rem;font-weight:700;color:#1f4a40;line-height:1.2;}
+.tr-g-h .tr-a{font-size:0.68rem;color:#7aa89b;}
+.tr-g.parti .tr-av{filter:grayscale(1);opacity:0.5;}
+.tr-g.parti .tr-n{color:#8aa39b;font-weight:400;}
+.tr-g-k{margin-left:19px;padding-left:14px;border-left:2px solid #e2f0eb;margin-top:7px;display:flex;flex-wrap:wrap;gap:5px;}
+.tr-gg{display:inline-flex;align-items:center;gap:7px;background:#eef6f3;border-radius:20px;padding:3px 12px 3px 3px;}
+.tr-gg .tr-av{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;color:#fff;flex-shrink:0;}
+.tr-gg .tr-n{font-size:0.76rem;font-weight:700;color:#2c4f46;}
+.tr-gg .tr-a{font-size:0.66rem;color:#7aa89b;}
+.tr-gg.parti{opacity:0.6;}
+.tr-gg.parti .tr-av{filter:grayscale(1);}
+.tr-gg.parti .tr-n{font-weight:400;color:#8aa39b;}
 .tr-mem{margin-top:14px;background:#f7fcfa;border-left:3px solid #c3ded4;border-radius:9px;padding:10px 12px;font-size:0.75rem;color:#5e8f81;line-height:1.5;}
 </style>
 </head>
@@ -382,7 +398,7 @@ const OBS=[
 /* rel : lien de parenté avec Andrée · nuage : personne décédée
    (exclue des anniversaires et des fêtes à venir) */
 const CONTACTS=[
-  {name:'Papa',     bd:'1932-12-22',rel:'conjoint',nuage:'2018-02-18'},
+  {name:'Georges',  bd:'1932-12-22',rel:'conjoint',nuage:'2018-02-18'},
   {name:'Andrée',   bd:'1935-05-29',rel:'elle'},
   {name:'Françoise',bd:'1957-03-02',rel:'enfant'},
   {name:'Martine',  bd:'1958-02-14',rel:'enfant'},
@@ -408,7 +424,8 @@ const CONTACTS=[
   {name:'Alba',     bd:'2019-03-23',rel:'arriere',nuage:'2020-05-29'},
   {name:'Amelys',   bd:'2022-04-24',rel:'arriere'},
   {name:'Livy',     bd:'2022-07-06',rel:'arriere'},
-  {name:'Benoît',   bd:'1990-12-31',rel:'arriere',nuage:'1991-01-11'},
+  {name:'Monica',   bd:null,        rel:'arriere'},
+  {name:'Benoît',   bd:'1990-12-31',rel:'petit',  nuage:'1991-01-11'},
 ];
 const RELS={
   elle:     {lbl:'Andrée',                 ico:'🌸',col:'#e91e63'},
@@ -424,8 +441,18 @@ function relOf(r){return RELS[r]||RELS.autre;}
    Une ligne = un prénom et son parent. Les personnes absentes de cette
    table restent affichees dans leur generation, sans branche. */
 const PARENTS={
-  'Lise':'Martine','Florent':'Martine','Anaele':'Martine',
-  'Paul':'Nicole','Elisa':'Nicole'
+  // Les enfants d'Andrée et Georges
+  'Stéphanie':'Françoise','Simon':'Françoise',
+  'Lise':'Martine','Anaele':'Martine','Florent':'Martine',
+  'Elisa':'Nicole','Paul':'Nicole',
+  'Bastien':'Pascale','Clément':'Pascale','Benoît':'Pascale',
+  'Xavier':'Isabelle','Rémi':'Isabelle',
+  'Manon':'Yves',
+  // La génération suivante
+  'Timothé':'Stéphanie','Léo':'Stéphanie',
+  'Alba':'Xavier','Nathanaël':'Xavier',
+  'Amelys':'Lise',
+  'Livy':'Florent','Monica':'Florent'
 };
 
 /* Fêtes (jour du prénom) des personnes de la famille — format MM-JD.
@@ -629,21 +656,40 @@ function renderArbre(){
   }
   h+='</div><div class="tr-stem"></div><div class="tr-bar" style="width:78%;"></div></div>';
 
-  // --- Ses enfants, chacun avec ses propres enfants quand on les connaît ---
-  const enfants=par('enfant'),petits=par('petit');
-  const rattaches={};
-  petits.forEach(function(c){if(PARENTS[c.name])(rattaches[PARENTS[c.name]]=rattaches[PARENTS[c.name]]||[]).push(c);});
-  const orphelins=petits.filter(c=>!PARENTS[c.name]);
+  // --- Trois générations imbriquées : enfant > petit-enfant > arrière ---
+  const enfants=par('enfant'),petits=par('petit'),arrieres=par('arriere');
+  const enfantsDe={};
+  CONTACTS.forEach(function(c){
+    const p=PARENTS[c.name];
+    if(p)(enfantsDe[p]=enfantsDe[p]||[]).push(c);
+  });
+  const sousTexte=c=>c.nuage?'🕊️ '+anneeDe(c.bd)+'–'+anneeDe(c.nuage)
+                           :(ageDe(c.bd)!==null?ageDe(c.bd)+' ans':'');
 
   h+='<div class="tr-gen"><div class="tr-lbl">👨‍👩‍👧 Ses enfants<span class="tr-cnt">'
     +enfants.filter(c=>!c.nuage).length+'</span></div>';
   enfants.forEach(function(e){
-    const kids=rattaches[e.name]||[];
     h+='<div class="tr-br"><div class="tr-br-h">'
       +'<div class="tr-av" style="background:'+colFor(e.name)+'">'+esc(initials(e.name))+'</div>'
-      +'<div><div class="tr-n">'+esc(e.name)+'</div><div class="tr-a">'+ageDe(e.bd)+' ans</div></div></div>';
+      +'<div><div class="tr-n">'+esc(e.name)+'</div><div class="tr-a">'+esc(sousTexte(e))+'</div></div></div>';
+    const kids=enfantsDe[e.name]||[];
     if(kids.length){
-      h+='<div class="tr-br-k"><div class="tr-grid">'+kids.map(membre).join('')+'</div></div>';
+      h+='<div class="tr-br-k">'+kids.map(function(k){
+        const gk=enfantsDe[k.name]||[];
+        const s=sousTexte(k);
+        return '<div class="tr-g'+(k.nuage?' parti':'')+'"><div class="tr-g-h">'
+          +'<div class="tr-av" style="background:'+colFor(k.name)+'">'+esc(initials(k.name))+'</div>'
+          +'<div><div class="tr-n">'+esc(k.name)+'</div>'
+          +(s?'<div class="tr-a">'+esc(s)+'</div>':'')+'</div></div>'
+          +(gk.length?'<div class="tr-g-k">'+gk.map(function(g){
+              const sg=sousTexte(g);
+              return '<div class="tr-gg'+(g.nuage?' parti':'')+'">'
+                +'<div class="tr-av" style="background:'+colFor(g.name)+'">'+esc(initials(g.name))+'</div>'
+                +'<div><div class="tr-n">'+esc(g.name)+'</div>'
+                +(sg?'<div class="tr-a">'+esc(sg)+'</div>':'')+'</div></div>';
+            }).join('')+'</div>':'')
+          +'</div>';
+      }).join('')+'</div>';
     } else {
       h+='<div class="tr-br-0">Ses enfants ne sont pas encore renseignés</div>';
     }
@@ -651,18 +697,20 @@ function renderArbre(){
   });
   h+='</div>';
 
-  if(orphelins.length){
-    h+='<div class="tr-gen"><div class="tr-lbl">👶 Ses autres petits-enfants<span class="tr-cnt">'
-      +orphelins.filter(c=>!c.nuage).length+'</span></div>'
-      +'<div class="tr-grid">'+orphelins.map(membre).join('')+'</div></div>';
-  }
+  // Personnes dont le parent n'est pas renseigné : rien ne doit se perdre
+  [{l:petits,ico:'👶',lbl:'Ses autres petits-enfants'},
+   {l:arrieres,ico:'🌟',lbl:'Ses autres arrière-petits-enfants'}].forEach(function(g){
+    const rest=g.l.filter(c=>!PARENTS[c.name]);
+    if(!rest.length)return;
+    h+='<div class="tr-gen"><div class="tr-lbl">'+g.ico+' '+esc(g.lbl)+'<span class="tr-cnt">'
+      +rest.filter(c=>!c.nuage).length+'</span></div>'
+      +'<div class="tr-grid">'+rest.map(membre).join('')+'</div></div>';
+  });
 
-  const arrieres=par('arriere');
-  if(arrieres.length){
-    h+='<div class="tr-gen"><div class="tr-lbl">🌟 Ses arrière-petits-enfants<span class="tr-cnt">'
-      +arrieres.filter(c=>!c.nuage).length+'</span></div>'
-      +'<div class="tr-grid">'+arrieres.map(membre).join('')+'</div></div>';
-  }
+  h+='<div class="tr-lbl" style="margin-top:14px;">📊 En tout<span class="tr-cnt">'
+    +enfants.filter(c=>!c.nuage).length+' enfants · '
+    +petits.filter(c=>!c.nuage).length+' petits-enfants · '
+    +arrieres.filter(c=>!c.nuage).length+' arrière-petits-enfants</span></div>';
 
   const partis=CONTACTS.filter(c=>c.nuage&&c.rel!=='conjoint');
   if(partis.length){
