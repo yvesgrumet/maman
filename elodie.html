@@ -156,6 +156,7 @@ textarea{resize:vertical;min-height:80px;}
     </div>
     <div style="margin-top:11px;"><span class="lbl">Durée de la visite</span>
       <div class="eg">
+        <button class="eb" onclick="pickOne(this,'duree')">15 min</button>
         <button class="eb" onclick="pickOne(this,'duree')">30 min</button>
         <button class="eb" onclick="pickOne(this,'duree')">1 h</button>
         <button class="eb" onclick="pickOne(this,'duree')">1 h 30</button>
@@ -233,8 +234,9 @@ textarea{resize:vertical;min-height:80px;}
 <!-- ===== FÊTES & ANNIVERSAIRES ===== -->
 <div id="tab-fetes" class="sec">
   <div class="card">
-    <div class="ct">🌸 La fête du jour</div>
-    <div id="feteJour"></div>
+    <div class="ct">🌸 Les prochaines fêtes de la famille</div>
+    <p class="hint">Les fêtes des prénoms de ses proches, pour pouvoir lui dire « c'est la fête de… aujourd'hui ! »</p>
+    <div id="feteList"></div>
   </div>
   <div class="card">
     <div class="ct">🎂 Les prochains anniversaires</div>
@@ -342,22 +344,60 @@ const OBS=[
   {cat:'logement',lbl:'🏠 Le logement',items:[['✅ Tout est en ordre','pos'],['🌡️ Trop chaud / trop froid','neg'],['🔧 Quelque chose est cassé','neg'],['🧺 Linge à faire','']]}
 ];
 
+/* rel : lien de parenté avec Andrée · nuage : personne décédée
+   (exclue des anniversaires et des fêtes à venir) */
 const CONTACTS=[
-  {name:'Françoise',bd:'1957-03-02'},{name:'Martine',  bd:'1958-02-14'},
-  {name:'Nicole',   bd:'1960-08-01'},{name:'Pascale',  bd:'1964-04-25'},
-  {name:'Isabelle', bd:'1969-09-20'},{name:'Yves',     bd:'1977-08-06'},
-  {name:'Stéphanie',bd:'1982-05-15'},{name:'Simon',    bd:'1990-08-06'},
-  {name:'Lise',     bd:'1981-07-01'},{name:'Anaele',   bd:'1984-09-09'},
-  {name:'Florent',  bd:'1989-11-10'},{name:'Elisa',    bd:'1992-12-08'},
-  {name:'Paul',     bd:'1999-07-31'},{name:'Clément',  bd:'1992-05-14'},
-  {name:'Bastien',  bd:'1996-04-21'},{name:'Xavier',   bd:'1988-12-30'},
-  {name:'Rémi',     bd:'1992-12-03'},{name:'Manon',    bd:'2004-03-03'},
-  {name:'Timothé',  bd:'2007-03-07'},{name:'Léo',      bd:'2012-11-04'},
-  {name:'Nathanaël',bd:'2015-06-05'},
-  {name:'Papa',     bd:'1932-12-22'},{name:'Andrée',   bd:'1935-05-29'},
-  {name:'Alba',     bd:'2019-03-23'},{name:'Amelys',   bd:'2022-04-24'},
-  {name:'Livy',     bd:'2022-07-06'},{name:'Benoît',   bd:'1990-12-31'},
+  {name:'Papa',     bd:'1932-12-22',rel:'conjoint',nuage:'2018-02-18'},
+  {name:'Andrée',   bd:'1935-05-29',rel:'elle'},
+  {name:'Françoise',bd:'1957-03-02',rel:'enfant'},
+  {name:'Martine',  bd:'1958-02-14',rel:'enfant'},
+  {name:'Nicole',   bd:'1960-08-01',rel:'enfant'},
+  {name:'Pascale',  bd:'1964-04-25',rel:'enfant'},
+  {name:'Isabelle', bd:'1969-09-20',rel:'enfant'},
+  {name:'Yves',     bd:'1977-08-06',rel:'enfant'},
+  {name:'Stéphanie',bd:'1982-05-15',rel:'petit'},
+  {name:'Simon',    bd:'1990-08-06',rel:'petit'},
+  {name:'Lise',     bd:'1981-07-01',rel:'petit'},
+  {name:'Anaele',   bd:'1984-09-09',rel:'petit'},
+  {name:'Florent',  bd:'1989-11-10',rel:'petit'},
+  {name:'Elisa',    bd:'1992-12-08',rel:'petit'},
+  {name:'Paul',     bd:'1999-07-31',rel:'petit'},
+  {name:'Clément',  bd:'1992-05-14',rel:'petit'},
+  {name:'Bastien',  bd:'1996-04-21',rel:'petit'},
+  {name:'Xavier',   bd:'1988-12-30',rel:'petit'},
+  {name:'Rémi',     bd:'1992-12-03',rel:'petit'},
+  {name:'Manon',    bd:'2004-03-03',rel:'petit'},
+  {name:'Timothé',  bd:'2007-03-07',rel:'arriere'},
+  {name:'Léo',      bd:'2012-11-04',rel:'arriere'},
+  {name:'Nathanaël',bd:'2015-06-05',rel:'arriere'},
+  {name:'Alba',     bd:'2019-03-23',rel:'arriere',nuage:'2020-05-29'},
+  {name:'Amelys',   bd:'2022-04-24',rel:'arriere'},
+  {name:'Livy',     bd:'2022-07-06',rel:'arriere'},
+  {name:'Benoît',   bd:'1990-12-31',rel:'arriere',nuage:'1991-01-11'},
 ];
+const RELS={
+  elle:     {lbl:'Andrée',                 ico:'🌸',col:'#e91e63'},
+  conjoint: {lbl:'Son mari',               ico:'❤️',col:'#607d8b'},
+  enfant:   {lbl:'Son enfant',             ico:'👨‍👩‍👧',col:'#7b3f8c'},
+  petit:    {lbl:'Son petit-enfant',       ico:'👶',col:'#2e7d9c'},
+  arriere:  {lbl:'Son arrière-petit-enfant',ico:'🌟',col:'#c47a1e'},
+  autre:    {lbl:'Proche',                 ico:'➕',col:'#5e8f81'}
+};
+function relOf(r){return RELS[r]||RELS.autre;}
+
+/* Fêtes (jour du prénom) des personnes de la famille — format MM-JD.
+   Table explicite : le rapprochement automatique avec le calendrier des
+   saints donnait trop de faux résultats (Françoise → tous les François,
+   Xavier → Françoise-Xavière...). Pour ajouter ou corriger une fête,
+   il suffit de modifier une ligne ci-dessous. */
+const FETES_FAMILLE={
+  'Andrée':'11-30','Françoise':'03-09','Martine':'01-30','Nicole':'12-06',
+  'Pascale':'05-17','Isabelle':'02-22','Yves':'05-19','Stéphanie':'12-26',
+  'Simon':'10-28','Lise':'11-17','Florent':'07-04','Elisa':'11-17',
+  'Paul':'06-29','Clément':'11-23','Bastien':'01-20','Xavier':'12-03',
+  'Rémi':'01-15','Manon':'08-15','Timothé':'01-26','Léo':'11-10',
+  'Nathanaël':'08-24'
+};
 const COLS={'Françoise':'#e040fb','Martine':'#f06292','Nicole':'#ba68c8','Pascale':'#ff7043','Isabelle':'#26c6da','Yves':'#0084ff'};
 function colFor(n){if(COLS[n])return COLS[n];let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return'hsl('+(Math.abs(h)%360)+',52%,55%)';}
 function initials(n){return n.trim().slice(0,2).toUpperCase();}
@@ -413,61 +453,91 @@ loadWeather();setInterval(loadWeather,30*60*1000);
 
 /* ---------- FÊTES & ANNIVERSAIRES ---------- */
 function allContacts(){
-  return CONTACTS.concat(Object.values(customContacts).map(c=>({name:c.name,bd:c.birthday||c.bd||null})));
+  return CONTACTS.concat(Object.values(customContacts).map(c=>({name:c.name,bd:c.birthday||c.bd||null,rel:'autre'})));
 }
 function showHeaderInfo(){
   const now=new Date(),d=now.getDate(),m=now.getMonth()+1,y=now.getFullYear();
   const tom=new Date(now);tom.setDate(d+1);
   const dt=tom.getDate(),mt=tom.getMonth()+1,yt=tom.getFullYear();
   const parts=[];
-  const saint=SAINTS[String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')];
+  const fk=String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  const fkt=String(mt).padStart(2,'0')+'-'+String(dt).padStart(2,'0');
+  const saint=SAINTS[fk];
   if(saint)parts.push('<span class="hfete">🌸 Aujourd\'hui : fête de '+esc(saint)+'</span>');
-  allContacts().forEach(c=>{
+  vivants().forEach(c=>{
+    if(FETES_FAMILLE[c.name]===fk)parts.push('<span class="hfete">🎉 C\'est la fête de '+esc(c.name)+' !</span>');
+  });
+  vivants().forEach(c=>{
     if(!c.bd)return;
     const p=c.bd.split('-').map(Number);
     if(p[2]===d&&p[1]===m)parts.push('<span class="hanniv">🎂 Anniversaire de '+esc(c.name)+' — '+(y-p[0])+' ans !</span>');
   });
-  allContacts().forEach(c=>{
+  vivants().forEach(c=>{
     if(!c.bd)return;
     const p=c.bd.split('-').map(Number);
     if(p[2]===dt&&p[1]===mt)parts.push('<span class="hdemain">🎁 Demain : anniversaire de '+esc(c.name)+' ('+(yt-p[0])+' ans)</span>');
+  });
+  vivants().forEach(c=>{
+    if(FETES_FAMILLE[c.name]===fkt)parts.push('<span class="hdemain">🌸 Demain : fête de '+esc(c.name)+'</span>');
   });
   document.getElementById('hInfo').innerHTML=parts.join('');
   renderFetes();
 }
 
-function renderFetes(){
-  const now=new Date(),d=now.getDate(),m=now.getMonth()+1;
-  const saint=SAINTS[String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')];
-  document.getElementById('feteJour').innerHTML=
-    '<div style="text-align:center;padding:8px 0;">'
-    +'<div style="font-size:2.6rem;">🌸</div>'
-    +'<div style="font-family:\'Playfair Display\',serif;font-size:1.5rem;color:#2e6b5e;margin-top:4px;">'+esc(saint||'—')+'</div>'
-    +'<div style="font-size:0.8rem;color:#7aa89b;margin-top:5px;">Nous fêtons les '+esc(saint||'')+' aujourd\'hui</div>'
-    +'</div>';
-
-  // Anniversaires à venir (90 jours)
+/* Prochaine occurrence d'un MM-JJ, en nombre de jours à partir d'aujourd'hui */
+function prochaine(mmjj){
   const today=new Date();today.setHours(0,0,0,0);
+  const p=mmjj.split('-').map(Number);
+  let next=new Date(today.getFullYear(),p[0]-1,p[1]);
+  if(next<today)next=new Date(today.getFullYear()+1,p[0]-1,p[1]);
+  return {date:next,days:Math.round((next-today)/86400000)};
+}
+function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function quandBadge(days){
+  return days===0?'<span class="badge2" style="background:#e91e63;">Aujourd\'hui !</span>'
+    :days===1?'<span class="badge2">Demain</span>'
+    :'<span class="li2-s">dans '+days+' jours</span>';
+}
+/* Les personnes décédées ne sont jamais proposées à Élodie */
+function vivants(){return allContacts().filter(c=>!c.nuage);}
+
+function renderFetes(){
+  // --- Fêtes des prénoms de la famille (120 jours) ---
+  const fl=[];
+  vivants().forEach(c=>{
+    const mmjj=FETES_FAMILLE[c.name];
+    if(!mmjj)return;
+    const n=prochaine(mmjj);
+    if(n.days<=120)fl.push({name:c.name,rel:c.rel,days:n.days,date:n.date});
+  });
+  fl.sort((a,b)=>a.days-b.days);
+  const fe=document.getElementById('feteList');
+  if(!fl.length){fe.innerHTML='<div class="empty"><div class="be">🌸</div><p>Aucune fête de famille dans les 4 prochains mois.</p></div>';}
+  else fe.innerHTML=fl.map(f=>{
+    const r=relOf(f.rel);
+    return '<div class="li2'+(f.days===0?' today':'')+'">'
+      +'<div class="av" style="background:'+colFor(f.name)+'">'+esc(initials(f.name))+'</div>'
+      +'<div class="li2-main"><div class="li2-t">🌸 '+esc(f.name)+' '+quandBadge(f.days)+'</div>'
+      +'<div class="li2-s">'+fd(dateStr(f.date))+' · <span style="color:'+r.col+';font-weight:700;">'+r.ico+' '+esc(r.lbl)+'</span></div></div></div>';
+  }).join('');
+
+  // --- Anniversaires à venir (120 jours) ---
   const list=[];
-  allContacts().forEach(c=>{
+  vivants().forEach(c=>{
     if(!c.bd)return;
     const p=c.bd.split('-').map(Number);
-    let next=new Date(today.getFullYear(),p[1]-1,p[2]);
-    if(next<today)next=new Date(today.getFullYear()+1,p[1]-1,p[2]);
-    const days=Math.round((next-today)/86400000);
-    if(days<=90)list.push({name:c.name,days,age:next.getFullYear()-p[0],date:next});
+    const n=prochaine(String(p[1]).padStart(2,'0')+'-'+String(p[2]).padStart(2,'0'));
+    if(n.days<=120)list.push({name:c.name,rel:c.rel,days:n.days,age:n.date.getFullYear()-p[0],date:n.date});
   });
   list.sort((a,b)=>a.days-b.days);
   const el=document.getElementById('annivList');
-  if(!list.length){el.innerHTML='<div class="empty"><div class="be">🎂</div><p>Aucun anniversaire dans les 3 prochains mois.</p></div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty"><div class="be">🎂</div><p>Aucun anniversaire dans les 4 prochains mois.</p></div>';return;}
   el.innerHTML=list.map(a=>{
-    const when=a.days===0?'<span class="badge2" style="background:#e91e63;">Aujourd\'hui !</span>'
-      :a.days===1?'<span class="badge2">Demain</span>'
-      :'<span class="li2-s">dans '+a.days+' jours</span>';
+    const r=relOf(a.rel);
     return '<div class="li2'+(a.days===0?' today':'')+'">'
       +'<div class="av" style="background:'+colFor(a.name)+'">'+esc(initials(a.name))+'</div>'
-      +'<div class="li2-main"><div class="li2-t">'+esc(a.name)+' — '+a.age+' ans '+when+'</div>'
-      +'<div class="li2-s">'+fd(a.date.getFullYear()+'-'+String(a.date.getMonth()+1).padStart(2,'0')+'-'+String(a.date.getDate()).padStart(2,'0'))+'</div></div></div>';
+      +'<div class="li2-main"><div class="li2-t">🎂 '+esc(a.name)+' — '+a.age+' ans '+quandBadge(a.days)+'</div>'
+      +'<div class="li2-s">'+fd(dateStr(a.date))+' · <span style="color:'+r.col+';font-weight:700;">'+r.ico+' '+esc(r.lbl)+'</span></div></div></div>';
   }).join('');
 }
 
