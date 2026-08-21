@@ -162,6 +162,13 @@ textarea{resize:vertical;min-height:80px;}
 .tr-gg.parti{opacity:0.6;}
 .tr-gg.parti .tr-av{filter:grayscale(1);}
 .tr-gg.parti .tr-n{font-weight:400;color:#8aa39b;}
+.tr-sp{display:inline-flex;align-items:center;gap:7px;background:#f6eef4;border:1px solid #ecdcea;border-radius:20px;padding:3px 12px 3px 3px;margin-left:auto;flex-shrink:0;}
+.tr-sp .tr-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;color:#fff;flex-shrink:0;}
+.tr-sp .tr-n{font-size:0.77rem;font-weight:700;color:#7d3f6b;}
+.tr-sp .tr-a{font-size:0.65rem;color:#a882a0;}
+.tr-sp.sm{gap:6px;padding:2px 10px 2px 2px;}
+.tr-sp.sm .tr-av{width:24px;height:24px;font-size:0.55rem;}
+.tr-sp.sm .tr-n{font-size:0.72rem;}
 .tr-mem{margin-top:14px;background:#f7fcfa;border-left:3px solid #c3ded4;border-radius:9px;padding:10px 12px;font-size:0.75rem;color:#5e8f81;line-height:1.5;}
 </style>
 </head>
@@ -455,6 +462,20 @@ const PARENTS={
   'Livy':'Florent','Monica':'Florent'
 };
 
+/* Les conjoints. La date de naissance n'est pas reprise ici : si la
+   personne existe deja dans le repertoire de la famille (Luc, Fefe...),
+   son age est repris automatiquement ; sinon seul le prenom s'affiche. */
+const CONJOINTS={
+  'Françoise':'Bernard','Martine':'Christian','Pascale':'Fefe',
+  'Isabelle':'Luc','Florent':'Claire'
+};
+const CONJOINT_DE={};
+Object.keys(CONJOINTS).forEach(function(k){CONJOINT_DE[CONJOINTS[k]]=k;});
+function lienDe(c){
+  if(CONJOINT_DE[c.name])return {ico:'💍',lbl:'Avec '+CONJOINT_DE[c.name],col:'#9c5b8f'};
+  return relOf(c.rel);
+}
+
 /* Fêtes (jour du prénom) des personnes de la famille — format MM-JD.
    Table explicite : le rapprochement automatique avec le calendrier des
    saints donnait trop de faux résultats (Françoise → tous les François,
@@ -584,7 +605,7 @@ function renderFetes(){
   const fe=document.getElementById('feteList');
   if(!fl.length){fe.innerHTML='<div class="empty"><div class="be">🌸</div><p>Aucune fête de famille dans les 4 prochains mois.</p></div>';}
   else fe.innerHTML=fl.map(f=>{
-    const r=relOf(f.rel);
+    const r=lienDe(f);
     return '<div class="li2'+(f.days===0?' today':'')+'">'
       +'<div class="av" style="background:'+colFor(f.name)+'">'+esc(initials(f.name))+'</div>'
       +'<div class="li2-main"><div class="li2-t">🌸 '+esc(f.name)+' '+quandBadge(f.days)+'</div>'
@@ -603,7 +624,7 @@ function renderFetes(){
   const el=document.getElementById('annivList');
   if(!list.length){el.innerHTML='<div class="empty"><div class="be">🎂</div><p>Aucun anniversaire dans les 4 prochains mois.</p></div>';return;}
   el.innerHTML=list.map(a=>{
-    const r=relOf(a.rel);
+    const r=lienDe(a);
     return '<div class="li2'+(a.days===0?' today':'')+'">'
       +'<div class="av" style="background:'+colFor(a.name)+'">'+esc(initials(a.name))+'</div>'
       +'<div class="li2-main"><div class="li2-t">🎂 '+esc(a.name)+' — '+a.age+' an'+(a.age>1?'s':'')+' '+quandBadge(a.days)+'</div>'
@@ -676,13 +697,26 @@ function renderArbre(){
     if(p)(enfantsDe[p]=enfantsDe[p]||[]).push(c);
   });
   const sousTexte=c=>c.nuage?'🕊️ '+anneeDe(c.bd)+'–'+anneeDe(c.nuage):ageTexte(c.bd);
+  /* Puce du conjoint. Sa date de naissance est reprise du répertoire
+     familial quand il ou elle y figure déjà (Luc, Fefe...). */
+  const chipConjoint=function(nom,petit){
+    const c=CONJOINTS[nom];
+    if(!c)return'';
+    const fiche=allContacts().find(x=>x.name===c)||{name:c};
+    const s=fiche.nuage?'🕊️ '+anneeDe(fiche.bd)+'–'+anneeDe(fiche.nuage):ageTexte(fiche.bd);
+    return '<div class="tr-sp'+(petit?' sm':'')+'" title="Conjoint de '+esc(nom)+'">'
+      +'<div class="tr-av" style="background:'+colFor(c)+'">'+esc(initials(c))+'</div>'
+      +'<div><div class="tr-n">💍 '+esc(c)+'</div>'
+      +(s?'<div class="tr-a">'+esc(s)+'</div>':'')+'</div></div>';
+  };
 
   h+='<div class="tr-gen"><div class="tr-lbl">👨‍👩‍👧 Ses enfants<span class="tr-cnt">'
     +enfants.filter(c=>!c.nuage).length+'</span></div>';
   enfants.forEach(function(e){
     h+='<div class="tr-br"><div class="tr-br-h">'
       +'<div class="tr-av" style="background:'+colFor(e.name)+'">'+esc(initials(e.name))+'</div>'
-      +'<div><div class="tr-n">'+esc(e.name)+'</div><div class="tr-a">'+esc(sousTexte(e))+'</div></div></div>';
+      +'<div><div class="tr-n">'+esc(e.name)+'</div><div class="tr-a">'+esc(sousTexte(e))+'</div></div>'
+      +chipConjoint(e.name,false)+'</div>';
     const kids=enfantsDe[e.name]||[];
     if(kids.length){
       h+='<div class="tr-br-k">'+kids.map(function(k){
@@ -691,7 +725,8 @@ function renderArbre(){
         return '<div class="tr-g'+(k.nuage?' parti':'')+'"><div class="tr-g-h">'
           +'<div class="tr-av" style="background:'+colFor(k.name)+'">'+esc(initials(k.name))+'</div>'
           +'<div><div class="tr-n">'+esc(k.name)+'</div>'
-          +(s?'<div class="tr-a">'+esc(s)+'</div>':'')+'</div></div>'
+          +(s?'<div class="tr-a">'+esc(s)+'</div>':'')+'</div>'
+          +chipConjoint(k.name,true)+'</div>'
           +(gk.length?'<div class="tr-g-k">'+gk.map(function(g){
               const sg=sousTexte(g);
               return '<div class="tr-gg'+(g.nuage?' parti':'')+'">'
@@ -975,6 +1010,7 @@ onReady(function(){db.ref('contacts_custom').on('value',snap=>{
   customContacts={};
   if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))customContacts[k]=v[k];}
   showHeaderInfo();
+  renderArbre();
 });});
 
 /* ---------- DÉMARRAGE ---------- */
