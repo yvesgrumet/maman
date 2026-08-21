@@ -424,7 +424,7 @@ const CONTACTS=[
   {name:'Alba',     bd:'2019-03-23',rel:'arriere',nuage:'2020-05-29'},
   {name:'Amelys',   bd:'2022-04-24',rel:'arriere'},
   {name:'Livy',     bd:'2022-07-06',rel:'arriere'},
-  {name:'Monica',   bd:null,        rel:'arriere'},
+  {name:'Monica',   bd:'2026-08-01',rel:'arriere'},
   {name:'Benoît',   bd:'1990-12-31',rel:'petit',  nuage:'1991-01-11'},
 ];
 const RELS={
@@ -606,7 +606,7 @@ function renderFetes(){
     const r=relOf(a.rel);
     return '<div class="li2'+(a.days===0?' today':'')+'">'
       +'<div class="av" style="background:'+colFor(a.name)+'">'+esc(initials(a.name))+'</div>'
-      +'<div class="li2-main"><div class="li2-t">🎂 '+esc(a.name)+' — '+a.age+' ans '+quandBadge(a.days)+'</div>'
+      +'<div class="li2-main"><div class="li2-t">🎂 '+esc(a.name)+' — '+a.age+' an'+(a.age>1?'s':'')+' '+quandBadge(a.days)+'</div>'
       +'<div class="li2-s">'+fd(dateStr(a.date))+' · <span style="color:'+r.col+';font-weight:700;">'+r.ico+' '+esc(r.lbl)+'</span></div></div></div>';
   }).join('');
 }
@@ -621,13 +621,25 @@ function ageDe(bd,ref){
   return a;
 }
 function anneeDe(bd){return bd?bd.split('-')[0]:'';}
+/* Âge lisible : « 20 jours », « 5 mois », « 1 an », « 13 ans » */
+function ageTexte(bd){
+  if(!bd)return'';
+  const p=bd.split('-').map(Number);
+  const n=new Date(),naiss=new Date(p[0],p[1]-1,p[2]);
+  const jours=Math.floor((n-naiss)/86400000);
+  if(jours<0)return'';
+  if(jours<31)return jours<=1?'nouveau-né':jours+' jours';
+  const mois=(n.getFullYear()-p[0])*12+(n.getMonth()+1-p[1])-(n.getDate()<p[2]?1:0);
+  if(mois<24)return mois+' mois';
+  const a=ageDe(bd);
+  return a+' an'+(a>1?'s':'');
+}
 
 function membre(c){
   const parti=!!c.nuage;
-  const age=ageDe(c.bd);
   const sous=parti
     ? '🕊️ '+anneeDe(c.bd)+'–'+anneeDe(c.nuage)
-    : (age!==null?age+' ans':'');
+    : ageTexte(c.bd);
   return '<div class="tr-m'+(parti?' parti':'')+'">'
     +'<div class="tr-av" style="background:'+colFor(c.name)+'">'+esc(initials(c.name))+'</div>'
     +'<div class="tr-n">'+esc(c.name)+'</div>'
@@ -646,7 +658,7 @@ function renderArbre(){
   if(andree){
     h+='<div class="tr-p"><div class="tr-av" style="background:'+colFor(andree.name)+'">'+esc(initials(andree.name))+'</div>'
       +'<div class="tr-n">'+esc(andree.name)+'</div>'
-      +'<div class="tr-a">'+ageDe(andree.bd)+' ans</div></div>';
+      +'<div class="tr-a">'+esc(ageTexte(andree.bd))+'</div></div>';
   }
   if(papa){
     h+='<div class="tr-amp">&amp;</div>'
@@ -663,8 +675,7 @@ function renderArbre(){
     const p=PARENTS[c.name];
     if(p)(enfantsDe[p]=enfantsDe[p]||[]).push(c);
   });
-  const sousTexte=c=>c.nuage?'🕊️ '+anneeDe(c.bd)+'–'+anneeDe(c.nuage)
-                           :(ageDe(c.bd)!==null?ageDe(c.bd)+' ans':'');
+  const sousTexte=c=>c.nuage?'🕊️ '+anneeDe(c.bd)+'–'+anneeDe(c.nuage):ageTexte(c.bd);
 
   h+='<div class="tr-gen"><div class="tr-lbl">👨‍👩‍👧 Ses enfants<span class="tr-cnt">'
     +enfants.filter(c=>!c.nuage).length+'</span></div>';

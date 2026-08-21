@@ -1393,6 +1393,7 @@ const CONTACTS=[
   {id:'alba',     name:'Alba',     ini:'Al',col:'#f48fb1',rel:'arriere',bd:'2019-03-23',nuage:'2020-05-29'},
   {id:'amelys',   name:'Amelys',   ini:'Ay',col:'#ce93d8',rel:'arriere',bd:'2022-04-24'},
   {id:'livy',     name:'Livy',     ini:'Lv',col:'#80deea',rel:'arriere',bd:'2022-07-06'},
+  {id:'monica',   name:'Monica',   ini:'Mo',col:'#ffab91',rel:'arriere',bd:'2026-08-01'},
   {id:'benoit',   name:'Benoît',   ini:'Bé',col:'#a5d6a7',rel:'arriere',bd:'1990-12-31',nuage:'1991-01-11'},
 ];
 const RELS={parent:'❤️ Parents',enfant:'👨‍👩‍👧 Enfants',petit:'👶 Petits-enfants',arriere:'🌟 Arrière-petits-enfants',autre:'➕ Autres contacts'};
@@ -1405,7 +1406,12 @@ function fmtBd(bd){
   const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
   const now=new Date();
   const age=now.getFullYear()-y-(now.getMonth()+1<m||(now.getMonth()+1===m&&now.getDate()<d)?1:0);
-  return d+' '+mo[m-1]+' · '+age+' ans';
+  const jours=Math.floor((now-new Date(y,m-1,d))/86400000);
+  let txt;
+  if(jours>=0&&jours<31)txt=(jours<=1?'nouveau-né':jours+' jours');
+  else if(age<1)txt=((now.getFullYear()-y)*12+(now.getMonth()+1-m)-(now.getDate()<d?1:0))+' mois';
+  else txt=age+' an'+(age>1?'s':'');
+  return d+' '+mo[m-1]+' · '+txt;
 }
 function iniFor(n){const p=n.trim().split(' ');return(p[0][0]+(p[1]?p[1][0]:'')).toUpperCase();}
 function colFor(n){let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))&0xffff;return PALCOLS[h%PALCOLS.length];}
