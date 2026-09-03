@@ -97,6 +97,12 @@ textarea{resize:vertical;min-height:80px;}
 .vrf-p{margin-top:6px;display:flex;align-items:center;gap:7px;}
 .pouce{background:#fff;border:1.5px solid #d6ebe4;border-radius:16px;padding:3px 11px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;color:#5e8f81;}
 .pouce.on{background:#fff6e8;border-color:#e8b860;color:#8a6520;}
+.pouce.rep.on{background:#dff2ec;border-color:#2e6b5e;color:#2e6b5e;}
+.vq{background:rgba(255,255,255,0.75);border-left:3px solid #b8cfe4;border-radius:7px;padding:5px 9px;font-size:0.74rem;color:#5a7590;margin-bottom:6px;line-height:1.35;}
+.vq b{color:#3d5a75;}
+.vcible{display:flex;align-items:center;gap:8px;background:#dff2ec;border-left:3px solid #2e6b5e;border-radius:8px;padding:7px 10px;font-size:0.76rem;color:#2c4f46;margin-top:10px;line-height:1.35;}
+.vcible b{color:#2e6b5e;}
+.vcible button{margin-left:auto;background:none;border:none;color:#5e8f81;font-size:0.95rem;cursor:pointer;flex-shrink:0;padding:0 2px;}
 .pouce-qui{font-size:0.68rem;color:#7aa89b;}
 .vrf{display:flex;gap:6px;margin-top:10px;}
 .vrf input{flex:1;font-size:0.84rem;}
@@ -1194,10 +1200,11 @@ function renderJournal(){
         const r=v.reponses[k];
         const aMoi=r.from==='elodie';
         return '<div class="vrep'+(aMoi?' vrep-moi':'')+'">'
+          +citation(r.replyTo)
           +'<b>'+esc(aMoi?'Vous':(r.who||'La famille'))+'</b> · '
           +esc(new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}))
           +'<br>'+esc(r.text)
-          +(aMoi?'':pouce('aide_visites/'+v._k+'/reponses/'+k,r.reactions))
+          +(aMoi?'':barreActions(v._k,k,r))
           +'</div>';
       }).join(''):'';
     return '<div class="vi'+(v.alerte?' alerte':'')+'">'
@@ -1209,7 +1216,9 @@ function renderJournal(){
       +vuPar(v.vu)
       +reactionsRecues(v.reactions)
       +reps
-      +'<div class="vrf"><input type="text" id="rep-'+v._k+'" placeholder="Répondre à la famille..." '
+      +bandeauCible(v._k)
+      +'<div class="vrf"><input type="text" id="rep-'+v._k+'" placeholder="'
+      +(cibleRep[v._k]?'Votre réponse à '+esc(cibleRep[v._k].who)+'...':'Répondre à la famille...')+'" '
       +'onkeydown="if(event.key===\'Enter\')repondre(\''+v._k+'\')">'
       +'<button class="rbtn" onclick="repondre(\''+v._k+'\')">Envoyer</button></div>'
       +'</div>';
@@ -1234,16 +1243,55 @@ function reactionsRecues(r){
   return '<div class="vrct" title="'+esc(gens.join(', '))+'">👍 '+gens.length+'</div>';
 }
 
-/* Bouton pouce sur un message de la famille */
-function pouce(chemin,reactions){
-  const gens=reactions?Object.keys(reactions):[];
+/* Pouce + « Répondre » sous un message de la famille */
+let cibleRep={};   // par compte rendu : le message auquel elle répond
+
+function barreActions(cleVisite,cleRep,r){
+  const chemin='aide_visites/'+cleVisite+'/reponses/'+cleRep;
+  const gens=r.reactions?Object.keys(r.reactions):[];
   const jaime=gens.indexOf(MOI)>-1;
   const autres=gens.filter(q=>q!==MOI);
-  return '<div class="vrf-p"><button class="pouce'+(jaime?' on':'')+'" '
-    +'onclick="togglePouce(\''+chemin+'\')" title="'+esc(gens.join(', '))+'">'
-    +'👍'+(gens.length?' '+gens.length:'')+'</button>'
+  const vise=cibleRep[cleVisite]&&cibleRep[cleVisite].cle===cleRep;
+  return '<div class="vrf-p">'
+    +'<button class="pouce'+(jaime?' on':'')+'" onclick="togglePouce(\''+chemin+'\')" '
+    +'title="'+esc(gens.join(', '))+'">👍'+(gens.length?' '+gens.length:'')+'</button>'
+    +'<button class="pouce rep'+(vise?' on':'')+'" onclick="viserReponse(\''+cleVisite+'\',\''+cleRep+'\')">'
+    +(vise?'✓ Sélectionné':'↩ Répondre')+'</button>'
     +(autres.length?'<span class="pouce-qui">'+esc(autres.join(', '))+'</span>':'')
     +'</div>';
+}
+
+/* Citation du message auquel on répond */
+function citation(rt){
+  if(!rt)return'';
+  return '<div class="vq">↩ <b>'+esc(rt.who||'')+'</b> · «&nbsp;'+esc(rt.extrait||'')+'&nbsp;»</div>';
+}
+
+/* Bandeau au-dessus du champ, rappelant la cible choisie */
+function bandeauCible(cleVisite){
+  const c=cibleRep[cleVisite];
+  if(!c)return'';
+  return '<div class="vcible">↩ Réponse à <b>'+esc(c.who)+'</b> : «&nbsp;'+esc(c.extrait)+'&nbsp;»'
+    +'<button onclick="annulerCible(\''+cleVisite+'\')" title="Annuler">✕</button></div>';
+}
+
+function viserReponse(cleVisite,cleRep){
+  const v=mesVisites.find(x=>x._k===cleVisite);
+  const r=v&&v.reponses&&v.reponses[cleRep];
+  if(!r)return;
+  if(cibleRep[cleVisite]&&cibleRep[cleVisite].cle===cleRep){delete cibleRep[cleVisite];}
+  else{
+    const t=String(r.text||'');
+    cibleRep[cleVisite]={cle:cleRep,who:r.who||'La famille',extrait:t.length>70?t.slice(0,70)+'…':t};
+  }
+  renderJournal();
+  const inp=document.getElementById('rep-'+cleVisite);
+  if(inp)inp.focus();
+}
+
+function annulerCible(cleVisite){
+  delete cibleRep[cleVisite];
+  renderJournal();
 }
 
 async function togglePouce(chemin){
@@ -1258,11 +1306,14 @@ async function repondre(k){
   const text=inp.value.trim();
   if(!text)return;
   inp.value='';
+  const cible=cibleRep[k];
   try{
-    await db.ref('aide_visites/'+k+'/reponses').push({
-      who:'Élodie',from:'elodie',text,ts:new Date().toISOString()
-    });
-    toast('💬 Réponse envoyée à la famille');
+    const msg={who:'Élodie',from:'elodie',text,ts:new Date().toISOString()};
+    if(cible)msg.replyTo={cle:cible.cle,who:cible.who,extrait:cible.extrait};
+    await db.ref('aide_visites/'+k+'/reponses').push(msg);
+    delete cibleRep[k];
+    renderJournal();
+    toast(cible?'💬 Réponse envoyée à '+cible.who:'💬 Réponse envoyée à la famille');
   }catch(e){toast('❌ Erreur : '+e.message);inp.value=text;}
 }
 

@@ -229,6 +229,8 @@ textarea{resize:vertical;min-height:70px;}
 .av2-rep{background:#eef4fb;border-left:3px solid #5b8bc4;border-radius:9px;padding:8px 11px;font-size:0.83rem;margin-top:6px;color:#22406b;}
 .av2-rep.av2-rep-el{background:#eef6f3;border-left-color:#4a9c88;color:#2c4f46;}
 .av2-rep.av2-rep-el b{color:#2e6b5e;}
+.av2-q{background:rgba(255,255,255,0.8);border-left:3px solid #b8cfe4;border-radius:7px;padding:5px 9px;font-size:0.73rem;color:#5a7590;margin-bottom:6px;line-height:1.35;}
+.av2-q b{color:#3d5a75;}
 .av2-pr{margin-top:7px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
 .apouce{background:#fff;border:1.5px solid #edd9e8;border-radius:16px;padding:3px 11px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;color:#8a6080;}
 .apouce.on{background:#fff6e8;border-color:#e8b860;color:#8a6520;}
@@ -1877,7 +1879,10 @@ function renderAideVisites(){
       .map(function(k){
         const r=v.reponses[k];
         const dElodie=r.from==='elodie';
+        const cit=r.replyTo?'<div class="av2-q">↩ <b>'+escHtmlF(r.replyTo.who||'')
+          +'</b> · &laquo;&nbsp;'+escHtmlF(r.replyTo.extrait||'')+'&nbsp;&raquo;</div>':'';
         return '<div class="av2-rep'+(dElodie?' av2-rep-el':'')+'">'
+          +cit
           +'<b>'+escHtmlF(dElodie?'Élodie':(r.who||''))+'</b> · '
           +new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})
           +'<br>'+escHtmlF(r.text)
