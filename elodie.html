@@ -123,10 +123,13 @@ textarea{resize:vertical;min-height:80px;}
 .hint{font-size:0.73rem;color:#7aa89b;font-style:italic;margin-bottom:10px;line-height:1.4;}
 
 /* BANDEAU « AJOUTER À L'ÉCRAN D'ACCUEIL » */
-.pwa{display:none;align-items:center;gap:11px;background:#fff;border-bottom:2px solid #dcefe8;padding:10px 13px;box-shadow:0 2px 10px rgba(46,107,94,0.08);}
+.pwa{display:none;align-items:center;flex-wrap:wrap;gap:9px 11px;background:#fff;border-bottom:2px solid #dcefe8;padding:10px 13px;box-shadow:0 2px 10px rgba(46,107,94,0.08);}
 .pwa.on{display:flex;}
-.pwa img{width:42px;height:42px;border-radius:11px;flex-shrink:0;box-shadow:0 2px 7px rgba(46,107,94,0.25);}
-.pwa-t{flex:1;min-width:0;font-size:0.8rem;color:#2c4f46;line-height:1.4;}
+.pwa img{order:1;width:42px;height:42px;border-radius:11px;flex-shrink:0;box-shadow:0 2px 7px rgba(46,107,94,0.25);}
+.pwa-t{order:2;flex:1 1 130px;min-width:0;font-size:0.8rem;color:#2c4f46;line-height:1.4;}
+.pwa-x{order:3;}
+.pwa-go{order:4;}
+@media(max-width:520px){.pwa-go{flex:1 1 100%;}}
 .pwa-t b{color:#2e6b5e;}
 .pwa-t .ios{display:inline-flex;align-items:center;justify-content:center;background:#eef6f3;border-radius:5px;padding:0 5px;font-weight:700;color:#2e6b5e;}
 .pwa-go{background:linear-gradient(135deg,#2e6b5e,#4a9c88);color:#fff;border:none;border-radius:11px;padding:10px 15px;font-size:0.83rem;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;white-space:nowrap;flex-shrink:0;}
@@ -673,12 +676,36 @@ function surIOS(){
   return /iPad|iPhone|iPod/.test(navigator.userAgent)
       ||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 }
+/* Samsung Internet fabrique une vraie application Android que Play Protect
+   refuse ensuite ("conçue pour une version plus ancienne d'Android").
+   Chrome n'a pas ce problème : on l'oriente vers Chrome. */
+function surSamsung(){return /SamsungBrowser/i.test(navigator.userAgent);}
+function copierLien(){
+  const url=location.href.split('#')[0];
+  const fini=function(ok){toast(ok?'📋 Lien copié — collez-le dans Chrome':'Lien : '+url);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){fini(true);},function(){fini(false);});
+    return;
+  }
+  try{
+    const t=document.createElement('textarea');
+    t.value=url;t.style.position='fixed';t.style.opacity='0';
+    document.body.appendChild(t);t.select();
+    const ok=document.execCommand('copy');
+    document.body.removeChild(t);fini(ok);
+  }catch(e){fini(false);}
+}
 function majPwaBar(){
   const bar=document.getElementById('pwaBar');
   if(!bar)return;
   if(dejaInstallee()||localStorage.getItem('pwa_plus_tard')){bar.classList.remove('on');return;}
   const txt=document.getElementById('pwaTxt'),go=document.getElementById('pwaGo');
-  if(promptInstall){
+  go.onclick=installerApp;go.textContent='Installer';
+  if(surSamsung()){
+    txt.innerHTML='<b>Ouvrez ce lien dans Chrome</b> pour l\'ajouter à votre écran d\'accueil.<br>'
+      +'<span style="color:#7aa89b;">Samsung Internet n\'y arrive pas : il est bloqué par Play Protect.</span>';
+    go.textContent='Copier le lien';go.onclick=copierLien;go.style.display='';
+  } else if(promptInstall){
     txt.innerHTML='<b>Gardez l\'application à portée de main.</b><br>Un appui et elle s\'ajoute à votre écran d\'accueil.';
     go.style.display='';
   } else if(surIOS()){
