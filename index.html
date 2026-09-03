@@ -585,7 +585,12 @@ function majOverlay(){
   if(o)o.style.display=userConnu?'none':'flex';
 }
 window.addEventListener('DOMContentLoaded',function(){domPret=true;majOverlay();});
-firebase.auth().onAuthStateChanged(function(u){userConnu=u||null;majOverlay();});
+firebase.auth().onAuthStateChanged(function(u){
+  // Une ancienne session anonyme ne donne plus acces a rien : on la ferme
+  // pour redemander le mot de passe plutot que d'afficher une page vide.
+  if(u&&u.email!==COMPTE){firebase.auth().signOut();return;}
+  userConnu=u||null;majOverlay();
+});
 
 function submitPw(){
   const champ=document.getElementById('pwInput'),err=document.getElementById('pwError');
