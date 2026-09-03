@@ -231,6 +231,10 @@ textarea{resize:vertical;min-height:70px;}
 .av2-rep.av2-rep-el b{color:#2e6b5e;}
 .av2-q{background:rgba(255,255,255,0.8);border-left:3px solid #b8cfe4;border-radius:7px;padding:5px 9px;font-size:0.73rem;color:#5a7590;margin-bottom:6px;line-height:1.35;}
 .av2-q b{color:#3d5a75;}
+.apouce.rep.on{background:#dff2ec;border-color:#2e6b5e;color:#2e6b5e;}
+.av2-cible{display:flex;align-items:center;gap:8px;background:#dff2ec;border-left:3px solid #2e6b5e;border-radius:8px;padding:7px 10px;font-size:0.76rem;color:#2c4f46;margin-top:9px;line-height:1.35;}
+.av2-cible b{color:#2e6b5e;}
+.av2-cible button{margin-left:auto;background:none;border:none;color:#5e8f81;font-size:0.95rem;cursor:pointer;flex-shrink:0;padding:0 2px;}
 .av2-pr{margin-top:7px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
 .apouce{background:#fff;border:1.5px solid #edd9e8;border-radius:16px;padding:3px 11px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;color:#8a6080;}
 .apouce.on{background:#fff6e8;border-color:#e8b860;color:#8a6520;}
@@ -1886,8 +1890,8 @@ function renderAideVisites(){
           +'<b>'+escHtmlF(dElodie?'Élodie':(r.who||''))+'</b> · '
           +new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})
           +'<br>'+escHtmlF(r.text)
-          +(dElodie?pouceF('aide_visites/'+v._k+'/reponses/'+k,r.reactions)
-                   :vuParF(r.vu,'elodie','Élodie a lu'))
+          +barreActionsF(v._k,k,r,dElodie)
+          +(dElodie?'':vuParF(r.vu,'elodie','Élodie a lu'))
           +'</div>';
       }).join(''):'';
     return '<div class="av2'+(v.alerte?' alerte':'')+'">'
@@ -1897,7 +1901,10 @@ function renderAideVisites(){
       +(v.note?'<div class="av2-note">'+escHtmlF(v.note)+'</div>':'')
       +pouceF('aide_visites/'+v._k,v.reactions)
       +reps
-      +'<div class="av2-rf"><input type="text" id="rep-'+v._k+'" placeholder="Répondre à Élodie..." onkeydown="if(event.key===\'Enter\')replyAide(\''+v._k+'\')"><button class="rbtn" style="background:#2e6b5e;" onclick="replyAide(\''+v._k+'\')">Envoyer</button></div>'
+      +bandeauCibleF(v._k)
+      +'<div class="av2-rf"><input type="text" id="rep-'+v._k+'" placeholder="'
+      +(cibleRepF[v._k]?'Votre réponse à '+escHtmlF(cibleRepF[v._k].who)+'...':'Répondre à Élodie...')
+      +'" onkeydown="if(event.key===\'Enter\')replyAide(\''+v._k+'\')"><button class="rbtn" style="background:#2e6b5e;" onclick="replyAide(\''+v._k+'\')">Envoyer</button></div>'
       +'</div>';
   }).join('');
 }
@@ -1921,6 +1928,54 @@ async function togglePouceF(chemin){
   if(s.exists())await ref.remove();
   else{await ref.set('👍');toast('👍 Envoyé à Élodie');}
 }
+/* Barre d'actions sous chaque réponse : pouce et « Répondre » */
+let cibleRepF={};   // par compte rendu : le message auquel on répond
+
+function barreActionsF(cleVisite,cleRep,r,dElodie){
+  const chemin='aide_visites/'+cleVisite+'/reponses/'+cleRep;
+  const moi=myName();
+  const gens=r.reactions?Object.keys(r.reactions):[];
+  const jaime=moi&&gens.indexOf(moi)>-1;
+  const sienne=!dElodie&&moi&&r.who===moi;
+  const vise=cibleRepF[cleVisite]&&cibleRepF[cleVisite].cle===cleRep;
+  return '<div class="av2-pr">'
+    +'<button class="apouce'+(jaime?' on':'')+'" onclick="togglePouceF(\''+chemin+'\')" '
+    +'title="'+escHtmlF(gens.join(', '))+'">👍'+(gens.length?' '+gens.length:'')+'</button>'
+    +(sienne?'':'<button class="apouce rep'+(vise?' on':'')+'" '
+      +'onclick="viserReponseF(\''+cleVisite+'\',\''+cleRep+'\')">'
+      +(vise?'✓ Sélectionné':'↩ Répondre')+'</button>')
+    +(gens.length?'<span class="apouce-qui">'+escHtmlF(gens.join(', '))+'</span>':'')
+    +'</div>';
+}
+
+function bandeauCibleF(cleVisite){
+  const c=cibleRepF[cleVisite];
+  if(!c)return'';
+  return '<div class="av2-cible">↩ Réponse à <b>'+escHtmlF(c.who)+'</b> : &laquo;&nbsp;'
+    +escHtmlF(c.extrait)+'&nbsp;&raquo;'
+    +'<button onclick="annulerCibleF(\''+cleVisite+'\')" title="Annuler">✕</button></div>';
+}
+
+function viserReponseF(cleVisite,cleRep){
+  const v=aideVisites.find(function(x){return x._k===cleVisite;});
+  const r=v&&v.reponses&&v.reponses[cleRep];
+  if(!r)return;
+  if(cibleRepF[cleVisite]&&cibleRepF[cleVisite].cle===cleRep){delete cibleRepF[cleVisite];}
+  else{
+    const t=String(r.text||'');
+    cibleRepF[cleVisite]={cle:cleRep,who:(r.from==='elodie'?'Élodie':(r.who||'')),
+      extrait:t.length>70?t.slice(0,70)+'…':t};
+  }
+  renderAideVisites();
+  const inp=document.getElementById('rep-'+cleVisite);
+  if(inp)inp.focus();
+}
+
+function annulerCibleF(cleVisite){
+  delete cibleRepF[cleVisite];
+  renderAideVisites();
+}
+
 function vuParF(vu,qui,libelle){
   if(!vu||!vu[qui])return'<div class="av2-vu">✓ Envoyé</div>';
   return '<div class="av2-vu ok">✓✓ '+escHtmlF(libelle)+'</div>';
@@ -1949,9 +2004,14 @@ async function replyAide(k){
   const nm=myName();
   if(!nm){toast('⚠️ Choisis d\'abord qui tu es dans l\'onglet Messages !');return;}
   inp.value='';
+  const cible=cibleRepF[k];
   try{
-    await db.ref('aide_visites/'+k+'/reponses').push({who:nm,text,ts:new Date().toISOString()});
-    toast('💬 Réponse envoyée à Élodie');
+    const msg={who:nm,text,ts:new Date().toISOString()};
+    if(cible)msg.replyTo={cle:cible.cle,who:cible.who,extrait:cible.extrait};
+    await db.ref('aide_visites/'+k+'/reponses').push(msg);
+    delete cibleRepF[k];
+    renderAideVisites();
+    toast(cible?'💬 Réponse envoyée à '+cible.who:'💬 Réponse envoyée à Élodie');
   }catch(e){toast('❌ Erreur : '+e.message);inp.value=text;}
 }
 </script>
