@@ -592,7 +592,9 @@ function submitPw(){
   const v=champ.value.trim().toLowerCase().replace(/[\s_]+/g,'-');
   if(!v)return;
   err.style.display='none';
-  firebase.auth().signInWithEmailAndPassword(COMPTE,v)
+  // Session conservee sur l'appareil : le mot de passe n'est demande qu'une fois
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(function(){return firebase.auth().signInWithEmailAndPassword(COMPTE,v);})
     .catch(function(){
       err.style.display='block';
       champ.value='';champ.focus();
