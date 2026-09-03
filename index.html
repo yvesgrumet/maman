@@ -105,7 +105,11 @@ textarea{resize:vertical;min-height:70px;}
 .dt{width:5px;height:5px;border-radius:50%;}
 .dj{background:#89b5a0}.dl{background:#9b7ec8}.df{background:#90afd0}
 .ds{background:#a0a0c0}.da{background:#d08060}.dm{background:#c4c478}
-.drdv{background:#f0a030}.dun{background:#c0506a}
+.drdv{background:#f0a030}.dun{background:#c0506a}.del{background:#2e6b5e}
+.elc{background:#f2faf7;border:1.5px solid #cfe8e0;border-left:4px solid #2e6b5e;border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+.elc-h{font-weight:700;color:#2e6b5e;font-size:0.88rem;}
+.elc-s{font-size:0.74rem;color:#5e8f81;margin-top:2px;}
+.elc-n{background:#fff;border-radius:8px;padding:9px;font-size:0.83rem;line-height:1.45;margin-top:8px;color:#2c4f46;white-space:pre-wrap;}
 .bday-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #faedf3;}
 .bday-row:last-child{border-bottom:none;}
 .bday-age{font-size:0.72rem;color:#b07898;margin-top:1px;}
@@ -408,6 +412,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="li"><div class="ld" style="background:#d4edda"></div> Visite</div>
       <div class="li"><div class="ld drdv"></div> RDV</div>
       <div class="li"><div class="ld dun"></div> Indispo</div>
+      <div class="li"><div class="ld del"></div> Élodie</div>
     </div>
   </div>
   <div id="bdayList"></div>
@@ -679,6 +684,9 @@ async function sendPushToFamily(title,notifBody){
 }
 
 let entries=[],rdvs=[],unavails=[];
+// Déclarés ici et non plus bas : le calendrier les lit avant que la
+// section « aide à domicile » du fichier ne soit atteinte.
+let aideMsgs=[],aideVisites=[];
 let selWho='',selWho2='',selUWho='';
 let selPers=[],selEmos=[],selActs=[],selPhoto=null;
 let calY,calM,filt='all',lastDay=null;
@@ -1102,7 +1110,8 @@ function renderCal(){
     const seen=new Set();let dots='';
     de.forEach(e=>(e.emotions||[]).forEach(em=>{const dc=CDMAP[em.cat];if(dc&&!seen.has(dc)){dots+='<div class="dt '+dc+'"></div>';seen.add(dc);}}));
     if(dr.length&&!seen.has('rdv')){dots+='<div class="dt drdv"></div>';seen.add('rdv');}
-    if(du.length&&!seen.has('un')){dots+='<div class="dt dun"></div>';}
+    if(du.length&&!seen.has('un')){dots+='<div class="dt dun"></div>';seen.add('un');}
+    if(aideVisites.some(function(v){return v.date===ds;})&&!seen.has('el')){dots+='<div class="dt del"></div>';}
     html+='<div class="'+cls+'" onclick="showDay(\''+ds+'\')"><span>'+d+'</span>'+(dots?'<div class="dts">'+dots+'</div>':'')+'</div>';
   }
   grid.innerHTML=html;
@@ -1149,6 +1158,7 @@ function showDay(ds){
   const div=document.getElementById('dayDetail');
   const dr=rdvs.filter(r=>r.date===ds);
   const du=unavails.filter(u=>u.from<=ds&&u.to>=ds);
+  const dl=aideVisites.filter(function(v){return v.date===ds;});
   let bdHtml='';
   try{
     const mm=ds.slice(5,7),dd=ds.slice(8,10),yr=parseInt(ds.slice(0,4),10);
@@ -1181,12 +1191,28 @@ function showDay(ds){
         if(val[k].date===ds)de.push({...val[k],_k:k});
       }
     }
-    if(!de.length&&!dr.length&&!du.length){
+    if(!de.length&&!dr.length&&!du.length&&!dl.length){
       div.innerHTML=bdHtml||'<div class="card"><p style="color:#8a6080;text-align:center;padding:8px">Aucune entrée ce jour-là</p></div>';
       if(bdHtml)div.scrollIntoView({behavior:'smooth',block:'start'});
       return;
     }
     let html='';
+    // Passage d'Élodie
+    const negC={moral:1,inquiet:1,tension:1};
+    dl.forEach(function(v){
+      const tags=[]
+        .concat((v.prestations||[]).map(function(p){return'<span class="atag">'+escHtmlF(p)+'</span>';}))
+        .concat((v.emotions||[]).map(function(e){return'<span class="atag '+(e.cat==='bien'?'pos':negC[e.cat]?'neg':'')+'">'+escHtmlF(e.label)+'</span>';}))
+        .concat((v.observations||[]).map(function(o){return'<span class="atag '+escHtmlF(o.tone||'')+'">'+escHtmlF(o.label)+'</span>';}))
+        .join('');
+      html+='<div class="elc">'
+        +'<div class="elc-h">'+(v.alerte?'⚠️ ':'🤝 ')+'Passage d\'Élodie</div>'
+        +'<div class="elc-s">'+escHtmlF([v.time,(v.moments||[]).join(' · '),v.duree].filter(Boolean).join(' · '))+'</div>'
+        +(tags?'<div style="margin-top:7px;">'+tags+'</div>':'')
+        +(v.note?'<div class="elc-n">'+escHtmlF(v.note)+'</div>':'')
+        +'<div style="margin-top:8px;"><button class="qbtn" onclick="goTab(\'aide\',document.getElementById(\'tab-aide-btn\'))">Voir le compte rendu et répondre →</button></div>'
+        +'</div>';
+    });
     du.forEach(u=>{html+='<div class="uc" data-uk="'+u._k+'"><div style="font-weight:700;color:#c0506a;">🚫 '+u.who+' — Pas disponible</div><div style="font-size:0.74rem;color:#9a3050;margin-top:2px;">Du '+fd(u.from)+' au '+fd(u.to)+(u.reason?' · '+u.reason:'')+'</div>'+buildUnavailReactRow(u._k,u.reactions||{})+'<button class="dbtn" onclick="delUnavail(\''+u._k+'\')">🗑️ Supprimer</button></div>';});
     dr.forEach(r=>{html+='<div class="rc"><div style="font-weight:700;color:#7a5000;">📅 '+r.title+'</div><div style="font-size:0.74rem;color:#b09000;">'+fd(r.date)+(r.time?' à '+r.time:'')+'</div><button class="dbtn" onclick="delRdv(\''+r._k+'\')">🗑️ Supprimer</button></div>';});
     for(const e of de){html+=mkCard(e,true);}
@@ -1759,7 +1785,7 @@ async function saveNewContact(){
 /* ============================================================
    AIDE À DOMICILE — Élodie
    ============================================================ */
-let aideMsgs=[],aideVisites=[],aFilt='all';
+let aFilt='all';
 
 function myName(){
   const who=familyUser||dmWho;
@@ -1853,6 +1879,7 @@ db.ref('aide_visites').on('value',function(snap){
   if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))aideVisites.push(Object.assign({},v[k],{_k:k}));}
   aideVisites.sort(function(a,b){return String((b.date||'')+(b.time||'')).localeCompare(String((a.date||'')+(a.time||'')));});
   renderAideVisites();
+  try{renderCal();}catch(e){}   // les passages d'Élodie apparaissent au calendrier
 });
 
 function setAFilt(el,f){
