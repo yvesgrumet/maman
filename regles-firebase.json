@@ -1,0 +1,40 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "aide_visites": {
+      ".read":  "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'",
+      ".write": "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'"
+    },
+    "aide_messages": {
+      ".read":  "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'",
+      ".write": "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'"
+    },
+
+    "visites_publiques": {
+      ".read":  "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'",
+      ".write": "auth.token.email === 'famille@suivi-maman.fr'"
+    },
+    "anniversaires_publics": {
+      ".read":  "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'",
+      ".write": "auth.token.email === 'famille@suivi-maman.fr'"
+    },
+    "maman_rdv": {
+      ".read":  "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'",
+      ".write": "auth.token.email === 'famille@suivi-maman.fr'"
+    },
+
+    "entries":          { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "group_messages":   { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "direct_messages":  { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "messages_enfants": { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "contacts":         { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "contacts_custom":  { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "maman_status":     { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "maman_courses":    { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "unavailabilities": { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "push_subs":        { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
+    "fcm_tokens":       { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" }
+  }
+}

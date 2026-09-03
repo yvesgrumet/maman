@@ -244,25 +244,43 @@ firebase.auth().onAuthStateChanged(function(u){
   };
 })();
 
-const AUTH_KEY='maman_app_auth';
-function checkAuth(){
-  if(localStorage.getItem(AUTH_KEY)){firebase.auth().signInAnonymously();return;}
-  document.getElementById('pwOverlay').style.display='flex';
+/* Cette application se connecte avec le compte de la famille. Le mot de
+   passe saisi est celui du compte Firebase : il n'est comparé nulle part
+   dans la page et n'est stocké nulle part. Les règles de la base
+   n'autorisent que ce compte sur les données familiales. */
+const COMPTE='famille@suivi-maman.fr';
+
+let domPret=false,userConnu;
+function majOverlay(){
+  if(!domPret||userConnu===undefined)return;
+  const o=document.getElementById('pwOverlay');
+  if(o)o.style.display=userConnu?'none':'flex';
 }
+window.addEventListener('DOMContentLoaded',function(){domPret=true;majOverlay();});
+firebase.auth().onAuthStateChanged(function(u){userConnu=u||null;majOverlay();});
+
 function submitPw(){
-  const v=document.getElementById('pwInput').value.trim().toLowerCase();
-  if(v==='maman'){
-    firebase.auth().signInAnonymously().then(function(){
-      localStorage.setItem(AUTH_KEY,'1');
-      document.getElementById('pwOverlay').style.display='none';
+  const champ=document.getElementById('pwInput'),err=document.getElementById('pwError');
+  const v=champ.value.trim().toLowerCase().replace(/[\s_]+/g,'-');
+  if(!v)return;
+  err.style.display='none';
+  firebase.auth().signInWithEmailAndPassword(COMPTE,v)
+    .catch(function(){
+      err.style.display='block';
+      champ.value='';champ.focus();
     });
-  } else {
-    document.getElementById('pwError').style.display='block';
-    document.getElementById('pwInput').value='';
-    document.getElementById('pwInput').focus();
-  }
 }
-window.addEventListener('DOMContentLoaded',checkAuth);
+function voirPw(el){
+  const c=document.getElementById('pwInput');
+  const cache=c.type==='password';
+  c.type=cache?'text':'password';
+  el.textContent=cache?'🙈 Masquer':'👁 Afficher';
+  c.focus();
+}
+function seDeconnecter(){
+  if(!confirm('Se déconnecter ? Le mot de passe sera redemandé.'))return;
+  firebase.auth().signOut().then(function(){location.reload();});
+}
 
 const MSGS={
   francoise:'https://m.me/desmarisf',martine:'https://m.me/100011156706828',
@@ -745,7 +763,8 @@ document.getElementById('rdvD').value=now.toISOString().slice(0,10);
     <div style="font-size:4rem;margin-bottom:16px;">🔐</div>
     <div style="font-family:'Playfair Display',serif;font-size:1.8rem;color:#7d4e6b;margin-bottom:8px;">Bonjour !</div>
     <div style="font-size:1.1rem;color:#8a6080;margin-bottom:28px;">Entre le mot de passe de la famille</div>
-    <input type="password" id="pwInput" style="width:100%;padding:18px;font-size:1.5rem;border:2px solid #edd9e8;border-radius:14px;text-align:center;outline:none;color:#3d2040;letter-spacing:4px;" placeholder="••••••" onkeydown="if(event.key==='Enter')submitPw()">
+    <input type="password" id="pwInput" style="width:100%;padding:18px;font-size:1.15rem;border:2px solid #edd9e8;border-radius:14px;text-align:center;outline:none;color:#3d2040;letter-spacing:1px;" placeholder="mot de passe" onkeydown="if(event.key==='Enter')submitPw()">
+    <div style="text-align:right;margin-top:6px;"><span onclick="voirPw(this)" style="font-size:0.8rem;color:#7d4e6b;cursor:pointer;font-weight:700;">👁 Afficher</span></div>
     <div id="pwError" style="display:none;color:#e53935;margin-top:12px;font-size:1rem;">❌ Mot de passe incorrect</div>
     <button onclick="submitPw()" style="margin-top:24px;width:100%;padding:20px;background:#7d4e6b;color:#fff;border:none;border-radius:14px;font-size:1.3rem;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;">Entrer ✓</button>
   </div>
