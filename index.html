@@ -227,6 +227,15 @@ textarea{resize:vertical;min-height:70px;}
 .atag.alerte{background:#fdeaea;color:#a02020;}
 .av2-note{background:#f7fcfa;border-radius:9px;padding:10px;font-size:0.86rem;line-height:1.45;margin-top:8px;color:#2c4f46;white-space:pre-wrap;}
 .av2-rep{background:#eef4fb;border-left:3px solid #5b8bc4;border-radius:9px;padding:8px 11px;font-size:0.83rem;margin-top:6px;color:#22406b;}
+.av2-rep.av2-rep-el{background:#eef6f3;border-left-color:#4a9c88;color:#2c4f46;}
+.av2-rep.av2-rep-el b{color:#2e6b5e;}
+.av2-pr{margin-top:7px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.apouce{background:#fff;border:1.5px solid #edd9e8;border-radius:16px;padding:3px 11px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;color:#8a6080;}
+.apouce.on{background:#fff6e8;border-color:#e8b860;color:#8a6520;}
+.apouce-qui{font-size:0.68rem;color:#b07898;}
+.av2-vu{font-size:0.68rem;color:#a8b8cc;margin-top:5px;font-style:italic;}
+.av2-vu.ok{color:#2e6b5e;font-style:normal;font-weight:700;}
+.aide-vu{font-size:0.62rem;opacity:0.85;margin-top:2px;text-align:right;}
 .av2-rf{display:flex;gap:6px;margin-top:9px;}
 .av2-rf input{flex:1;font-size:0.82rem;}
 </style>
@@ -863,7 +872,7 @@ function goTab(name,btn){
   if(name==='journal'){renderJournal();clearBadge();}
   if(name==='stats')renderStats();
   if(name==='contacts')renderContacts();
-  if(name==='aide'){markAideRead();setTimeout(function(){const b=document.getElementById('aideBody');if(b)b.scrollTop=b.scrollHeight;},60);}
+  if(name==='aide'){markAideRead();markAideVu();setTimeout(function(){const b=document.getElementById('aideBody');if(b)b.scrollTop=b.scrollHeight;},60);}
   if(name==='messages'){
     lastGrpViewF=Date.now();localStorage.setItem('lgvF',String(lastGrpViewF));
     renderGroupMsgsF();
@@ -942,7 +951,7 @@ function renderRdvList(){
   if(!fut.length){div.innerHTML='<p style="color:#8a6080;font-size:0.82rem;text-align:center;padding:7px">Aucun rendez-vous à venir</p>';return;}
   div.innerHTML=fut.map(r=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;margin-bottom:5px;background:${r.date===ts?'#fffbe8':'#faedf3'};border-left:3px solid ${r.date===ts?'#f0a030':'#c4789a'};">
     <div><div style="font-weight:700;color:#7d4e6b;font-size:0.85rem;">📅 ${r.title}${r.date===ts?'<span style="background:#f0a030;color:#fff;border-radius:6px;padding:1px 6px;font-size:0.68rem;margin-left:4px;">Aujourd\'hui</span>':''}</div>
-    <div style="font-size:0.74rem;color:#8a6080;">${fd(r.date)}${r.time?' à '+r.time:''}</div></div>
+    <div style="font-size:0.74rem;color:#8a6080;">${fd(r.date)}${r.time?' à '+r.time:''}${r.par?' · <span style="color:#2e6b5e;font-weight:700;">noté par '+escHtmlF(r.par)+'</span>':''}</div></div>
     <button onclick="delRdv('${r._k}')" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;padding:4px 7px;">✕</button>
   </div>`).join('');
 }
@@ -1787,11 +1796,17 @@ function renderAideMsgs(){
   el.innerHTML=aideMsgs.map(function(m){
     const fromEl=m.from==='elodie';
     const t=new Date(m.ts);
+    let vu='';
+    if(!fromEl){
+      const lu=m.vu&&m.vu.elodie;
+      vu='<div class="aide-vu">'+(lu?'✓✓ Vu par Élodie':'✓ Envoyé')+'</div>';
+    }
     return '<div class="aide-bbl '+(fromEl?'ab-el':'ab-fam')+'">'
       +'<div class="aide-bbl-w">'+escHtmlF(fromEl?'Élodie':(m.fromName||'Famille'))+'</div>'
       +escHtmlF(m.text)
       +'<div class="aide-bbl-t">'+t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '
-      +String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+'</div></div>';
+      +String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+'</div>'
+      +vu+'</div>';
   }).join('');
   if(wasBottom)el.scrollTop=el.scrollHeight;
 }
@@ -1857,21 +1872,69 @@ function renderAideVisites(){
       .concat((v.emotions||[]).map(function(e){return'<span class="atag '+(e.cat==='bien'?'pos':negCats[e.cat]?'neg':'')+'">'+escHtmlF(e.label)+'</span>';}))
       .concat((v.observations||[]).map(function(o){return'<span class="atag '+escHtmlF(o.tone||'')+'">'+escHtmlF(o.label)+'</span>';}))
       .join('');
-    const reps=v.reponses?Object.keys(v.reponses).map(function(k){
-      const r=v.reponses[k];
-      return '<div class="av2-rep"><b>'+escHtmlF(r.who||'')+'</b> · '
-        +new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})
-        +'<br>'+escHtmlF(r.text)+'</div>';
-    }).join(''):'';
+    const reps=v.reponses?Object.keys(v.reponses)
+      .sort(function(a,b){return String(v.reponses[a].ts).localeCompare(String(v.reponses[b].ts));})
+      .map(function(k){
+        const r=v.reponses[k];
+        const dElodie=r.from==='elodie';
+        return '<div class="av2-rep'+(dElodie?' av2-rep-el':'')+'">'
+          +'<b>'+escHtmlF(dElodie?'Élodie':(r.who||''))+'</b> · '
+          +new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})
+          +'<br>'+escHtmlF(r.text)
+          +(dElodie?pouceF('aide_visites/'+v._k+'/reponses/'+k,r.reactions)
+                   :vuParF(r.vu,'elodie','Élodie a lu'))
+          +'</div>';
+      }).join(''):'';
     return '<div class="av2'+(v.alerte?' alerte':'')+'">'
       +'<div class="av2-h"><div><div class="av2-d">'+(v.alerte?'⚠️ ':'🤝 ')+fd(v.date)+'</div>'
       +'<div class="av2-t">'+escHtmlF([v.time,(v.moments||[]).join(' · '),v.duree].filter(Boolean).join(' · '))+' · par '+escHtmlF(v.aide||'Élodie')+'</div></div></div>'
       +(tags?'<div>'+tags+'</div>':'')
       +(v.note?'<div class="av2-note">'+escHtmlF(v.note)+'</div>':'')
+      +pouceF('aide_visites/'+v._k,v.reactions)
       +reps
       +'<div class="av2-rf"><input type="text" id="rep-'+v._k+'" placeholder="Répondre à Élodie..." onkeydown="if(event.key===\'Enter\')replyAide(\''+v._k+'\')"><button class="rbtn" style="background:#2e6b5e;" onclick="replyAide(\''+v._k+'\')">Envoyer</button></div>'
       +'</div>';
   }).join('');
+}
+
+/* --- Pouces et accusés de lecture côté famille --- */
+function pouceF(chemin,reactions){
+  const gens=reactions?Object.keys(reactions):[];
+  const moi=myName();
+  const jaime=moi&&gens.indexOf(moi)>-1;
+  return '<div class="av2-pr"><button class="apouce'+(jaime?' on':'')+'" '
+    +'onclick="togglePouceF(\''+chemin+'\')" title="'+escHtmlF(gens.join(', '))+'">'
+    +'👍'+(gens.length?' '+gens.length:'')+'</button>'
+    +(gens.length?'<span class="apouce-qui">'+escHtmlF(gens.join(', '))+'</span>':'')
+    +'</div>';
+}
+async function togglePouceF(chemin){
+  const moi=myName();
+  if(!moi){toast('⚠️ Choisis d\'abord qui tu es dans l\'onglet Messages !');return;}
+  const ref=db.ref(chemin+'/reactions/'+moi);
+  const s=await ref.once('value');
+  if(s.exists())await ref.remove();
+  else{await ref.set('👍');toast('👍 Envoyé à Élodie');}
+}
+function vuParF(vu,qui,libelle){
+  if(!vu||!vu[qui])return'<div class="av2-vu">✓ Envoyé</div>';
+  return '<div class="av2-vu ok">✓✓ '+escHtmlF(libelle)+'</div>';
+}
+
+/* Signale à Élodie que ses comptes rendus et ses messages ont été vus */
+function markAideVu(){
+  const moi=myName();
+  if(!moi)return;
+  const uv={};
+  aideVisites.forEach(function(v){
+    if(!v.vu||!v.vu[moi])uv[v._k+'/vu/'+moi]=new Date().toISOString();
+  });
+  if(Object.keys(uv).length)db.ref('aide_visites').update(uv);
+  const um={};
+  aideMsgs.forEach(function(m){
+    if(m.from==='elodie'&&(!m.vu||!m.vu[moi]))um[m._k+'/vu/'+moi]=new Date().toISOString();
+  });
+  if(Object.keys(um).length)db.ref('aide_messages').update(um);
 }
 
 async function replyAide(k){

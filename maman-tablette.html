@@ -498,7 +498,7 @@ function renderRdv(){
   const tom=new Date();tom.setDate(tom.getDate()+1);const tts=tom.toISOString().slice(0,10);
   const fut=rdvItems.filter(r=>r.date>=ts);
   if(!fut.length){ul.innerHTML='<li style="text-align:center;color:#c0a0b8;padding:11px;font-size:0.88rem;">Aucun rendez-vous à venir 📅</li>';return;}
-  ul.innerHTML=fut.map(r=>'<li class="ri2 '+(r.date===ts?'tod':'')+'"><div style="flex:1;"><div style="font-weight:700;color:#7d4e6b;font-size:0.88rem;">📅 '+r.title+(r.date===ts?'<span class="rbadge">Aujourd\'hui !</span>':r.date===tts?'<span class="rbadge" style="background:#e8a030;">Demain 🔔</span>':'')+'</div><div style="font-size:0.76rem;color:#b07898;">'+fd(r.date)+(r.time?' à '+r.time:'')+'</div></div><button onclick="db.ref(\'maman_rdv/'+r._k+'\').remove()" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;">✕</button></li>').join('');
+  ul.innerHTML=fut.map(r=>'<li class="ri2 '+(r.date===ts?'tod':'')+'"><div style="flex:1;"><div style="font-weight:700;color:#7d4e6b;font-size:0.88rem;">📅 '+r.title+(r.date===ts?'<span class="rbadge">Aujourd\'hui !</span>':r.date===tts?'<span class="rbadge" style="background:#e8a030;">Demain 🔔</span>':'')+'</div><div style="font-size:0.76rem;color:#b07898;">'+fd(r.date)+(r.time?' à '+r.time:'')+(r.par?' · noté par '+r.par:'')+'</div></div><button onclick="db.ref(\'maman_rdv/'+r._k+'\').remove()" style="background:none;border:none;cursor:pointer;color:#e08fa0;font-size:0.95rem;">✕</button></li>').join('');
 }
 
 // Messages enfants

@@ -89,6 +89,18 @@ textarea{resize:vertical;min-height:80px;}
 .vnote{background:#f7fcfa;border-radius:9px;padding:10px;font-size:0.86rem;line-height:1.45;margin-top:8px;color:#2c4f46;white-space:pre-wrap;}
 .vrep{background:#eef4fb;border-left:3px solid #5b8bc4;border-radius:9px;padding:9px 11px;font-size:0.84rem;margin-top:7px;color:#22406b;}
 .vrep b{color:#1a3560;}
+.vrep.vrep-moi{background:#eef6f3;border-left-color:#4a9c88;color:#2c4f46;}
+.vrep.vrep-moi b{color:#2e6b5e;}
+.vvu{font-size:0.72rem;color:#a8c2ba;margin-top:8px;font-style:italic;}
+.vvu.vvu-ok{color:#3d7a6a;font-style:normal;font-weight:700;}
+.vrct{display:inline-block;background:#fff6e8;border:1px solid #f2ddb8;border-radius:14px;padding:2px 10px;font-size:0.76rem;font-weight:700;color:#8a6520;margin-top:7px;}
+.vrf-p{margin-top:6px;display:flex;align-items:center;gap:7px;}
+.pouce{background:#fff;border:1.5px solid #d6ebe4;border-radius:16px;padding:3px 11px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;color:#5e8f81;}
+.pouce.on{background:#fff6e8;border-color:#e8b860;color:#8a6520;}
+.pouce-qui{font-size:0.68rem;color:#7aa89b;}
+.vrf{display:flex;gap:6px;margin-top:10px;}
+.vrf input{flex:1;font-size:0.84rem;}
+.dm-vu{font-size:0.62rem;opacity:0.85;margin-top:2px;text-align:right;}
 .vdel{background:none;border:1px solid #d6ebe4;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:0.72rem;color:#c07070;font-weight:700;flex-shrink:0;}
 
 /* MESSAGES */
@@ -134,6 +146,24 @@ textarea{resize:vertical;min-height:80px;}
 .pwa-t .ios{display:inline-flex;align-items:center;justify-content:center;background:#eef6f3;border-radius:5px;padding:0 5px;font-weight:700;color:#2e6b5e;}
 .pwa-go{background:linear-gradient(135deg,#2e6b5e,#4a9c88);color:#fff;border:none;border-radius:11px;padding:10px 15px;font-size:0.83rem;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;white-space:nowrap;flex-shrink:0;}
 .pwa-x{background:none;border:none;color:#a8c2ba;font-size:1.1rem;cursor:pointer;padding:2px 4px;flex-shrink:0;}
+
+/* AGENDA */
+.cnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cnav button{background:#eef6f3;border:1.5px solid #d6ebe4;border-radius:10px;width:38px;height:34px;font-size:0.95rem;cursor:pointer;color:#2e6b5e;}
+.ctit{font-family:'Playfair Display',serif;font-size:1.05rem;color:#2e6b5e;font-weight:700;text-transform:capitalize;}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cjn{text-align:center;font-size:0.63rem;font-weight:700;color:#7aa89b;text-transform:uppercase;padding-bottom:3px;}
+.cj{aspect-ratio:1;border-radius:9px;background:#f7fcfa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font-size:0.8rem;color:#2c4f46;border:2px solid transparent;}
+.cj.vide{background:transparent;cursor:default;}
+.cj.auj{background:#dff2ec;font-weight:700;}
+.cj.sel{border-color:#2e6b5e;background:#fff;}
+.cj-pts{display:flex;gap:2px;height:5px;}
+.cpt{width:5px;height:5px;border-radius:50%;display:inline-block;}
+.cpt.fam{background:#4a9c88;}
+.cpt.moi{background:#7b5ec4;}
+.cpt.rdv{background:#e8a030;}
+.cleg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:11px;font-size:0.7rem;color:#5e8f81;}
+.cli{display:flex;align-items:center;gap:5px;}
 
 /* ARBRE DE FAMILLE */
 .tr-root{text-align:center;padding:4px 0 2px;}
@@ -328,6 +358,27 @@ textarea{resize:vertical;min-height:80px;}
 
 <!-- ===== LA FAMILLE ===== -->
 <div id="tab-famille" class="sec">
+  <div class="card">
+    <div class="ct">📅 L'agenda d'Andrée</div>
+    <div class="cnav"><button onclick="chgMois(-1)">◀</button><div class="ctit" id="calTitre"></div><button onclick="chgMois(1)">▶</button></div>
+    <div class="cgrid" id="calGrid"></div>
+    <div class="cleg">
+      <div class="cli"><span class="cpt fam"></span> Passage famille</div>
+      <div class="cli"><span class="cpt moi"></span> Ma visite</div>
+      <div class="cli"><span class="cpt rdv"></span> Rendez-vous</div>
+    </div>
+  </div>
+  <div id="calDetail"></div>
+  <div class="card">
+    <div class="ct">➕ Noter un rendez-vous</div>
+    <p class="hint">Il apparaîtra aussitôt chez la famille et sur la tablette d'Andrée.</p>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px;">
+      <input type="text" id="rdvTitre" placeholder="Ex : Médecin, Coiffeur, Kiné..." style="flex:2;min-width:150px;">
+      <input type="date" id="rdvDate" style="flex:1;min-width:130px;">
+      <input type="time" id="rdvHeure" style="flex:0 0 110px;">
+    </div>
+    <button class="sbtn" style="padding:12px;" onclick="ajouterRdv()">📅 Ajouter le rendez-vous</button>
+  </div>
   <div class="card">
     <div class="ct">🌳 L'arbre de famille d'Andrée</div>
     <p class="hint">Pour mettre un visage et un âge sur les prénoms dont elle vous parlera.</p>
@@ -572,6 +623,7 @@ function goTab(id,btn){
   currentTab=id;
   window.scrollTo(0,0);
   if(id==='messages'){markDmRead();setTimeout(()=>{const b=document.getElementById('dmBody');b.scrollTop=b.scrollHeight;},60);}
+  if(id==='journal')markVisitesVues();
 }
 
 /* ---------- HORLOGE / MÉTÉO ---------- */
@@ -756,6 +808,114 @@ function pwaPlusTard(){
   localStorage.setItem('pwa_plus_tard','1');
   document.getElementById('pwaBar').classList.remove('on');
   toast('Vous pourrez l\'installer plus tard depuis le menu du navigateur');
+}
+
+/* ---------- AGENDA ---------- */
+let calY=new Date().getFullYear(),calM=new Date().getMonth(),jourSel=null;
+
+function chgMois(d){
+  calM+=d;
+  if(calM<0){calM=11;calY--;}
+  if(calM>11){calM=0;calY++;}
+  renderCal();
+}
+
+function renderCal(){
+  const grille=document.getElementById('calGrid');
+  if(!grille)return;
+  document.getElementById('calTitre').textContent=MOIS[calM]+' '+calY;
+
+  const prem=new Date(calY,calM,1);
+  const decal=(prem.getDay()+6)%7;              // lundi en première colonne
+  const nbJours=new Date(calY,calM+1,0).getDate();
+  const auj=todayStr();
+
+  let h=['L','M','M','J','V','S','D'].map(j=>'<div class="cjn">'+j+'</div>').join('');
+  for(let i=0;i<decal;i++)h+='<div class="cj vide"></div>';
+  for(let j=1;j<=nbJours;j++){
+    const ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(j).padStart(2,'0');
+    const pts=[];
+    if(famVisites.some(v=>v.date===ds))pts.push('<span class="cpt fam"></span>');
+    if(mesVisites.some(v=>v.date===ds))pts.push('<span class="cpt moi"></span>');
+    if(rdvItems.some(r=>r.date===ds))pts.push('<span class="cpt rdv"></span>');
+    h+='<div class="cj'+(ds===auj?' auj':'')+(ds===jourSel?' sel':'')+'" onclick="voirJour(\''+ds+'\')">'
+      +'<div>'+j+'</div><div class="cj-pts">'+pts.join('')+'</div></div>';
+  }
+  grille.innerHTML=h;
+  renderDetailJour();
+}
+
+function voirJour(ds){
+  jourSel=(jourSel===ds?null:ds);
+  renderCal();
+}
+
+function renderDetailJour(){
+  const el=document.getElementById('calDetail');
+  if(!el)return;
+  if(!jourSel){el.innerHTML='';return;}
+
+  const fam=famVisites.filter(v=>v.date===jourSel);
+  const moi=mesVisites.filter(v=>v.date===jourSel);
+  const rdv=rdvItems.filter(r=>r.date===jourSel);
+
+  let h='<div class="card"><div class="ct">📌 '+esc(fd(jourSel))+'</div>';
+
+  if(rdv.length){
+    h+='<div class="el" style="margin-bottom:6px;">📅 Rendez-vous</div>'
+      +rdv.map(r=>'<div class="li2 rdv"><div style="font-size:1.3rem;">📅</div>'
+        +'<div class="li2-main"><div class="li2-t">'+esc(r.title)+'</div>'
+        +'<div class="li2-s">'+(r.time?esc(r.time):'heure non précisée')
+        +(r.par?' · noté par '+esc(r.par):'')+'</div></div>'
+        +(r.parId==='elodie'?'<button class="vdel" onclick="supprRdv(\''+r._k+'\')">🗑️</button>':'')
+        +'</div>').join('');
+  }
+
+  if(fam.length){
+    h+='<div class="el" style="margin:12px 0 6px;">👨‍👩‍👧 La famille est passée</div>'
+      +fam.map(v=>'<div class="li2">'
+        +'<div class="av" style="background:'+colFor(v.who||'?')+'">'+esc(initials(v.who||'?'))+'</div>'
+        +'<div class="li2-main"><div class="li2-t">'+esc(v.who||'—')+'</div>'
+        +'<div class="li2-s">'+(v.time?esc(v.time):'')
+        +((v.periods&&v.periods.length)?' · '+esc(v.periods.join(' · ')):'')+'</div></div></div>').join('');
+  }
+
+  if(moi.length){
+    h+='<div class="el" style="margin:12px 0 6px;">💚 Ma visite</div>'
+      +moi.map(v=>'<div class="li2" style="border-left-color:#7b5ec4;">'
+        +'<div style="font-size:1.3rem;">💚</div>'
+        +'<div class="li2-main"><div class="li2-t">'+esc([v.time,v.duree].filter(Boolean).join(' · '))+'</div>'
+        +'<div class="li2-s">'+esc((v.prestations||[]).length+' prestation'+((v.prestations||[]).length>1?'s':''))+'</div></div></div>').join('');
+  }
+
+  if(!rdv.length&&!fam.length&&!moi.length){
+    h+='<div class="empty" style="padding:20px;"><div class="be">🌤️</div><p>Rien de noté ce jour-là.</p></div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+async function ajouterRdv(){
+  const t=document.getElementById('rdvTitre').value.trim();
+  const d=document.getElementById('rdvDate').value;
+  const hh=document.getElementById('rdvHeure').value;
+  if(!t){toast('⚠️ Indiquez le motif du rendez-vous');return;}
+  if(!d){toast('⚠️ Choisissez une date');return;}
+  try{
+    // parId sans accent : c'est lui que les règles Firebase contrôlent
+    await db.ref('maman_rdv').push({title:t,date:d,time:hh||'',par:'Élodie',parId:'elodie',ts:new Date().toISOString()});
+    document.getElementById('rdvTitre').value='';
+    document.getElementById('rdvHeure').value='';
+    jourSel=d;
+    const p=d.split('-').map(Number);calY=p[0];calM=p[1]-1;
+    toast('📅 Rendez-vous ajouté et partagé');
+  }catch(e){toast('❌ Impossible d\'ajouter : '+e.message);}
+}
+
+async function supprRdv(k){
+  if(!confirm('Supprimer ce rendez-vous ?'))return;
+  try{await db.ref('maman_rdv/'+k).remove();toast('🗑️ Rendez-vous supprimé');}
+  catch(e){toast('❌ '+e.message);}
 }
 
 /* ---------- ARBRE DE FAMILLE ---------- */
@@ -1008,6 +1168,7 @@ onReady(function(){db.ref('aide_visites').on('value',snap=>{
   mesVisites.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
   document.getElementById('syncBar').textContent='✅ Connecté · '+mesVisites.length+' visite'+(mesVisites.length>1?'s':'')+' enregistrée'+(mesVisites.length>1?'s':'');
   renderJournal();
+  renderCal();
 });});
 
 function setJFilt(el,f){
@@ -1027,19 +1188,82 @@ function renderJournal(){
       .concat((v.emotions||[]).map(e=>'<span class="tag '+(e.cat==='bien'?'pos':(e.cat==='moral'||e.cat==='inquiet'||e.cat==='tension')?'neg':'')+'">'+esc(e.label)+'</span>'))
       .concat((v.observations||[]).map(o=>'<span class="tag '+esc(o.tone||'')+'">'+esc(o.label)+'</span>'))
       .join('');
-    const reps=v.reponses?Object.keys(v.reponses).map(k=>{
-      const r=v.reponses[k];
-      return '<div class="vrep"><b>'+esc(r.who||'La famille')+'</b> · '+esc(new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}))+'<br>'+esc(r.text)+'</div>';
-    }).join(''):'';
+    const reps=v.reponses?Object.keys(v.reponses)
+      .sort((a,b)=>String(v.reponses[a].ts).localeCompare(String(v.reponses[b].ts)))
+      .map(k=>{
+        const r=v.reponses[k];
+        const aMoi=r.from==='elodie';
+        return '<div class="vrep'+(aMoi?' vrep-moi':'')+'">'
+          +'<b>'+esc(aMoi?'Vous':(r.who||'La famille'))+'</b> · '
+          +esc(new Date(r.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}))
+          +'<br>'+esc(r.text)
+          +(aMoi?'':pouce('aide_visites/'+v._k+'/reponses/'+k,r.reactions))
+          +'</div>';
+      }).join(''):'';
     return '<div class="vi'+(v.alerte?' alerte':'')+'">'
       +'<div class="vih"><div><div class="vid">'+(v.alerte?'⚠️ ':'')+fd(v.date)+'</div>'
       +'<div class="vit">'+esc([v.time,(v.moments||[]).join(' · '),v.duree].filter(Boolean).join(' · '))+'</div></div>'
       +'<button class="vdel" onclick="delVisite(\''+v._k+'\')">🗑️</button></div>'
       +(tags?'<div>'+tags+'</div>':'')
       +(v.note?'<div class="vnote">'+esc(v.note)+'</div>':'')
+      +vuPar(v.vu)
+      +reactionsRecues(v.reactions)
       +reps
+      +'<div class="vrf"><input type="text" id="rep-'+v._k+'" placeholder="Répondre à la famille..." '
+      +'onkeydown="if(event.key===\'Enter\')repondre(\''+v._k+'\')">'
+      +'<button class="rbtn" onclick="repondre(\''+v._k+'\')">Envoyer</button></div>'
       +'</div>';
   }).join('');
+}
+
+/* --- Qui a vu, pouces, réponses --- */
+const MOI='elodie';
+
+/* « Vu par Yves, Martine » sous un compte rendu (on ne s'y compte pas) */
+function vuPar(vu){
+  const gens=vu?Object.keys(vu).filter(q=>q!==MOI):[];
+  if(!gens.length)return'<div class="vvu">👁 Pas encore vu par la famille</div>';
+  return '<div class="vvu vvu-ok">👁 Vu par '+esc(gens.join(', '))+'</div>';
+}
+
+/* Pouces reçus sur le compte rendu, sans bouton : on ne réagit pas au sien */
+function reactionsRecues(r){
+  if(!r)return'';
+  const gens=Object.keys(r).filter(q=>q!==MOI);
+  if(!gens.length)return'';
+  return '<div class="vrct" title="'+esc(gens.join(', '))+'">👍 '+gens.length+'</div>';
+}
+
+/* Bouton pouce sur un message de la famille */
+function pouce(chemin,reactions){
+  const gens=reactions?Object.keys(reactions):[];
+  const jaime=gens.indexOf(MOI)>-1;
+  const autres=gens.filter(q=>q!==MOI);
+  return '<div class="vrf-p"><button class="pouce'+(jaime?' on':'')+'" '
+    +'onclick="togglePouce(\''+chemin+'\')" title="'+esc(gens.join(', '))+'">'
+    +'👍'+(gens.length?' '+gens.length:'')+'</button>'
+    +(autres.length?'<span class="pouce-qui">'+esc(autres.join(', '))+'</span>':'')
+    +'</div>';
+}
+
+async function togglePouce(chemin){
+  const ref=db.ref(chemin+'/reactions/'+MOI);
+  const s=await ref.once('value');
+  if(s.exists()){await ref.remove();}
+  else{await ref.set('👍');toast('👍 Envoyé');}
+}
+
+async function repondre(k){
+  const inp=document.getElementById('rep-'+k);
+  const text=inp.value.trim();
+  if(!text)return;
+  inp.value='';
+  try{
+    await db.ref('aide_visites/'+k+'/reponses').push({
+      who:'Élodie',from:'elodie',text,ts:new Date().toISOString()
+    });
+    toast('💬 Réponse envoyée à la famille');
+  }catch(e){toast('❌ Erreur : '+e.message);inp.value=text;}
 }
 
 async function delVisite(k){
@@ -1067,19 +1291,43 @@ function renderDm(){
   el.innerHTML=dmMsgs.map(m=>{
     const mine=m.from==='elodie';
     const t=new Date(m.ts);
+    let vu='';
+    if(mine){
+      const gens=m.vu?Object.keys(m.vu).filter(q=>q!==MOI):[];
+      vu='<div class="dm-vu">'+(gens.length?'✓✓ Vu par '+esc(gens.join(', ')):'✓ Envoyé')+'</div>';
+    }
     return '<div class="dm-bbl '+(mine?'dm-me':'dm-fam')+'">'
       +(mine?'':'<div class="dm-bbl-w">'+esc(m.fromName||'La famille')+'</div>')
       +esc(m.text)
-      +'<div class="dm-bbl-t">'+t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '+hhmm(t)+'</div></div>';
+      +'<div class="dm-bbl-t">'+t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '+hhmm(t)+'</div>'
+      +vu+'</div>';
   }).join('');
   if(wasBottom)el.scrollTop=el.scrollHeight;
 }
 
 function markDmRead(){
   const upd={};
-  dmMsgs.forEach(m=>{if(m.from!=='elodie'&&!m.readByAide)upd[m._k+'/readByAide']=true;});
+  dmMsgs.forEach(m=>{
+    if(m.from==='elodie')return;
+    if(!m.readByAide)upd[m._k+'/readByAide']=true;
+    if(!m.vu||!m.vu[MOI])upd[m._k+'/vu/'+MOI]=new Date().toISOString();
+  });
   if(Object.keys(upd).length)db.ref('aide_messages').update(upd);
   document.getElementById('msgBadge').style.display='none';
+}
+
+/* Signale à la famille qu'elle a lu leurs réponses sur ses comptes rendus */
+function markVisitesVues(){
+  const upd={};
+  mesVisites.forEach(v=>{
+    if(!v.reponses)return;
+    Object.keys(v.reponses).forEach(k=>{
+      const r=v.reponses[k];
+      if(r.from==='elodie')return;
+      if(!r.vu||!r.vu[MOI])upd[v._k+'/reponses/'+k+'/vu/'+MOI]=new Date().toISOString();
+    });
+  });
+  if(Object.keys(upd).length)db.ref('aide_visites').update(upd);
 }
 
 async function sendDm(){
@@ -1098,6 +1346,7 @@ onReady(function(){db.ref('maman_rdv').on('value',snap=>{
   if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))rdvItems.push(Object.assign({},v[k],{_k:k}));}
   rdvItems.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   renderRdv();
+  renderCal();
 });});
 function renderRdv(){
   const ts=todayStr();
@@ -1121,6 +1370,7 @@ onReady(function(){db.ref('visites_publiques').on('value',snap=>{
   if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))famVisites.push(Object.assign({},v[k],{_k:k}));}
   famVisites.sort((a,b)=>String(b.date+(b.time||'')).localeCompare(String(a.date+(a.time||''))));
   renderFam();
+  renderCal();
 });});
 function renderFam(){
   const el=document.getElementById('famList');
@@ -1155,6 +1405,7 @@ window.addEventListener('DOMContentLoaded',function(){
   showHeaderInfo();
   renderArbre();
   majPwaBar();
+  renderCal();
 });
 </script>
 

@@ -22,7 +22,11 @@
     },
     "maman_rdv": {
       ".read":  "auth.token.email === 'famille@suivi-maman.fr' || auth.token.email === 'elodie@suivi-maman.fr'",
-      ".write": "auth.token.email === 'famille@suivi-maman.fr'"
+      ".write": "auth.token.email === 'famille@suivi-maman.fr'",
+      "$rdv": {
+        ".write":    "auth.token.email === 'famille@suivi-maman.fr' || (auth.token.email === 'elodie@suivi-maman.fr' && (!data.exists() || data.child('parId').val() === 'elodie'))",
+        ".validate": "!newData.exists() || auth.token.email === 'famille@suivi-maman.fr' || newData.child('parId').val() === 'elodie'"
+      }
     },
 
     "entries":          { ".read": "auth.token.email === 'famille@suivi-maman.fr'", ".write": "auth.token.email === 'famille@suivi-maman.fr'" },
