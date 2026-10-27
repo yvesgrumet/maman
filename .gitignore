@@ -1,0 +1,3 @@
+# Fichiers Cloudflare : contiennent un secret, ne doivent jamais etre publies
+.wrangler/
+wrangler.toml

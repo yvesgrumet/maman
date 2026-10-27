@@ -1,7 +1,0 @@
-name = "maman-push"
-main = "cloudflare-push.js"
-compatibility_date = "2024-01-01"
-
-[vars]
-PUSH_SECRET = "famille-maman-2024"
-VAPID_PUBLIC_KEY = "BAEROU3tbuDf08jwsrCgHxualIaM6JN06FvUXS0f_Yqr9L6y87YTpMYdkyoA-8IZslTyj1E1zBuqx0zq4K-Z2AQ"
