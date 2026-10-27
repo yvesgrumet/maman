@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Suivi Andrée — Ingrid</title>
+<title>Suivi Andrée</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Suivi Andrée">
 <meta name="theme-color" content="#2e6b5e">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="icon" type="image/png" href="icone-ingrid-192.png">
-<link rel="apple-touch-icon" href="icone-ingrid.png">
-<link rel="manifest" href="manifest-ingrid.json">
+<link rel="icon" type="image/png" href="icone-aide-192.png">
+<link rel="apple-touch-icon" href="icone-aide.png">
+<link rel="manifest" href="manifest-aide.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -243,7 +243,7 @@ textarea{resize:vertical;min-height:80px;}
 <div class="sync" id="syncBar">⏳ Connexion...</div>
 
 <div class="pwa" id="pwaBar">
-  <img src="icone-ingrid-192.png" alt="">
+  <img src="icone-aide-192.png" alt="">
   <div class="pwa-t" id="pwaTxt"></div>
   <button class="pwa-go" id="pwaGo" onclick="installerApp()">Installer</button>
   <button class="pwa-x" onclick="pwaPlusTard()" title="Plus tard">✕</button>
@@ -430,7 +430,10 @@ firebase.auth().onAuthStateChanged(function(u){
    est celui du compte : il n'est comparé nulle part dans la page et
    n'est stocké nulle part. Les règles de la base n'autorisent ce compte
    que sur les données destinées à l'aide à domicile. */
-const COMPTE='ingrid@suivi-maman.fr';
+const COMPTE='aide@suivi-maman.fr';
+/* Prénom de l'aide à domicile en poste. Une seule ligne à changer
+   lors d'un remplacement ; le reste du fichier ne nomme personne. */
+const AIDE_PRENOM='Ingrid';
 function norm(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().replace(/[\s_]+/g,'-');}
 
 let domPret=false,userConnu;
@@ -701,7 +704,7 @@ function quandBadge(days){
     :days===1?'<span class="badge2">Demain</span>'
     :'<span class="li2-s">dans '+days+' jours</span>';
 }
-/* Les personnes décédées ne sont jamais proposées à Ingrid */
+/* Les personnes décédées ne sont jamais proposées à l'aide à domicile */
 function vivants(){return allContacts().filter(c=>!c.nuage);}
 
 function renderFetes(){
@@ -873,7 +876,7 @@ function renderDetailJour(){
         +'<div class="li2-main"><div class="li2-t">'+esc(r.title)+'</div>'
         +'<div class="li2-s">'+(r.time?esc(r.time):'heure non précisée')
         +(r.par?' · noté par '+esc(r.par):'')+'</div></div>'
-        +(r.parId==='ingrid'?'<button class="vdel" onclick="supprRdv(\''+r._k+'\')">🗑️</button>':'')
+        +(r.parId===MOI?'<button class="vdel" onclick="supprRdv(\''+r._k+'\')">🗑️</button>':'')
         +'</div>').join('');
   }
 
@@ -909,7 +912,7 @@ async function ajouterRdv(){
   if(!d){toast('⚠️ Choisissez une date');return;}
   try{
     // parId sans accent : c'est lui que les règles Firebase contrôlent
-    await db.ref('maman_rdv').push({title:t,date:d,time:hh||'',par:'Ingrid',parId:'ingrid',ts:new Date().toISOString()});
+    await db.ref('maman_rdv').push({title:t,date:d,time:hh||'',par:AIDE_PRENOM,parId:MOI,ts:new Date().toISOString()});
     document.getElementById('rdvTitre').value='';
     document.getElementById('rdvHeure').value='';
     jourSel=d;
@@ -1144,7 +1147,7 @@ async function saveVisite(){
   btn.disabled=true;btn.textContent='⏳ Enregistrement...';
   try{
     await db.ref('aide_visites').push({
-      aide:'Ingrid',
+      aide:AIDE_PRENOM,
       aideId:MOI,          // marque l'auteur : chaque aide ne voit que ses propres visites
       date:document.getElementById('vDate').value||todayStr(),
       time:document.getElementById('vTime').value||'',
@@ -1200,7 +1203,7 @@ function renderJournal(){
       .sort((a,b)=>String(v.reponses[a].ts).localeCompare(String(v.reponses[b].ts)))
       .map(k=>{
         const r=v.reponses[k];
-        const aMoi=r.from==='ingrid';
+        const aMoi=r.from===MOI;
         return '<div class="vrep'+(aMoi?' vrep-moi':'')+'">'
           +citation(r.replyTo)
           +'<b>'+esc(aMoi?'Vous':(r.who||'La famille'))+'</b> · '
@@ -1228,7 +1231,9 @@ function renderJournal(){
 }
 
 /* --- Qui a vu, pouces, réponses --- */
-const MOI='ingrid';
+/* Identifiant neutre : ne nomme personne (le code source est public)
+   et distinct pour chaque aide, ce qui cloisonne leurs donnees. */
+const MOI='aide-2026-10';
 
 /* « Vu par Yves, Martine » sous un compte rendu (on ne s'y compte pas) */
 function vuPar(vu){
@@ -1310,7 +1315,7 @@ async function repondre(k){
   inp.value='';
   const cible=cibleRep[k];
   try{
-    const msg={who:'Ingrid',from:'ingrid',text,ts:new Date().toISOString()};
+    const msg={who:AIDE_PRENOM,from:MOI,text,ts:new Date().toISOString()};
     if(cible)msg.replyTo={cle:cible.cle,who:cible.who,extrait:cible.extrait};
     await db.ref('aide_visites/'+k+'/reponses').push(msg);
     delete cibleRep[k];
@@ -1332,7 +1337,7 @@ onReady(function(){db.ref('aide_messages').orderByChild('ts').limitToLast(80).on
   if(snap.exists()){const v=snap.val();for(const k of Object.keys(v))if(v[k].aideId===MOI)dmMsgs.push(Object.assign({},v[k],{_k:k}));}
   dmMsgs.sort((a,b)=>new Date(a.ts)-new Date(b.ts));
   renderDm();
-  const unread=dmMsgs.filter(m=>m.from!=='ingrid'&&!m.readByAide).length;
+  const unread=dmMsgs.filter(m=>m.from!==MOI&&!m.readByAide).length;
   const b=document.getElementById('msgBadge');
   if(unread&&currentTab!=='messages'){b.textContent=unread;b.style.display='flex';}else b.style.display='none';
   if(currentTab==='messages')markDmRead();
@@ -1343,7 +1348,7 @@ function renderDm(){
   if(!dmMsgs.length){el.innerHTML='<div class="empty" style="margin:auto;"><div class="be">💬</div><p>Aucun message.<br>Écrivez le premier mot à la famille !</p></div>';return;}
   const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<60;
   el.innerHTML=dmMsgs.map(m=>{
-    const mine=m.from==='ingrid';
+    const mine=m.from===MOI;
     const t=new Date(m.ts);
     let vu='';
     if(mine){
@@ -1362,7 +1367,7 @@ function renderDm(){
 function markDmRead(){
   const upd={};
   dmMsgs.forEach(m=>{
-    if(m.from==='ingrid')return;
+    if(m.from===MOI)return;
     if(!m.readByAide)upd[m._k+'/readByAide']=true;
     if(!m.vu||!m.vu[MOI])upd[m._k+'/vu/'+MOI]=new Date().toISOString();
   });
@@ -1377,7 +1382,7 @@ function markVisitesVues(){
     if(!v.reponses)return;
     Object.keys(v.reponses).forEach(k=>{
       const r=v.reponses[k];
-      if(r.from==='ingrid')return;
+      if(r.from===MOI)return;
       if(!r.vu||!r.vu[MOI])upd[v._k+'/reponses/'+k+'/vu/'+MOI]=new Date().toISOString();
     });
   });
@@ -1390,7 +1395,7 @@ async function sendDm(){
   if(!text)return;
   inp.value='';
   try{
-    await db.ref('aide_messages').push({text,from:'ingrid',fromName:'Ingrid',aideId:MOI,ts:new Date().toISOString(),readByAide:true});
+    await db.ref('aide_messages').push({text,from:MOI,fromName:AIDE_PRENOM,aideId:MOI,ts:new Date().toISOString(),readByAide:true});
   }catch(e){toast('❌ Erreur : '+e.message);inp.value=text;}
 }
 
@@ -1467,7 +1472,7 @@ window.addEventListener('DOMContentLoaded',function(){
 <div id="pwOverlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#2e6b5e 0%,#4a9c88 60%,#7bc4ae 100%);z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:30px;">
   <div style="background:#fff;border-radius:24px;padding:38px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
     <div style="font-size:3.6rem;margin-bottom:14px;">🔐</div>
-    <div style="font-family:'Playfair Display',serif;font-size:1.7rem;color:#2e6b5e;margin-bottom:6px;">Bonjour Ingrid !</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.7rem;color:#2e6b5e;margin-bottom:6px;">Bonjour !</div>
     <div style="font-size:1rem;color:#5e8f81;margin-bottom:24px;">Entrez le mot de passe</div>
     <input type="password" id="pwInput" style="width:100%;padding:16px;font-size:1.15rem;border:2px solid #d6ebe4;border-radius:14px;text-align:center;outline:none;color:#1f4a40;letter-spacing:1px;font-family:'Lato',sans-serif;" placeholder="mot de passe" onkeydown="if(event.key==='Enter')submitPw()">
     <div style="text-align:right;margin-top:6px;"><span onclick="voirPw(this)" style="font-size:0.8rem;color:#2e6b5e;cursor:pointer;font-weight:700;">👁 Afficher</span></div>
